@@ -30,18 +30,18 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         display: (v) => shekel(v),
       },
       {
-        key: 'R0',
-        getLabel: (t) => t.r0Label,
-        getTooltip: (t) => t.tooltips.R0,
-        min: 0, max: 15_000, step: 100,
-        display: (v) => shekel(v),
-      },
-      {
         key: 'V',
         getLabel: (t) => t.vLabel,
         getTooltip: (t) => t.tooltips.V,
         min: 0, max: 0.15, step: 0.005,
         display: (v) => pct(v),
+      },
+      {
+        key: 'R0',
+        getLabel: (t) => t.r0Label,
+        getTooltip: (t) => t.tooltips.R0,
+        min: 0, max: 15_000, step: 100,
+        display: (v) => shekel(v),
       },
       {
         key: 'Ri',
@@ -215,6 +215,22 @@ export default function Sliders({ params, update, results, t, isRTL }: Props) {
             </div>
           )}
 
+          {/* מס שבח toggle — inside At Sale, before sliders */}
+          {group.id === 'selling' && (
+            <div className="mb-3 flex flex-col gap-2">
+              <TaxToggle
+                label={t.masShvachLabel}
+                value={params.masShvach}
+                options={[
+                  { value: 'exempt', label: t.exempt0 },
+                  { value: '25%', label: t.standard25 },
+                ]}
+                onChange={(v) => update('masShvach', v as Params['masShvach'])}
+              />
+              <p className="text-xs text-slate-500 leading-relaxed">{t.masShvachNote}</p>
+            </div>
+          )}
+
           <div className="flex flex-col divide-y divide-slate-700/50">
             {group.sliders.map((def) => (
               <SliderRow
@@ -231,22 +247,6 @@ export default function Sliders({ params, update, results, t, isRTL }: Props) {
               />
             ))}
           </div>
-
-          {/* מס שבח toggle — inside At Sale */}
-          {group.id === 'selling' && (
-            <div className="mt-3 flex flex-col gap-2">
-              <TaxToggle
-                label={t.masShvachLabel}
-                value={params.masShvach}
-                options={[
-                  { value: 'exempt', label: t.exempt0 },
-                  { value: '25%', label: t.standard25 },
-                ]}
-                onChange={(v) => update('masShvach', v as Params['masShvach'])}
-              />
-              <p className="text-xs text-slate-500 leading-relaxed">{t.masShvachNote}</p>
-            </div>
-          )}
 
           {/* Cost breakdown — inside At Purchase */}
           {group.id === 'costs' && (

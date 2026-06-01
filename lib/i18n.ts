@@ -76,7 +76,7 @@ export const LANG: Record<Lang, Translation> = {
       "See when buying an investment apartment in Israel beats investing the same capital in the S&P 500 — and when it doesn't.",
     langToggle: 'עב',
     purchaseTaxLabel: 'Purchase tax',
-    masShvachLabel: 'מס שבח at sale',
+    masShvachLabel: 'Real estate capital gains',
     investor8: 'Investor (8%)',
     firstApt: 'First apartment',
     exempt0: 'Exempt (0%)',

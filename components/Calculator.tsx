@@ -51,10 +51,20 @@ export default function Calculator() {
         </div>
       </header>
 
-      {/* Main */}
-      <main className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
-        {/* Sliders — order-2 on mobile (goes below chart), order-1 on desktop (left column) */}
-        <aside className="order-2 lg:order-1 lg:w-[360px] shrink-0">
+      {/* Main — 3-column on desktop: sliders | chart (sticky) | cards (sticky) */}
+      <main className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:grid lg:grid-cols-[340px_1fr_300px] lg:items-start gap-6">
+        {/* Result cards — order-1 mobile (top), order-3 desktop (right) */}
+        <div className="order-1 lg:order-3 lg:sticky lg:top-4 flex flex-col gap-3">
+          <ResultCards results={results} params={params} t={t} />
+        </div>
+
+        {/* Chart — order-2 mobile, order-2 desktop (center, sticky, always visible) */}
+        <div className="order-2 lg:order-2 lg:sticky lg:top-4 bg-[#1e293b] border border-[#334155] rounded-lg p-4">
+          <Chart points={results.points} crossover={results.crossover} t={t} />
+        </div>
+
+        {/* Sliders — order-3 mobile (bottom), order-1 desktop (left) */}
+        <aside className="order-3 lg:order-1">
           <Sliders
             params={params}
             update={update}
@@ -63,12 +73,6 @@ export default function Calculator() {
             isRTL={isRTL}
           />
         </aside>
-
-        {/* Right column: cards + chart — order-1 on mobile (top), order-2 on desktop */}
-        <div className="order-1 lg:order-2 flex-1 min-w-0 flex flex-col gap-4">
-          <ResultCards results={results} params={params} t={t} />
-          <Chart points={results.points} crossover={results.crossover} t={t} />
-        </div>
       </main>
 
       {/* Methodology note */}

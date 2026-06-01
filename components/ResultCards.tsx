@@ -43,7 +43,7 @@ export default function ResultCards({ results, params, t }: Props) {
   const { crossover, goalMonth, Tp, Ep, S0 } = results
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div className="flex flex-col gap-3">
       {/* Crossover card */}
       <Card title={t.crossoverTitle}>
         {crossover ? (
