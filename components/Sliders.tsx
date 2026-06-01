@@ -232,17 +232,21 @@ export default function Sliders({ params, update, results, t, isRTL }: Props) {
           {/* Live cost summary under purchase costs group */}
           {group.getTitle(t) === t.groupCosts && (
             <div className="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400 flex flex-col gap-1" dir="ltr">
-              <div className="flex justify-between">
+              <div className="flex justify-between text-slate-300 font-medium">
                 <span>{t.costsLiveEp}</span>
                 <span className="text-white tabular-nums">{shekel(results.Ep)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between pl-2">
+                <span>{t.downPaymentCard}</span>
+                <span className="tabular-nums">{shekel(results.S0)}</span>
+              </div>
+              <div className="flex justify-between pl-2">
                 <span>{t.costsLiveTp}</span>
                 <span className="tabular-nums">{shekel(results.Tp)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between pl-2">
                 <span>{t.costsLiveAdded}</span>
-                <span className="tabular-nums">{shekel(results.addedCosts - results.Tp)}</span>
+                <span className="tabular-nums">{shekel(results.Ep - results.S0 - results.Tp)}</span>
               </div>
             </div>
           )}

@@ -40,7 +40,7 @@ function MonthYearValue({
 }
 
 export default function ResultCards({ results, params, t }: Props) {
-  const { crossover, goalMonth, Tp, Ep, addedCosts } = results
+  const { crossover, goalMonth, Tp, Ep, S0 } = results
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -74,10 +74,13 @@ export default function ResultCards({ results, params, t }: Props) {
         </div>
         <div className="text-xs text-slate-400 mt-1 flex flex-col gap-0.5">
           <span dir="ltr">
+            {t.downPaymentCard}: {shekel(S0)} ({pct(params.p, 0)})
+          </span>
+          <span dir="ltr">
             {t.purchaseTaxCard}: {shekel(Tp)} ({pct(Tp / params.Av0, 1)})
           </span>
           <span dir="ltr">
-            {t.addedCostsCard}: {pct(params.purchaseCostsRate, 1)} {t.ofAptValue}
+            {t.addedCostsCard}: {shekel(Ep - S0 - Tp)} ({pct(params.purchaseCostsRate, 1)})
           </span>
         </div>
       </Card>

@@ -54,6 +54,7 @@ export type Translation = {
   monthLabel: string
   yearLabel2: string
   goalSubLabel: (p: string) => string
+  downPaymentCard: string
   purchaseTaxCard: string
   addedCostsCard: string
   ofAptValue: string
@@ -128,6 +129,7 @@ export const LANG: Record<Lang, Translation> = {
     monthLabel: 'Month',
     yearLabel2: 'Year',
     goalSubLabel: (p) => `Goal: ${p} of purchase costs`,
+    downPaymentCard: 'Down payment',
     purchaseTaxCard: 'Purchase tax',
     addedCostsCard: 'Closing costs',
     ofAptValue: 'of apartment value',
@@ -199,6 +201,7 @@ export const LANG: Record<Lang, Translation> = {
     monthLabel: 'חודש',
     yearLabel2: 'שנה',
     goalSubLabel: (p) => `יעד: ${p} מהוצאות הרכישה`,
+    downPaymentCard: 'הון עצמי',
     purchaseTaxCard: 'מס רכישה',
     addedCostsCard: 'עלויות עסקה',
     ofAptValue: 'משווי הדירה',
