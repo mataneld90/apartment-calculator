@@ -161,8 +161,8 @@ interface SliderRowProps {
 
 function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChange, isRTL }: SliderRowProps) {
   return (
-    <div className="flex items-center gap-2 py-1 min-w-0">
-      <div className="flex items-center gap-1 w-28 sm:w-36 shrink-0">
+    <div className="flex items-center gap-2 py-0.5 min-w-0">
+      <div className="flex items-center gap-1 w-28 shrink-0">
         <span className="text-xs text-slate-300 leading-tight">{label}</span>
         {tooltip && <InfoTooltip text={tooltip} />}
       </div>
@@ -176,7 +176,7 @@ function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChan
         className="flex-1 h-1 min-w-0"
         style={isRTL ? { transform: 'scaleX(-1)' } : undefined}
       />
-      <span className="text-xs text-white w-20 sm:w-24 text-right shrink-0 tabular-nums" dir="ltr">
+      <span className="text-xs text-white w-20 text-right shrink-0 tabular-nums" dir="ltr">
         {displayValue}
       </span>
     </div>
@@ -189,14 +189,16 @@ interface Props {
   results: Results
   t: Translation
   isRTL: boolean
+  only?: string[]
 }
 
-export default function Sliders({ params, update, results, t, isRTL }: Props) {
+export default function Sliders({ params, update, results, t, isRTL, only }: Props) {
+  const visibleGroups = only ? GROUPS.filter(g => only.includes(g.id)) : GROUPS
   return (
-    <div className="flex flex-col gap-4">
-      {GROUPS.map((group) => (
-        <div key={group.id} className="bg-[#1e293b] border border-[#334155] rounded-lg p-4">
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
+    <div className="flex flex-col gap-3">
+      {visibleGroups.map((group) => (
+        <div key={group.id} className="bg-[#1e293b] border border-[#334155] rounded-lg p-3">
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
             {group.getTitle(t)}
           </div>
 

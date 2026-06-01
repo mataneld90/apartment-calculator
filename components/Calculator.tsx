@@ -51,26 +51,38 @@ export default function Calculator() {
         </div>
       </header>
 
-      {/* Main — 3-column on desktop: sliders | chart (sticky) | cards (sticky) */}
-      <main className="max-w-7xl mx-auto px-4 py-6 flex flex-col lg:grid lg:grid-cols-[340px_1fr_300px] lg:items-start gap-6">
-        {/* Result cards — order-1 mobile (top), order-3 desktop (right) */}
-        <div className="order-1 lg:order-3 lg:sticky lg:top-4 flex flex-col gap-3">
+      {/* Main — desktop: left sliders | center (chart + cards) | right sliders */}
+      <main className="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:grid lg:grid-cols-[360px_1fr_360px] lg:items-start gap-4">
+
+        {/* Center: chart + result cards below — order-1 mobile, order-2 desktop */}
+        <div className="order-1 lg:order-2 flex flex-col gap-3">
+          <div className="bg-[#1e293b] border border-[#334155] rounded-lg p-4">
+            <Chart points={results.points} crossover={results.crossover} t={t} />
+          </div>
           <ResultCards results={results} params={params} t={t} />
         </div>
 
-        {/* Chart — order-2 mobile, order-2 desktop (center, sticky, always visible) */}
-        <div className="order-2 lg:order-2 lg:sticky lg:top-4 bg-[#1e293b] border border-[#334155] rounded-lg p-4">
-          <Chart points={results.points} crossover={results.crossover} t={t} />
-        </div>
-
-        {/* Sliders — order-3 mobile (bottom), order-1 desktop (left) */}
-        <aside className="order-3 lg:order-1">
+        {/* Left sliders: Apartment + Mortgage — order-2 mobile, order-1 desktop */}
+        <aside className="order-2 lg:order-1">
           <Sliders
             params={params}
             update={update}
             results={results}
             t={t}
             isRTL={isRTL}
+            only={['apartment', 'mortgage']}
+          />
+        </aside>
+
+        {/* Right sliders: At Purchase + At Sale + Passive + Misc — order-3 both */}
+        <aside className="order-3">
+          <Sliders
+            params={params}
+            update={update}
+            results={results}
+            t={t}
+            isRTL={isRTL}
+            only={['costs', 'selling', 'passive', 'misc']}
           />
         </aside>
       </main>

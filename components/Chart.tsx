@@ -29,7 +29,7 @@ function CustomTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length || label === undefined) return null
   return (
-    <div className="bg-slate-800 border border-slate-600 rounded p-2 text-xs shadow-lg" dir="ltr">
+    <div className="bg-slate-800/75 border border-slate-600 rounded p-2 text-xs shadow-lg" dir="ltr">
       <p className="text-slate-400 mb-1">
         Month {label} · Year {(label / 12).toFixed(1)}
       </p>
@@ -56,12 +56,14 @@ function makeTicks(start: number, end: number): number[] {
 
 export default function Chart({ points, crossover, t }: Props) {
   const [domain, setDomain] = useState<[number, number]>([0, TOTAL_MONTHS])
+  const [isPanning, setIsPanning] = useState(false)
   const isDragging = useRef(false)
   const dragStart = useRef<{ x: number; domainStart: number } | null>(null)
 
   const visiblePoints = points.filter(p => p.month >= domain[0] && p.month <= domain[1])
   const [start, end] = domain
   const ticks = makeTicks(start, end)
+  const isZoomed = start !== 0 || end !== TOTAL_MONTHS
 
   const reset = () => setDomain([0, TOTAL_MONTHS])
 
@@ -70,7 +72,7 @@ export default function Chart({ points, crossover, t }: Props) {
     const [s, en] = domain
     const center = (s + en) / 2
     const span = en - s
-    const factor = e.deltaY > 0 ? 1.15 : 0.87  // scroll down = zoom out, up = zoom in
+    const factor = e.deltaY > 0 ? 1.15 : 0.87
     const newSpan = Math.max(24, Math.min(TOTAL_MONTHS, span * factor))
     const newS = Math.max(0, Math.round(center - newSpan / 2))
     const newE = Math.min(TOTAL_MONTHS, Math.round(newS + newSpan))
@@ -79,6 +81,7 @@ export default function Chart({ points, crossover, t }: Props) {
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     isDragging.current = true
+    setIsPanning(true)
     dragStart.current = { x: e.clientX, domainStart: domain[0] }
   }, [domain])
 
@@ -86,7 +89,6 @@ export default function Chart({ points, crossover, t }: Props) {
     if (!isDragging.current || !dragStart.current) return
     const [s, en] = domain
     const span = en - s
-    // Approximate pixels-to-months: chart width ~500px for 360 months
     const pxPerMonth = 500 / span
     const deltaMonths = Math.round((dragStart.current.x - e.clientX) / pxPerMonth)
     const newS = Math.max(0, dragStart.current.domainStart + deltaMonths)
@@ -94,24 +96,26 @@ export default function Chart({ points, crossover, t }: Props) {
     setDomain([newS, newE])
   }, [domain])
 
-  const onMouseUp = () => { isDragging.current = false; dragStart.current = null }
-
-  const isZoomed = start !== 0 || end !== TOTAL_MONTHS
+  const onMouseUp = () => {
+    isDragging.current = false
+    setIsPanning(false)
+    dragStart.current = null
+  }
 
   return (
     <div dir="ltr" className="w-full flex flex-col gap-1">
-      {isZoomed && (
-        <div className="flex justify-end">
+      <div className="flex justify-end h-5">
+        {isZoomed && (
           <button
             onClick={reset}
             className="text-xs text-slate-400 hover:text-slate-200 px-2 py-0.5 rounded border border-slate-600 hover:border-slate-400 transition-colors"
           >
             Reset zoom
           </button>
-        </div>
-      )}
+        )}
+      </div>
       <div
-        style={{ width: '100%', height: 340, cursor: isDragging.current ? 'grabbing' : 'grab' }}
+        style={{ width: '100%', height: 360, cursor: isPanning ? 'grabbing' : 'grab' }}
         onWheel={onWheel}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
@@ -184,7 +188,7 @@ export default function Chart({ points, crossover, t }: Props) {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <p className="text-xs text-slate-600 text-center">Scroll to zoom · drag to pan</p>
+      <p className="text-xs text-slate-600 text-center select-none">Scroll to zoom · drag to pan</p>
     </div>
   )
 }
