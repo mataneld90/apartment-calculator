@@ -1,0 +1,45 @@
+export type BuyerType = 'investor' | 'single'
+export type MasShvach = 'exempt' | '25%'
+
+export interface Params {
+  Av0: number
+  p: number
+  R0: number
+  Y: number
+  Ip: number
+  V: number
+  Ib: number
+  primeMinus: number
+  Ri: number
+  buyerType: BuyerType
+  TVAT: number
+  Elp: number
+  Elc: number
+  Ereb: number
+  Erea: number
+  Emb: number
+  Es: number
+  masShvach: MasShvach
+  cgt: number
+  G0: number
+}
+
+export interface ChartPoint {
+  month: number
+  apartmentGain: number
+  passiveGain: number
+  goal: number
+}
+
+export interface Results {
+  points: ChartPoint[]
+  crossover: { month: number; value: number } | null
+  goalMonth: { month: number; value: number } | null
+  Tp: number
+  M0: number
+  monthlyPayment: number
+  Ep: number
+  addedCosts: number
+  S0: number
+  G: number
+}
