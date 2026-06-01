@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   ResponsiveContainer,
   LineChart,
@@ -29,7 +29,7 @@ function CustomTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length || label === undefined) return null
   return (
-    <div className="bg-slate-800/75 border border-slate-600 rounded p-2 text-xs shadow-lg" dir="ltr">
+    <div className="bg-slate-800/75 border border-slate-600 rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir="ltr">
       <p className="text-slate-400 mb-1">
         Month {label} · Year {(label / 12).toFixed(1)}
       </p>
@@ -42,65 +42,93 @@ function CustomTooltip({ active, payload, label }: {
   )
 }
 
-const TOTAL_MONTHS = 360
+const TOTAL = 360
 
 function makeTicks(start: number, end: number): number[] {
-  const ticks: number[] = []
   const range = end - start
   const step = range <= 60 ? 12 : range <= 120 ? 24 : 60
+  const ticks: number[] = []
   const first = Math.ceil(start / step) * step
   for (let m = first; m <= end; m += step) ticks.push(m)
-  if (!ticks.includes(start) && start % step === 0) ticks.unshift(start)
   return ticks
 }
 
 export default function Chart({ points, crossover, t }: Props) {
-  const [domain, setDomain] = useState<[number, number]>([0, TOTAL_MONTHS])
-  const [isPanning, setIsPanning] = useState(false)
-  const isDragging = useRef(false)
-  const dragStart = useRef<{ x: number; domainStart: number } | null>(null)
+  const [domain, setDomain] = useState<[number, number]>([0, TOTAL])
+  const divRef = useRef<HTMLDivElement>(null)
+  // Stores drag start snapshot — avoids stale closure in onMouseMove
+  const drag = useRef<{ startX: number; origS: number; span: number } | null>(null)
+  const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isZoomed = domain[0] !== 0 || domain[1] !== TOTAL
 
-  const visiblePoints = points.filter(p => p.month >= domain[0] && p.month <= domain[1])
-  const [start, end] = domain
-  const ticks = makeTicks(start, end)
-  const isZoomed = start !== 0 || end !== TOTAL_MONTHS
+  const setCursor = (c: string) => {
+    if (divRef.current) divRef.current.style.cursor = c
+  }
 
-  const reset = () => setDomain([0, TOTAL_MONTHS])
+  const clearCursorTimer = () => {
+    if (cursorTimer.current) clearTimeout(cursorTimer.current)
+  }
 
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault()
+  // Non-passive wheel handler — the only way to call preventDefault() reliably
+  useEffect(() => {
+    const el = divRef.current
+    if (!el) return
+
+    const handler = (e: WheelEvent) => {
+      e.preventDefault()
+      // Show zoom cursor briefly, then restore grab
+      setCursor(e.deltaY < 0 ? 'zoom-in' : 'zoom-out')
+      clearCursorTimer()
+      cursorTimer.current = setTimeout(() => {
+        setCursor(drag.current ? 'grabbing' : 'grab')
+      }, 350)
+
+      setDomain(prev => {
+        const [s, en] = prev
+        const center = (s + en) / 2
+        const span = en - s
+        const factor = e.deltaY > 0 ? 1.15 : 0.87
+        const newSpan = Math.max(24, Math.min(TOTAL, span * factor))
+        const newS = Math.max(0, Math.round(center - newSpan / 2))
+        const newE = Math.min(TOTAL, Math.round(newS + newSpan))
+        return [newS, newE]
+      })
+    }
+
+    el.style.cursor = 'grab'
+    el.addEventListener('wheel', handler, { passive: false })
+    return () => {
+      el.removeEventListener('wheel', handler)
+      clearCursorTimer()
+    }
+  }, [])
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    setCursor('grabbing')
     const [s, en] = domain
-    const center = (s + en) / 2
-    const span = en - s
-    const factor = e.deltaY > 0 ? 1.15 : 0.87
-    const newSpan = Math.max(24, Math.min(TOTAL_MONTHS, span * factor))
-    const newS = Math.max(0, Math.round(center - newSpan / 2))
-    const newE = Math.min(TOTAL_MONTHS, Math.round(newS + newSpan))
-    setDomain([newS, newE])
-  }, [domain])
+    drag.current = { startX: e.clientX, origS: s, span: en - s }
+  }
 
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    isDragging.current = true
-    setIsPanning(true)
-    dragStart.current = { x: e.clientX, domainStart: domain[0] }
-  }, [domain])
-
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging.current || !dragStart.current) return
-    const [s, en] = domain
-    const span = en - s
-    const pxPerMonth = 500 / span
-    const deltaMonths = Math.round((dragStart.current.x - e.clientX) / pxPerMonth)
-    const newS = Math.max(0, dragStart.current.domainStart + deltaMonths)
-    const newE = Math.min(TOTAL_MONTHS, newS + span)
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!drag.current) return
+    const { startX, origS, span } = drag.current
+    const pxPerMonth = 480 / span
+    const delta = Math.round((startX - e.clientX) / pxPerMonth)
+    const newS = Math.max(0, origS + delta)
+    const newE = Math.min(TOTAL, newS + span)
     setDomain([newS, newE])
-  }, [domain])
+  }
 
   const onMouseUp = () => {
-    isDragging.current = false
-    setIsPanning(false)
-    dragStart.current = null
+    drag.current = null
+    setCursor('grab')
   }
+
+  const reset = () => setDomain([0, TOTAL])
+
+  const [start, end] = domain
+  const visible = points.filter(p => p.month >= start && p.month <= end)
+  const ticks = makeTicks(start, end)
 
   return (
     <div dir="ltr" className="w-full flex flex-col gap-1">
@@ -114,16 +142,17 @@ export default function Chart({ points, crossover, t }: Props) {
           </button>
         )}
       </div>
+
       <div
-        style={{ width: '100%', height: 360, cursor: isPanning ? 'grabbing' : 'grab' }}
-        onWheel={onWheel}
+        ref={divRef}
+        style={{ width: '100%', height: 360 }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={visiblePoints} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+          <LineChart data={visible} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis
               dataKey="month"
@@ -139,55 +168,22 @@ export default function Chart({ points, crossover, t }: Props) {
               width={64}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend
-              formatter={(value) => (
-                <span style={{ color: '#94a3b8', fontSize: 12 }}>{value}</span>
-              )}
-            />
+            <Legend formatter={(v) => <span style={{ color: '#94a3b8', fontSize: 12 }}>{v}</span>} />
             {crossover && crossover.month >= start && crossover.month <= end && (
               <ReferenceLine
                 x={crossover.month}
                 stroke="#64748b"
                 strokeDasharray="4 2"
-                label={{
-                  value: t.crossoverLabel,
-                  position: 'insideTopRight',
-                  fill: '#94a3b8',
-                  fontSize: 10,
-                }}
+                label={{ value: t.crossoverLabel, position: 'insideTopRight', fill: '#94a3b8', fontSize: 10 }}
               />
             )}
-            <Line
-              type="monotone"
-              dataKey="apartmentGain"
-              name={t.apartmentLine}
-              stroke="#16a34a"
-              dot={false}
-              strokeWidth={2}
-              isAnimationActive={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="passiveGain"
-              name={t.passiveLine}
-              stroke="#2563eb"
-              dot={false}
-              strokeWidth={2}
-              isAnimationActive={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="goal"
-              name={t.goalLine}
-              stroke="#64748b"
-              dot={false}
-              strokeWidth={1}
-              strokeDasharray="5 3"
-              isAnimationActive={false}
-            />
+            <Line type="monotone" dataKey="apartmentGain" name={t.apartmentLine} stroke="#16a34a" dot={false} strokeWidth={2} isAnimationActive={false} />
+            <Line type="monotone" dataKey="passiveGain" name={t.passiveLine} stroke="#2563eb" dot={false} strokeWidth={2} isAnimationActive={false} />
+            <Line type="monotone" dataKey="goal" name={t.goalLine} stroke="#64748b" dot={false} strokeWidth={1} strokeDasharray="5 3" isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
+
       <p className="text-xs text-slate-600 text-center select-none">Scroll to zoom · drag to pan</p>
     </div>
   )

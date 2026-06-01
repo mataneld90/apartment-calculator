@@ -70,7 +70,7 @@ export default function Calculator() {
             results={results}
             t={t}
             isRTL={isRTL}
-            only={['apartment', 'mortgage']}
+            only={['apartment', 'mortgage', 'passive']}
           />
         </aside>
 
@@ -82,7 +82,7 @@ export default function Calculator() {
             results={results}
             t={t}
             isRTL={isRTL}
-            only={['costs', 'selling', 'passive', 'misc']}
+            only={['costs', 'selling', 'misc']}
           />
         </aside>
       </main>
