@@ -13,8 +13,9 @@ export type Translation = {
   masShvachNote: string
   groupApartment: string
   groupMortgage: string
-  groupPassive: string
   groupCosts: string
+  groupSelling: string
+  groupPassive: string
   groupMisc: string
   av0Label: string
   pLabel: string
@@ -83,9 +84,10 @@ export const LANG: Record<Lang, Translation> = {
     masShvachNote:
       'Exemptions may apply in co-ownership structures or specific legal arrangements. Consult a tax advisor.',
     groupApartment: 'Apartment',
-    groupMortgage: 'Mortgage & Selling',
-    groupPassive: 'Passive Investment',
+    groupMortgage: 'Mortgage',
     groupCosts: 'Purchase Costs',
+    groupSelling: 'Selling',
+    groupPassive: 'Passive Investment',
     groupMisc: 'Misc',
     av0Label: 'Apartment purchase price',
     pLabel: 'Mortgage fraction',
@@ -156,9 +158,10 @@ export const LANG: Record<Lang, Translation> = {
     masShvachNote:
       'פטורים עשויים לחול במבנה שותפות או הסדרים משפטיים ספציפיים. יש להתייעץ עם יועץ מס.',
     groupApartment: 'דירה',
-    groupMortgage: 'משכנתא ומכירה',
-    groupPassive: 'השקעה פסיבית',
+    groupMortgage: 'משכנתא',
     groupCosts: 'עלויות רכישה',
+    groupSelling: 'מכירה',
+    groupPassive: 'השקעה פסיבית',
     groupMisc: 'שונות',
     av0Label: 'מחיר הרכישה',
     pLabel: 'אחוז מימון',

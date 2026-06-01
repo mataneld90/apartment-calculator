@@ -29,25 +29,11 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
         display: (v) => shekel(v),
       },
       {
-        key: 'p',
-        getLabel: (t) => t.pLabel,
-        getTooltip: (t) => t.tooltips.p,
-        min: 0.1, max: 0.75, step: 0.01,
-        display: (v) => pct(v, 0),
-      },
-      {
         key: 'R0',
         getLabel: (t) => t.r0Label,
         getTooltip: (t) => t.tooltips.R0,
         min: 0, max: 15_000, step: 100,
         display: (v) => shekel(v),
-      },
-      {
-        key: 'Y',
-        getLabel: (t) => t.yLabel,
-        getTooltip: () => '',
-        min: 5, max: 30, step: 1,
-        display: (v, t) => t.yearDisplay(v),
       },
       {
         key: 'V',
@@ -69,6 +55,20 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
     getTitle: (t) => t.groupMortgage,
     sliders: [
       {
+        key: 'p',
+        getLabel: (t) => t.pLabel,
+        getTooltip: (t) => t.tooltips.p,
+        min: 0.1, max: 0.75, step: 0.01,
+        display: (v) => pct(v, 0),
+      },
+      {
+        key: 'Y',
+        getLabel: (t) => t.yLabel,
+        getTooltip: () => '',
+        min: 5, max: 30, step: 1,
+        display: (v, t) => t.yearDisplay(v),
+      },
+      {
         key: 'Ib',
         getLabel: (t) => t.ibLabel,
         getTooltip: (t) => t.tooltips.Ib,
@@ -82,6 +82,23 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
         min: 0, max: 0.03, step: 0.001,
         display: (v, t) => t.primeMinusDisplay(v),
       },
+    ],
+  },
+  {
+    getTitle: (t) => t.groupCosts,
+    sliders: [
+      {
+        key: 'purchaseCostsRate',
+        getLabel: (t) => t.purchaseCostsRateLabel,
+        getTooltip: (t) => t.tooltips.purchaseCostsRate,
+        min: 0, max: 0.15, step: 0.005,
+        display: (v) => pct(v),
+      },
+    ],
+  },
+  {
+    getTitle: (t) => t.groupSelling,
+    sliders: [
       {
         key: 'Es',
         getLabel: (t) => t.esLabel,
@@ -107,18 +124,6 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
         getTooltip: (t) => t.tooltips.cgt,
         min: 0, max: 0.5, step: 0.05,
         display: (v) => pct(v, 0),
-      },
-    ],
-  },
-  {
-    getTitle: (t) => t.groupCosts,
-    sliders: [
-      {
-        key: 'purchaseCostsRate',
-        getLabel: (t) => t.purchaseCostsRateLabel,
-        getTooltip: (t) => t.tooltips.purchaseCostsRate,
-        min: 0, max: 0.15, step: 0.005,
-        display: (v) => pct(v),
       },
     ],
   },
