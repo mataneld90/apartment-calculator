@@ -17,8 +17,9 @@ type SliderDef = {
   display: (v: number, t: Translation) => string
 }
 
-const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] = [
+const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: SliderDef[] }[] = [
   {
+    id: 'apartment',
     getTitle: (t) => t.groupApartment,
     sliders: [
       {
@@ -52,6 +53,7 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
     ],
   },
   {
+    id: 'mortgage',
     getTitle: (t) => t.groupMortgage,
     sliders: [
       {
@@ -85,6 +87,7 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
     ],
   },
   {
+    id: 'costs',
     getTitle: (t) => t.groupCosts,
     sliders: [
       {
@@ -97,6 +100,7 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
     ],
   },
   {
+    id: 'selling',
     getTitle: (t) => t.groupSelling,
     sliders: [
       {
@@ -109,6 +113,7 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
     ],
   },
   {
+    id: 'passive',
     getTitle: (t) => t.groupPassive,
     sliders: [
       {
@@ -128,6 +133,7 @@ const GROUPS: { getTitle: (t: Translation) => string; sliders: SliderDef[] }[] =
     ],
   },
   {
+    id: 'misc',
     getTitle: (t) => t.groupMisc,
     sliders: [
       {
@@ -188,35 +194,27 @@ interface Props {
 export default function Sliders({ params, update, results, t, isRTL }: Props) {
   return (
     <div className="flex flex-col gap-4">
-      {/* Tax toggles */}
-      <div className="bg-[#1e293b] border border-[#334155] rounded-lg p-4 flex flex-col gap-3">
-        <TaxToggle
-          label={t.purchaseTaxLabel}
-          value={params.buyerType}
-          options={[
-            { value: 'investor', label: t.investor8 },
-            { value: 'single', label: t.firstApt },
-          ]}
-          onChange={(v) => update('buyerType', v as Params['buyerType'])}
-        />
-        <TaxToggle
-          label={t.masShvachLabel}
-          value={params.masShvach}
-          options={[
-            { value: 'exempt', label: t.exempt0 },
-            { value: '25%', label: t.standard25 },
-          ]}
-          onChange={(v) => update('masShvach', v as Params['masShvach'])}
-        />
-        <p className="text-xs text-slate-500 leading-relaxed">{t.masShvachNote}</p>
-      </div>
-
-      {/* Slider groups */}
       {GROUPS.map((group) => (
-        <div key={group.getTitle(t)} className="bg-[#1e293b] border border-[#334155] rounded-lg p-4">
+        <div key={group.id} className="bg-[#1e293b] border border-[#334155] rounded-lg p-4">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
             {group.getTitle(t)}
           </div>
+
+          {/* Purchase tax toggle — inside At Purchase */}
+          {group.id === 'costs' && (
+            <div className="mb-3">
+              <TaxToggle
+                label={t.purchaseTaxLabel}
+                value={params.buyerType}
+                options={[
+                  { value: 'investor', label: t.investor8 },
+                  { value: 'single', label: t.firstApt },
+                ]}
+                onChange={(v) => update('buyerType', v as Params['buyerType'])}
+              />
+            </div>
+          )}
+
           <div className="flex flex-col divide-y divide-slate-700/50">
             {group.sliders.map((def) => (
               <SliderRow
@@ -234,8 +232,24 @@ export default function Sliders({ params, update, results, t, isRTL }: Props) {
             ))}
           </div>
 
-          {/* Live cost summary under purchase costs group */}
-          {group.getTitle(t) === t.groupCosts && (
+          {/* מס שבח toggle — inside At Sale */}
+          {group.id === 'selling' && (
+            <div className="mt-3 flex flex-col gap-2">
+              <TaxToggle
+                label={t.masShvachLabel}
+                value={params.masShvach}
+                options={[
+                  { value: 'exempt', label: t.exempt0 },
+                  { value: '25%', label: t.standard25 },
+                ]}
+                onChange={(v) => update('masShvach', v as Params['masShvach'])}
+              />
+              <p className="text-xs text-slate-500 leading-relaxed">{t.masShvachNote}</p>
+            </div>
+          )}
+
+          {/* Cost breakdown — inside At Purchase */}
+          {group.id === 'costs' && (
             <div className="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400 flex flex-col gap-1" dir="ltr">
               <div className="flex justify-between text-slate-300 font-medium">
                 <span>{t.costsLiveEp}</span>
