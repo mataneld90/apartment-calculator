@@ -23,7 +23,7 @@ function purchaseTaxSingle(A: number): number {
 export function compute(params: Params): Results {
   const {
     Av0, p, R0, Y, Ip, V, Ib, primeMinus, Ri,
-    buyerType, TVAT, Elp, Elc, Ereb, Erea, Emb,
+    buyerType, purchaseCostsRate,
     Es, masShvach, cgt, G0,
   } = params
 
@@ -38,7 +38,7 @@ export function compute(params: Params): Results {
     ? purchaseTaxInvestor(Av0)
     : purchaseTaxSingle(Av0)
 
-  const addedCosts = Tp + (Av0 * (Elp + Elc + Ereb)) * (1 + TVAT) + Erea + Emb
+  const addedCosts = Tp + Av0 * purchaseCostsRate
   const Ep = S0 + addedCosts
   const G = G0 * Ep
   const taxBasis = Av0 + addedCosts
@@ -126,12 +126,7 @@ export const DEFAULT_PARAMS: Params = {
   primeMinus: 0.009,
   Ri: 0.03,
   buyerType: 'investor',
-  TVAT: 0.18,
-  Elp: 0.005,
-  Elc: 0,
-  Ereb: 0.02,
-  Erea: 3_500,
-  Emb: 0,
+  purchaseCostsRate: 0.05,
   Es: 0.03,
   masShvach: '25%',
   cgt: 0.25,

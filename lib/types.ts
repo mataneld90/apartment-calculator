@@ -12,12 +12,7 @@ export interface Params {
   primeMinus: number
   Ri: number
   buyerType: BuyerType
-  TVAT: number
-  Elp: number
-  Elc: number
-  Ereb: number
-  Erea: number
-  Emb: number
+  purchaseCostsRate: number
   Es: number
   masShvach: MasShvach
   cgt: number

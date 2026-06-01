@@ -77,7 +77,7 @@ export default function ResultCards({ results, params, t }: Props) {
             {t.purchaseTaxCard}: {shekel(Tp)} ({pct(Tp / params.Av0, 1)})
           </span>
           <span dir="ltr">
-            {t.addedCostsCard}: {pct((addedCosts - Tp) / params.Av0, 1)} {t.ofAptValue}
+            {t.addedCostsCard}: {pct(params.purchaseCostsRate, 1)} {t.ofAptValue}
           </span>
         </div>
       </Card>
