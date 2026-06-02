@@ -111,18 +111,19 @@ function MethodologyEN() {
     <div className="pt-3 flex flex-col gap-3">
       <p>The calculator compares two scenarios for the same capital:</p>
       <p>
-        <strong className="text-slate-300">Apartment scenario N(x):</strong> You buy an
-        investment apartment with a mortgage and rent it out. N(x) is your net gain if you sold at
-        month x — net sale proceeds (after selling costs and מס שבח if applicable), plus all
-        cumulative rent received, minus total purchase expenses and remaining mortgage principal.
+        <strong className="text-slate-300">Apartment scenario:</strong> You buy an
+        investment apartment with a mortgage and rent it out. The apartment gain at any month is
+        your net gain if you sold then — net sale proceeds (after selling costs and מס שבח if
+        applicable), plus all cumulative rent received, minus total purchase expenses and
+        remaining mortgage principal.
       </p>
       <p>
-        <strong className="text-slate-300">Passive scenario P(x):</strong> You invest the same
-        capital (down payment + all purchase costs) in an S&amp;P 500 index fund. P(x) is your
-        after-tax net gain, assuming you also reinvest the monthly difference between mortgage
-        payment and rent into the fund. Capital gains tax applies at realization.
+        <strong className="text-slate-300">Passive scenario:</strong> You invest the same
+        capital (down payment + all purchase costs) in an S&amp;P 500 index fund. The passive
+        gain is your after-tax net gain, assuming you also reinvest the monthly difference between
+        mortgage payment and rent into the fund. Capital gains tax applies at realization.
       </p>
-      <p>The crossover month is when N(x) first exceeds P(x).</p>
+      <p>The crossover point is when the apartment scenario first overtakes the passive investment.</p>
       <p className="font-medium text-slate-300">Key assumptions:</p>
       <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
         <li>Spitzer (שפיצר) amortization — fixed monthly payment, standard in Israel</li>
@@ -141,16 +142,17 @@ function MethodologyHE() {
     <div className="pt-3 flex flex-col gap-3">
       <p>המחשבון משווה שני תרחישים עבור אותו הון:</p>
       <p>
-        <strong className="text-slate-300">תרחיש דירה N(x):</strong> קונים דירת השקעה במשכנתא
-        ומשכירים. N(x) הוא הרווח הנקי אם תמכרו בחודש x — תמורת מכירה נטו (לאחר עלויות מכירה
-        ומס שבח אם חל), בתוספת כל השכירות שנצברה, בניכוי הוצאות הרכישה הכוללות ויתרת המשכנתא.
+        <strong className="text-slate-300">תרחיש דירה:</strong> קונים דירת השקעה במשכנתא
+        ומשכירים. הרווח מהדירה בכל חודש הוא הרווח הנקי אם תמכרו אז — תמורת מכירה נטו (לאחר
+        עלויות מכירה ומס שבח אם חל), בתוספת כל השכירות שנצברה, בניכוי הוצאות הרכישה הכוללות
+        ויתרת המשכנתא.
       </p>
       <p>
-        <strong className="text-slate-300">תרחיש פסיבי P(x):</strong> משקיעים את אותו ההון
-        (מקדמה + כל עלויות הרכישה) במדד S&amp;P 500. P(x) הוא הרווח הנקי לאחר מס, בהנחה שגם
-        ההפרש החודשי בין תשלום המשכנתא לשכירות מושקע בקרן. מס רווח הון חל בממוש.
+        <strong className="text-slate-300">תרחיש פסיבי:</strong> משקיעים את אותו ההון
+        (מקדמה + כל עלויות הרכישה) במדד S&amp;P 500. הרווח הפסיבי הוא הרווח הנקי לאחר מס,
+        בהנחה שגם ההפרש החודשי בין תשלום המשכנתא לשכירות מושקע בקרן. מס רווח הון חל בממוש.
       </p>
-      <p>נקודת המעבר היא החודש שבו N(x) עולה לראשונה על P(x).</p>
+      <p>נקודת המעבר היא החודש שבו הרווח מהדירה עולה לראשונה על ההשקעה הפסיבית.</p>
       <p className="font-medium text-slate-300">הנחות מרכזיות:</p>
       <ul className="list-disc list-inside flex flex-col gap-1 mr-2">
         <li>שיטת שפיצר — תשלום חודשי קבוע, סטנדרט בישראל</li>

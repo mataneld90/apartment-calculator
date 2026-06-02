@@ -129,9 +129,16 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
   const ticks = makeTicks(start, end)
   const visibleCrossovers = crossovers.filter(c => c.month >= start && c.month <= end)
 
-  const overtakesText = crossovers.length === 2
-    ? `${t.monthLabel} ${crossovers[0].month} – ${crossovers[1].month} · ${t.yearLabel2} ${(crossovers[0].month / 12).toFixed(1)} – ${(crossovers[1].month / 12).toFixed(1)}`
-    : null
+  const YTICK = 2_000_000
+  const yVals = view === 'diff'
+    ? visible.map(p => p.gainDiff)
+    : visible.flatMap(p => [p.apartmentGain, p.passiveGain])
+  const yRawMin = yVals.length ? Math.min(...yVals) : 0
+  const yRawMax = yVals.length ? Math.max(...yVals) : YTICK * 4
+  const yTickMin = Math.floor(yRawMin / YTICK) * YTICK
+  const yTickMax = Math.ceil(yRawMax / YTICK) * YTICK
+  const yTicks: number[] = []
+  for (let v = yTickMin; v <= yTickMax; v += YTICK) yTicks.push(v)
 
   return (
     <div dir="ltr" className="w-full flex flex-col gap-1">
@@ -162,13 +169,6 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
         )}
       </div>
 
-      {/* Crossover range label — only in gains view when exactly 2 crossovers */}
-      {view === 'gains' && overtakesText && (
-        <p className="text-xs text-slate-400 text-center">
-          {t.overtakesPassiveLabel}: <span className="text-slate-200">{overtakesText}</span>
-        </p>
-      )}
-
       <div
         ref={divRef}
         style={{ width: '100%', height: 360 }}
@@ -188,6 +188,8 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
               tick={{ fill: '#94a3b8', fontSize: 11 }}
             />
             <YAxis
+              domain={[yTickMin, yTickMax]}
+              ticks={yTicks}
               tickFormatter={shortShekel}
               stroke="#475569"
               tick={{ fill: '#94a3b8', fontSize: 11 }}
@@ -233,7 +235,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
                     stroke="#64748b"
                     strokeDasharray="4 2"
                     label={{
-                      value: crossovers.length > 1 ? `${t.crossoverLabel} ${i + 1}` : t.crossoverLabel,
+                      value: `${t.yearLabel2} ${(c.month / 12).toFixed(1)}`,
                       position: 'insideTopRight',
                       fill: '#94a3b8',
                       fontSize: 10,
@@ -253,7 +255,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
                     stroke="#64748b"
                     strokeDasharray="4 2"
                     label={{
-                      value: crossovers.length > 1 ? `${t.crossoverLabel} ${i + 1}` : t.crossoverLabel,
+                      value: `${t.yearLabel2} ${(c.month / 12).toFixed(1)}`,
                       position: 'insideTopRight',
                       fill: '#94a3b8',
                       fontSize: 10,
