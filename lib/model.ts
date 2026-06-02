@@ -24,7 +24,7 @@ export function compute(params: Params): Results {
   const {
     Av0, p, R0, Y, Ip, V, Ib, primeMinus, Ri,
     buyerType, purchaseCostsRate,
-    Es, masShvach, cgt, G0,
+    Es, masShvach, cgt, G0, Im,
   } = params
 
   const S0 = (1 - p) * Av0
@@ -50,8 +50,10 @@ export function compute(params: Params): Results {
 
   // Month 0: rem=M0, F=0, gain<0 so masShvachTax=0
   const N0 = Av0 * (1 - Es) - Ep - M0
+  const fee0 = M0 * Math.max(0, I - Im) * Y
+  const N0adj = N0 - fee0
   const points: ChartPoint[] = [
-    { month: 0, apartmentGain: Math.round(N0), passiveGain: 0, gainDiff: Math.round(N0), goal: Math.round(G) },
+    { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), goal: Math.round(G) },
   ]
 
   let F = 0
@@ -95,21 +97,25 @@ export function compute(params: Params): Results {
       (intComp - intFlat)
     )
 
+    const yearsLeft = Math.max(0, (T - x) / 12)
+    const prepaymentFee = rem * Math.max(0, I - Im) * yearsLeft
+    const N_x_adj = N_x - prepaymentFee
+
     // Detect every sign change in (N - P)
-    if (Math.sign(prevN - prevP) !== Math.sign(N_x - P_x) && N_x !== P_x) {
-      crossovers.push({ month: x, value: Math.round((N_x + P_x) / 2) })
+    if (Math.sign(prevN - prevP) !== Math.sign(N_x_adj - P_x) && N_x_adj !== P_x) {
+      crossovers.push({ month: x, value: Math.round((N_x_adj + P_x) / 2) })
     }
-    if (!goalMonth && prevN < G && N_x >= G) {
-      goalMonth = { month: x, value: Math.round(N_x) }
+    if (!goalMonth && prevN < G && N_x_adj >= G) {
+      goalMonth = { month: x, value: Math.round(N_x_adj) }
     }
-    prevN = N_x
+    prevN = N_x_adj
     prevP = P_x
 
     points.push({
       month: x,
-      apartmentGain: Math.round(N_x),
+      apartmentGain: Math.round(N_x_adj),
       passiveGain: Math.round(P_x),
-      gainDiff: Math.round(N_x - P_x),
+      gainDiff: Math.round(N_x_adj - P_x),
       goal: Math.round(G),
     })
   }
@@ -133,4 +139,5 @@ export const DEFAULT_PARAMS: Params = {
   masShvach: '25%',
   cgt: 0.25,
   G0: 0.5,
+  Im: 0.046,  // = Ib(0.04) + 0.015 − primeMinus(0.009); keep in sync when defaults change
 }

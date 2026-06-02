@@ -17,6 +17,7 @@ export interface Params {
   masShvach: MasShvach
   cgt: number
   G0: number
+  Im: number
 }
 
 export interface ChartPoint {

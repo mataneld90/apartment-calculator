@@ -26,6 +26,7 @@ export type Translation = {
   ibLabel: string
   primeMinusLabel: string
   esLabel: string
+  imLabel: string
   ipLabel: string
   cgtLabel: string
   purchaseCostsRateLabel: string
@@ -44,6 +45,7 @@ export type Translation = {
     buyerTypeInvestor: string
     buyerTypeSingle: string
     masShvach: string
+    Im: string
     G0: string
     R0: string
     purchaseCostsRate: string
@@ -101,6 +103,7 @@ export const LANG: Record<Lang, Translation> = {
     ibLabel: 'BOI prime rate',
     primeMinusLabel: 'Your spread below prime',
     esLabel: 'Selling costs',
+    imLabel: 'Market rate',
     ipLabel: 'Passive return (net)',
     cgtLabel: 'Capital gains tax',
     purchaseCostsRateLabel: 'Closing costs',
@@ -123,6 +126,7 @@ export const LANG: Record<Lang, Translation> = {
         'First-time buyers or those with no other apartment pay a graduated rate: 0% up to ~₪2M, rising to 5% at ₪2.35M+.',
       masShvach:
         'Capital gains tax on real estate profit at sale: 25% of (net sale proceeds − tax basis). Exempt if this is your primary and only residence. For investment apartments, it typically applies. Consult a tax advisor about co-ownership or other exemptions.',
+      Im: 'Current market rate for new mortgages. When below your effective mortgage rate, the bank charges a prepayment fee equal to: remaining balance × rate gap × years left. At or above your rate: ₪0 fee.',
       G0: 'Target net profit as a multiple of your total purchase outlay. 0.5× = "I want to net back 50% of everything I spent buying this apartment."',
       R0: 'Rent at the time of purchase, before any annual increases. The model applies the yearly rent increase at the start of each subsequent year.',
       purchaseCostsRate: 'All purchase-related costs as % of apartment value, excluding purchase tax (מס רכישה). Typical breakdown: RE broker ~2% (+VAT), lawyer ~0.5% (+VAT), RE appraiser ~₪3,500, mortgage broker if applicable. Default 5% is a reasonable all-in estimate for most buyers.',
@@ -178,6 +182,7 @@ export const LANG: Record<Lang, Translation> = {
     ibLabel: 'ריבית בנק ישראל',
     primeMinusLabel: 'ההנחה שלך מהפריים',
     esLabel: 'עלויות מכירה',
+    imLabel: 'ריבית שוק',
     ipLabel: 'תשואה פסיבית (נטו)',
     cgtLabel: 'מס רווח הון',
     purchaseCostsRateLabel: 'עלויות עסקה',
@@ -199,6 +204,7 @@ export const LANG: Record<Lang, Translation> = {
         'רוכשי דירה ראשונה משלמים מדרגות: 0% עד כ-₪2M, עולה ל-5% מ-₪2.35M+.',
       masShvach:
         'מס על הרווח הריאלי בנדל"ן: 25% מ-(תמורה נטו − בסיס עלות). פטור אם זו דירתך היחידה. לדירת השקעה לרוב חל. יש להתייעץ עם עו"ד לגבי מבנה שותפות.',
+      Im: 'ריבית השוק הנוכחית למשכנתאות חדשות. כשנמוכה מהריבית שלך, הבנק יגבה עמלת פירעון מוקדם: יתרת הלוואה × הפרש הריביות × שנות פירעון שנותרו. כשגבוהה ממנה: ₪0 עמלה.',
       G0: 'יעד רווח נקי כמכפיל של סך הוצאות הרכישה. 0.5× = "אני רוצה לקבל בחזרה 50% מכל מה שהוצאתי."',
       R0: 'שכירות בעת הרכישה, לפני עליות שנתיות. המחשבון מחיל את עליית השכירות בתחילת כל שנה.',
       purchaseCostsRate: 'כל עלויות הרכישה כאחוז משווי הדירה, ללא מס רכישה. פירוט אופייני: מתווך ~2% (+מע"מ), עו"ד ~0.5% (+מע"מ), שמאי ~₪3,500, יועץ משכנתא לפי הסכמה. ברירת מחדל 5% מכסה את רוב הרוכשים.',

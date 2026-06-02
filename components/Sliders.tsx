@@ -110,6 +110,13 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         min: 0, max: 0.1, step: 0.005,
         display: (v) => pct(v),
       },
+      {
+        key: 'Im',
+        getLabel: (t) => t.imLabel,
+        getTooltip: (t) => t.tooltips.Im,
+        min: 0, max: 0.10, step: 0.001,
+        display: (v) => pct(v),
+      },
     ],
   },
   {
