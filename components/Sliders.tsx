@@ -128,7 +128,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getLabel: (t) => t.ipLabel,
         getTooltip: (t) => t.tooltips.Ip,
         min: 0.02, max: 0.2, step: 0.005,
-        display: (v) => pct(v),
+        display: (v, t) => pct(v) + ' ' + t.perYear,
       },
       {
         key: 'cgt',

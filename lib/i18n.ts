@@ -68,6 +68,10 @@ export type Translation = {
   crossoverLabel: string
   viewGains: string
   viewDiff: string
+  perYear: string
+  scrollHint: string
+  resetZoom: string
+  overtakesPassiveLabel: string
   costsLiveEp: string
   costsLiveTp: string
   costsLiveAdded: string
@@ -149,6 +153,10 @@ export const LANG: Record<Lang, Translation> = {
     crossoverLabel: 'Crossover',
     viewGains: 'Gains',
     viewDiff: 'Difference',
+    perYear: '/ yr',
+    scrollHint: 'Scroll to zoom · drag to pan',
+    resetZoom: 'Reset zoom',
+    overtakesPassiveLabel: '🏠 Apartment overtakes passive',
     costsLiveEp: 'Total paid to buy',
     costsLiveTp: 'Purchase tax',
     costsLiveAdded: 'Purchase costs',
@@ -227,6 +235,10 @@ export const LANG: Record<Lang, Translation> = {
     crossoverLabel: 'נקודת מעבר',
     viewGains: 'רווחים',
     viewDiff: 'הפרש',
+    perYear: '/ שנה',
+    scrollHint: 'גלגל לזום · גרור להזזה',
+    resetZoom: 'אפס זום',
+    overtakesPassiveLabel: '🏠 הדירה עוקפת פסיבי',
     costsLiveEp: 'סה"כ עלות הרכישה',
     costsLiveTp: 'מס רכישה',
     costsLiveAdded: 'עלויות עסקה',

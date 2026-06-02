@@ -16,6 +16,7 @@ import {
 import type { ChartPoint } from '@/lib/types'
 import type { Translation } from '@/lib/i18n'
 import { shortShekel, shekel } from '@/lib/formatters'
+import InfoTooltip from './InfoTooltip'
 
 interface Props {
   points: ChartPoint[]
@@ -27,25 +28,6 @@ interface Props {
 
 type View = 'gains' | 'diff'
 
-function CustomTooltip({ active, payload, label }: {
-  active?: boolean
-  payload?: { color: string; name: string; value: number }[]
-  label?: number
-}) {
-  if (!active || !payload?.length || label === undefined) return null
-  return (
-    <div className="bg-slate-800/65 border border-slate-600 rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir="ltr">
-      <p className="text-slate-400 mb-1">
-        Month {label} · Year {(label / 12).toFixed(1)}
-      </p>
-      {payload.map((entry) => (
-        <p key={entry.name} style={{ color: entry.color }}>
-          {entry.name}: {shekel(entry.value)}
-        </p>
-      ))}
-    </div>
-  )
-}
 
 const TOTAL = 360
 const GREEN = '#16a34a'
@@ -148,7 +130,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
   const visibleCrossovers = crossovers.filter(c => c.month >= start && c.month <= end)
 
   const overtakesText = crossovers.length === 2
-    ? `Month ${crossovers[0].month} – ${crossovers[1].month} · Year ${(crossovers[0].month / 12).toFixed(1)} – ${(crossovers[1].month / 12).toFixed(1)}`
+    ? `${t.monthLabel} ${crossovers[0].month} – ${crossovers[1].month} · ${t.yearLabel2} ${(crossovers[0].month / 12).toFixed(1)} – ${(crossovers[1].month / 12).toFixed(1)}`
     : null
 
   return (
@@ -175,7 +157,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
             onClick={() => setDomain([0, TOTAL])}
             className="text-xs text-slate-400 hover:text-slate-200 px-2 py-0.5 rounded border border-slate-600 hover:border-slate-400 transition-colors"
           >
-            Reset zoom
+            {t.resetZoom}
           </button>
         )}
       </div>
@@ -183,7 +165,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
       {/* Crossover range label — only in gains view when exactly 2 crossovers */}
       {view === 'gains' && overtakesText && (
         <p className="text-xs text-slate-400 text-center">
-          🏠 Apartment overtakes passive: <span className="text-slate-200">{overtakesText}</span>
+          {t.overtakesPassiveLabel}: <span className="text-slate-200">{overtakesText}</span>
         </p>
       )}
 
@@ -211,7 +193,21 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
               tick={{ fill: '#94a3b8', fontSize: 11 }}
               width={64}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={({ active, payload, label }) => {
+              if (!active || !payload?.length || label === undefined) return null
+              return (
+                <div className="bg-slate-800/65 border border-slate-600 rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir="ltr">
+                  <p className="text-slate-400 mb-1">
+                    {t.monthLabel} {label} · {t.yearLabel2} {(Number(label) / 12).toFixed(1)}
+                  </p>
+                  {payload.map((entry) => (
+                    <p key={entry.name} style={{ color: entry.color }}>
+                      {entry.name}: {typeof entry.value === 'number' ? shekel(entry.value) : entry.value}
+                    </p>
+                  ))}
+                </div>
+              )
+            }} />
             <Legend formatter={(v) => <span style={{ color: '#94a3b8', fontSize: 12 }}>{v}</span>} />
 
             {/* Background color bands: green where apartment leads, blue where passive leads */}
@@ -271,10 +267,13 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
         </ResponsiveContainer>
       </div>
 
-      <p className="text-xs text-slate-600 text-center select-none">Scroll to zoom · drag to pan</p>
+      <p className="text-xs text-slate-600 text-center select-none">{t.scrollHint}</p>
 
       <div className="flex items-center gap-2 pt-2 border-t border-slate-700/50">
-        <span className="text-xs text-slate-400 w-28 shrink-0">{t.g0Label}</span>
+        <div className="flex items-center gap-1 w-28 shrink-0">
+          <span className="text-xs text-slate-400 leading-tight">{t.g0Label}</span>
+          <InfoTooltip text={t.tooltips.G0} />
+        </div>
         <input
           type="range"
           min={0}
