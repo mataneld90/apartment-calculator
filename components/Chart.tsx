@@ -30,19 +30,22 @@ type View = 'gains' | 'diff'
 
 
 const TOTAL = 360
-const GREEN = '#16a34a'
-const BLUE = '#2563eb'
+// Color-blind safe: orange (apartment) + blue (passive) — distinct for deuteranopia, protanopia, tritanopia
+const APT = '#f97316'   // orange-500
+const PAS = '#3b82f6'   // blue-500
+const GOAL = '#06b6d4'  // cyan-500 — distinct from both orange and blue
+const DIFF = '#a78bfa'  // violet-400 — for N-P difference line
 
-function colorBands(crossovers: { month: number }[], initialGreen: boolean) {
-  const bands: { x1: number; x2: number; green: boolean }[] = []
-  let green = initialGreen
+function colorBands(crossovers: { month: number }[], initialApt: boolean) {
+  const bands: { x1: number; x2: number; apt: boolean }[] = []
+  let apt = initialApt
   let prev = 0
   for (const c of crossovers) {
-    bands.push({ x1: prev, x2: c.month, green })
-    green = !green
+    bands.push({ x1: prev, x2: c.month, apt })
+    apt = !apt
     prev = c.month
   }
-  bands.push({ x1: prev, x2: TOTAL, green })
+  bands.push({ x1: prev, x2: TOTAL, apt })
   return bands
 }
 
@@ -63,8 +66,8 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isZoomed = domain[0] !== 0 || domain[1] !== TOTAL
   const goalValue = points[0]?.goal ?? 0
-  const initialGreen = (points[0]?.gainDiff ?? -1) >= 0
-  const bands = colorBands(crossovers, initialGreen)
+  const initialApt = (points[0]?.gainDiff ?? -1) >= 0
+  const bands = colorBands(crossovers, initialApt)
 
   const setCursor = (c: string) => {
     if (divRef.current) divRef.current.style.cursor = c
@@ -213,8 +216,8 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
             <Legend formatter={(v) => <span style={{ color: 'var(--chart-tick)', fontSize: 12 }}>{v}</span>} />
 
             {/* Background color bands: green where apartment leads, blue where passive leads */}
-            {bands.map(({ x1, x2, green }) => (
-              <ReferenceArea key={x1} x1={x1} x2={x2} fill={green ? GREEN : BLUE} fillOpacity={0.08} stroke="none" />
+            {bands.map(({ x1, x2, apt }) => (
+              <ReferenceArea key={x1} x1={x1} x2={x2} fill={apt ? APT : PAS} fillOpacity={0.08} stroke="none" />
             ))}
 
             {view === 'gains' ? (
@@ -222,10 +225,10 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
                 {goalValue > 0 && (
                   <ReferenceLine
                     y={goalValue}
-                    stroke="#f59e0b"
+                    stroke={GOAL}
                     strokeWidth={1.5}
                     strokeDasharray="6 3"
-                    label={{ value: t.goalLine, position: 'insideTopRight', fill: '#f59e0b', fontSize: 10 }}
+                    label={{ value: t.goalLine, position: 'insideTopRight', fill: GOAL, fontSize: 10 }}
                   />
                 )}
                 {visibleCrossovers.map((c, i) => (
@@ -242,8 +245,8 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
                     }}
                   />
                 ))}
-                <Line type="monotone" dataKey="apartmentGain" name={t.apartmentLine} stroke="#16a34a" dot={false} strokeWidth={2} isAnimationActive={false} />
-                <Line type="monotone" dataKey="passiveGain" name={t.passiveLine} stroke="#2563eb" dot={false} strokeWidth={2} isAnimationActive={false} />
+                <Line type="monotone" dataKey="apartmentGain" name={t.apartmentLine} stroke={APT} dot={false} strokeWidth={2} isAnimationActive={false} />
+                <Line type="monotone" dataKey="passiveGain" name={t.passiveLine} stroke={PAS} dot={false} strokeWidth={2} isAnimationActive={false} />
               </>
             ) : (
               <>
@@ -262,7 +265,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
                     }}
                   />
                 ))}
-                <Line type="monotone" dataKey="gainDiff" name={t.diffLine} stroke="#a78bfa" dot={false} strokeWidth={2} isAnimationActive={false} />
+                <Line type="monotone" dataKey="gainDiff" name={t.diffLine} stroke={DIFF} dot={false} strokeWidth={2} isAnimationActive={false} />
               </>
             )}
           </LineChart>
