@@ -31,8 +31,8 @@ type View = 'gains' | 'diff'
 
 const TOTAL = 360
 // Color-blind safe: orange (apartment) + blue (passive) — distinct for deuteranopia, protanopia, tritanopia
-const APT = '#f97316'   // orange-500
-const PAS = '#3b82f6'   // blue-500
+const APT = '#3b82f6'   // blue-500
+const PAS = '#f97316'   // orange-500
 const GOAL = '#06b6d4'  // cyan-500 — distinct from both orange and blue
 const DIFF = '#a78bfa'  // violet-400 — for N-P difference line
 
