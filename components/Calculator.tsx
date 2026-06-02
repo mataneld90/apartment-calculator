@@ -57,7 +57,7 @@ export default function Calculator() {
         {/* Center: chart + result cards below — order-1 mobile, order-2 desktop */}
         <div className="order-1 lg:order-2 flex flex-col gap-3">
           <div className="bg-[#1e293b] border border-[#334155] rounded-lg p-4">
-            <Chart points={results.points} crossover={results.crossover} t={t} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} />
           </div>
           <ResultCards results={results} params={params} t={t} />
         </div>

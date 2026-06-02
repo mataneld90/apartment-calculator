@@ -28,7 +28,7 @@ export interface ChartPoint {
 
 export interface Results {
   points: ChartPoint[]
-  crossover: { month: number; value: number } | null
+  crossovers: { month: number; value: number }[]
   goalMonth: { month: number; value: number } | null
   Tp: number
   M0: number

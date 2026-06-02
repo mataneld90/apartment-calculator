@@ -18,7 +18,7 @@ import { shortShekel, shekel } from '@/lib/formatters'
 
 interface Props {
   points: ChartPoint[]
-  crossover: { month: number; value: number } | null
+  crossovers: { month: number; value: number }[]
   t: Translation
 }
 
@@ -29,7 +29,7 @@ function CustomTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length || label === undefined) return null
   return (
-    <div className="bg-slate-800/75 border border-slate-600 rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir="ltr">
+    <div className="bg-slate-800/65 border border-slate-600 rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir="ltr">
       <p className="text-slate-400 mb-1">
         Month {label} · Year {(label / 12).toFixed(1)}
       </p>
@@ -53,32 +53,28 @@ function makeTicks(start: number, end: number): number[] {
   return ticks
 }
 
-export default function Chart({ points, crossover, t }: Props) {
+export default function Chart({ points, crossovers, t }: Props) {
   const [domain, setDomain] = useState<[number, number]>([0, TOTAL])
   const divRef = useRef<HTMLDivElement>(null)
-  // Stores drag start snapshot — avoids stale closure in onMouseMove
   const drag = useRef<{ startX: number; origS: number; span: number } | null>(null)
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isZoomed = domain[0] !== 0 || domain[1] !== TOTAL
+  const goalValue = points[0]?.goal ?? 0
 
   const setCursor = (c: string) => {
     if (divRef.current) divRef.current.style.cursor = c
   }
 
-  const clearCursorTimer = () => {
-    if (cursorTimer.current) clearTimeout(cursorTimer.current)
-  }
-
-  // Non-passive wheel handler — the only way to call preventDefault() reliably
+  // Non-passive wheel listener — prevents page scroll AND allows zoom cursor
   useEffect(() => {
     const el = divRef.current
     if (!el) return
+    el.style.cursor = 'grab'
 
     const handler = (e: WheelEvent) => {
       e.preventDefault()
-      // Show zoom cursor briefly, then restore grab
       setCursor(e.deltaY < 0 ? 'zoom-in' : 'zoom-out')
-      clearCursorTimer()
+      if (cursorTimer.current) clearTimeout(cursorTimer.current)
       cursorTimer.current = setTimeout(() => {
         setCursor(drag.current ? 'grabbing' : 'grab')
       }, 350)
@@ -95,11 +91,10 @@ export default function Chart({ points, crossover, t }: Props) {
       })
     }
 
-    el.style.cursor = 'grab'
     el.addEventListener('wheel', handler, { passive: false })
     return () => {
       el.removeEventListener('wheel', handler)
-      clearCursorTimer()
+      if (cursorTimer.current) clearTimeout(cursorTimer.current)
     }
   }, [])
 
@@ -124,18 +119,17 @@ export default function Chart({ points, crossover, t }: Props) {
     setCursor('grab')
   }
 
-  const reset = () => setDomain([0, TOTAL])
-
   const [start, end] = domain
   const visible = points.filter(p => p.month >= start && p.month <= end)
   const ticks = makeTicks(start, end)
+  const visibleCrossovers = crossovers.filter(c => c.month >= start && c.month <= end)
 
   return (
     <div dir="ltr" className="w-full flex flex-col gap-1">
       <div className="flex justify-end h-5">
         {isZoomed && (
           <button
-            onClick={reset}
+            onClick={() => setDomain([0, TOTAL])}
             className="text-xs text-slate-400 hover:text-slate-200 px-2 py-0.5 rounded border border-slate-600 hover:border-slate-400 transition-colors"
           >
             Reset zoom
@@ -169,17 +163,41 @@ export default function Chart({ points, crossover, t }: Props) {
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend formatter={(v) => <span style={{ color: '#94a3b8', fontSize: 12 }}>{v}</span>} />
-            {crossover && crossover.month >= start && crossover.month <= end && (
+
+            {/* Goal horizontal reference line */}
+            {goalValue > 0 && (
               <ReferenceLine
-                x={crossover.month}
-                stroke="#64748b"
-                strokeDasharray="4 2"
-                label={{ value: t.crossoverLabel, position: 'insideTopRight', fill: '#94a3b8', fontSize: 10 }}
+                y={goalValue}
+                stroke="#f59e0b"
+                strokeWidth={1.5}
+                strokeDasharray="6 3"
+                label={{
+                  value: t.goalLine,
+                  position: 'insideTopRight',
+                  fill: '#f59e0b',
+                  fontSize: 10,
+                }}
               />
             )}
+
+            {/* Vertical crossover lines */}
+            {visibleCrossovers.map((c, i) => (
+              <ReferenceLine
+                key={c.month}
+                x={c.month}
+                stroke="#64748b"
+                strokeDasharray="4 2"
+                label={{
+                  value: crossovers.length > 1 ? `${t.crossoverLabel} ${i + 1}` : t.crossoverLabel,
+                  position: 'insideTopRight',
+                  fill: '#94a3b8',
+                  fontSize: 10,
+                }}
+              />
+            ))}
+
             <Line type="monotone" dataKey="apartmentGain" name={t.apartmentLine} stroke="#16a34a" dot={false} strokeWidth={2} isAnimationActive={false} />
             <Line type="monotone" dataKey="passiveGain" name={t.passiveLine} stroke="#2563eb" dot={false} strokeWidth={2} isAnimationActive={false} />
-            <Line type="monotone" dataKey="goal" name={t.goalLine} stroke="#64748b" dot={false} strokeWidth={1} strokeDasharray="5 3" isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

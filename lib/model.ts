@@ -61,7 +61,7 @@ export function compute(params: Params): Results {
 
   let prevN = N0
   let prevP = 0
-  let crossover: Results['crossover'] = null
+  const crossovers: Results['crossovers'] = []
   let goalMonth: Results['goalMonth'] = null
 
   for (let x = 1; x <= 360; x++) {
@@ -95,8 +95,9 @@ export function compute(params: Params): Results {
       (intComp - intFlat)
     )
 
-    if (!crossover && prevN <= prevP && N_x > P_x) {
-      crossover = { month: x, value: Math.round((N_x + P_x) / 2) }
+    // Detect every sign change in (N - P)
+    if (Math.sign(prevN - prevP) !== Math.sign(N_x - P_x) && N_x !== P_x) {
+      crossovers.push({ month: x, value: Math.round((N_x + P_x) / 2) })
     }
     if (!goalMonth && prevN < G && N_x >= G) {
       goalMonth = { month: x, value: Math.round(N_x) }
@@ -112,7 +113,7 @@ export function compute(params: Params): Results {
     })
   }
 
-  return { points, crossover, goalMonth, Tp, M0, monthlyPayment, Ep, addedCosts, S0, G }
+  return { points, crossovers, goalMonth, Tp, M0, monthlyPayment, Ep, addedCosts, S0, G }
 }
 
 export const DEFAULT_PARAMS: Params = {

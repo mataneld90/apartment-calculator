@@ -16,3 +16,10 @@ input[type='range'] {
 input[type='range']::-webkit-slider-thumb {
   cursor: pointer;
 }
+
+/* Let chart container div control cursor — Recharts sets cursor:default on SVG which overrides parent */
+.recharts-wrapper,
+.recharts-wrapper svg,
+.recharts-surface {
+  cursor: inherit !important;
+}
