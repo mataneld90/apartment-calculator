@@ -210,7 +210,7 @@ export default function Sliders({ params, update, results, t, isRTL, only }: Pro
       {visibleGroups.map((group) => (
         <div
           key={group.id}
-          className={`border border-[var(--c-border)] rounded-lg p-3 ${group.id === 'passive' ? 'bg-[rgba(249,115,22,0.08)]' : 'bg-[var(--bg-panel)]'}`}
+          className={`border border-[var(--c-border)] rounded-lg p-3 ${group.id === 'passive' ? 'bg-[rgba(249,115,22,0.08)]' : 'bg-[rgba(59,130,246,0.08)]'}`}
         >
           <div className="text-xs font-semibold text-[var(--c-muted)] uppercase tracking-wide mb-2">
             {group.getTitle(t)}
