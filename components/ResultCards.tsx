@@ -11,7 +11,7 @@ interface Props {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[#1e293b]/65 border border-[#334155] rounded-lg p-4 flex flex-col gap-1">
+    <div className="bg-[#1e293b]/50 border border-[#334155] rounded-lg p-4 flex flex-col gap-1">
       <div className="text-xs text-slate-400 font-medium uppercase tracking-wide">{title}</div>
       {children}
     </div>
