@@ -132,12 +132,12 @@ export const DEFAULT_PARAMS: Params = {
   V: 0.06,
   Ib: 0.04,
   primeMinus: 0.009,
-  Ri: 0.03,
+  Ri: 0.035,
   buyerType: 'investor',
   purchaseCostsRate: 0.05,
   Es: 0.03,
   masShvach: '25%',
   cgt: 0.25,
   G0: 0.5,
-  Im: 0.046,  // = Ib(0.04) + 0.015 − primeMinus(0.009); keep in sync when defaults change
+  Im: 0.045,
 }

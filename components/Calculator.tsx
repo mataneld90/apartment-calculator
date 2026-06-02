@@ -6,7 +6,6 @@ import type { Params } from '@/lib/types'
 import { LANG, type Lang } from '@/lib/i18n'
 import dynamic from 'next/dynamic'
 import Sliders from './Sliders'
-import ResultCards from './ResultCards'
 
 const Chart = dynamic(() => import('./Chart'), {
   ssr: false,
@@ -54,12 +53,11 @@ export default function Calculator() {
       {/* Main — desktop: left sliders | center (chart + cards) | right sliders */}
       <main className="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:grid lg:grid-cols-[360px_1fr_360px] lg:items-start gap-4">
 
-        {/* Center: chart + result cards below — order-1 mobile, order-2 desktop */}
-        <div className="order-1 lg:order-2 flex flex-col gap-3">
+        {/* Center: chart — order-1 mobile, order-2 desktop */}
+        <div className="order-1 lg:order-2">
           <div className="bg-[rgba(30,41,59,0.75)] border border-[#334155] rounded-lg p-4">
             <Chart points={results.points} crossovers={results.crossovers} G0={params.G0} onG0Change={(v) => update('G0', v)} t={t} />
           </div>
-          <ResultCards results={results} params={params} t={t} />
         </div>
 
         {/* Left sliders: Apartment + Mortgage — order-2 mobile, order-1 desktop */}

@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
+  ReferenceArea,
 } from 'recharts'
 import type { ChartPoint } from '@/lib/types'
 import type { Translation } from '@/lib/i18n'
@@ -47,6 +48,21 @@ function CustomTooltip({ active, payload, label }: {
 }
 
 const TOTAL = 360
+const GREEN = '#16a34a'
+const BLUE = '#2563eb'
+
+function colorBands(crossovers: { month: number }[], initialGreen: boolean) {
+  const bands: { x1: number; x2: number; green: boolean }[] = []
+  let green = initialGreen
+  let prev = 0
+  for (const c of crossovers) {
+    bands.push({ x1: prev, x2: c.month, green })
+    green = !green
+    prev = c.month
+  }
+  bands.push({ x1: prev, x2: TOTAL, green })
+  return bands
+}
 
 function makeTicks(start: number, end: number): number[] {
   const range = end - start
@@ -65,6 +81,8 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isZoomed = domain[0] !== 0 || domain[1] !== TOTAL
   const goalValue = points[0]?.goal ?? 0
+  const initialGreen = (points[0]?.gainDiff ?? -1) >= 0
+  const bands = colorBands(crossovers, initialGreen)
 
   const setCursor = (c: string) => {
     if (divRef.current) divRef.current.style.cursor = c
@@ -195,6 +213,11 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend formatter={(v) => <span style={{ color: '#94a3b8', fontSize: 12 }}>{v}</span>} />
+
+            {/* Background color bands: green where apartment leads, blue where passive leads */}
+            {bands.map(({ x1, x2, green }) => (
+              <ReferenceArea key={x1} x1={x1} x2={x2} fill={green ? GREEN : BLUE} fillOpacity={0.08} stroke="none" />
+            ))}
 
             {view === 'gains' ? (
               <>
