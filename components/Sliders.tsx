@@ -170,7 +170,7 @@ function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChan
   return (
     <div className="flex items-center gap-2 py-0.5 min-w-0">
       <div className="flex items-center gap-1 w-28 shrink-0">
-        <span className="text-xs text-slate-300 leading-tight">{label}</span>
+        <span className="text-xs text-[var(--c-text-3)] leading-tight">{label}</span>
         {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       <input
@@ -183,7 +183,7 @@ function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChan
         className="flex-1 h-1 min-w-0"
         style={isRTL ? { transform: 'scaleX(-1)' } : undefined}
       />
-      <span className="text-xs text-white w-20 text-right shrink-0 tabular-nums" dir="ltr">
+      <span className="text-xs text-[var(--c-text)] w-20 text-right shrink-0 tabular-nums" dir="ltr">
         {displayValue}
       </span>
     </div>
@@ -204,8 +204,8 @@ export default function Sliders({ params, update, results, t, isRTL, only }: Pro
   return (
     <div className="flex flex-col gap-3">
       {visibleGroups.map((group) => (
-        <div key={group.id} className="bg-[rgba(30,41,59,0.75)] border border-[#334155] rounded-lg p-3">
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+        <div key={group.id} className="bg-[var(--bg-panel)] border border-[var(--c-border)] rounded-lg p-3">
+          <div className="text-xs font-semibold text-[var(--c-muted)] uppercase tracking-wide mb-2">
             {group.getTitle(t)}
           </div>
 
@@ -236,11 +236,11 @@ export default function Sliders({ params, update, results, t, isRTL, only }: Pro
                 ]}
                 onChange={(v) => update('masShvach', v as Params['masShvach'])}
               />
-              <p className="text-xs text-slate-500 leading-relaxed">{t.masShvachNote}</p>
+              <p className="text-xs text-[var(--c-dim)] leading-relaxed">{t.masShvachNote}</p>
             </div>
           )}
 
-          <div className="flex flex-col divide-y divide-slate-700/50">
+          <div className="flex flex-col divide-y divide-[var(--c-border)]">
             {group.sliders.map((def) => (
               <SliderRow
                 key={def.key}
@@ -259,10 +259,10 @@ export default function Sliders({ params, update, results, t, isRTL, only }: Pro
 
           {/* Cost breakdown — inside At Purchase */}
           {group.id === 'costs' && (
-            <div className="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400 flex flex-col gap-1" dir="ltr">
-              <div className="flex justify-between text-slate-300 font-medium">
+            <div className="mt-3 pt-3 border-t border-[var(--c-border)] text-xs text-[var(--c-muted)] flex flex-col gap-1" dir="ltr">
+              <div className="flex justify-between text-[var(--c-text-3)] font-medium">
                 <span>{t.costsLiveEp}</span>
-                <span className="text-white tabular-nums">{shekel(results.Ep)}</span>
+                <span className="text-[var(--c-text)] tabular-nums">{shekel(results.Ep)}</span>
               </div>
               <div className="flex justify-between pl-2">
                 <span>{t.downPaymentCard}</span>

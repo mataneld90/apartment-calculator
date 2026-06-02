@@ -1,8 +1,46 @@
 @import "tailwindcss";
 
+:root {
+  --bg-page: #0f172a;
+  --bg-panel: rgba(30, 41, 59, 0.75);
+  --bg-control: #1e293b;
+  --c-border: #334155;
+  --c-border-hover: #475569;
+  --c-text: #ffffff;
+  --c-text-2: #e2e8f0;
+  --c-text-3: #cbd5e1;
+  --c-muted: #94a3b8;
+  --c-dim: #64748b;
+  --chart-grid: #334155;
+  --chart-axis: #475569;
+  --chart-tick: #94a3b8;
+  --chart-crossover: #64748b;
+  --tooltip-bg: rgba(30, 41, 59, 0.85);
+  --tooltip-border: #475569;
+}
+
+.light {
+  --bg-page: #f8fafc;
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --bg-control: #f1f5f9;
+  --c-border: #e2e8f0;
+  --c-border-hover: #94a3b8;
+  --c-text: #0f172a;
+  --c-text-2: #1e293b;
+  --c-text-3: #334155;
+  --c-muted: #475569;
+  --c-dim: #94a3b8;
+  --chart-grid: #e2e8f0;
+  --chart-axis: #94a3b8;
+  --chart-tick: #64748b;
+  --chart-crossover: #94a3b8;
+  --tooltip-bg: rgba(248, 250, 252, 0.97);
+  --tooltip-border: #e2e8f0;
+}
+
 body {
-  background-color: #0f172a;
-  color: white;
+  background-color: var(--bg-page);
+  color: var(--c-text);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -12,12 +50,10 @@ input[type='range'] {
   height: 4px;
 }
 
-/* Smooth range thumb */
 input[type='range']::-webkit-slider-thumb {
   cursor: pointer;
 }
 
-/* Let chart container div control cursor — Recharts sets cursor:default on SVG which overrides parent */
 .recharts-wrapper,
 .recharts-wrapper svg,
 .recharts-surface {

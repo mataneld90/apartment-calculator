@@ -151,8 +151,8 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
               onClick={() => setView(v)}
               className={`text-xs px-2 py-0.5 rounded border transition-colors ${
                 view === v
-                  ? 'border-slate-400 text-slate-200 bg-slate-700'
-                  : 'border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-600'
+                  ? 'border-[var(--c-border-hover)] text-[var(--c-text-2)] bg-[var(--bg-control)]'
+                  : 'border-[var(--c-border)] text-[var(--c-dim)] hover:text-[var(--c-muted)] hover:border-[var(--c-border-hover)]'
               }`}
             >
               {v === 'gains' ? t.viewGains : t.viewDiff}
@@ -162,7 +162,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
         {isZoomed && (
           <button
             onClick={() => setDomain([0, TOTAL])}
-            className="text-xs text-slate-400 hover:text-slate-200 px-2 py-0.5 rounded border border-slate-600 hover:border-slate-400 transition-colors"
+            className="text-xs text-[var(--c-muted)] hover:text-[var(--c-text)] px-2 py-0.5 rounded border border-[var(--c-border)] hover:border-[var(--c-border-hover)] transition-colors"
           >
             {t.resetZoom}
           </button>
@@ -179,27 +179,27 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
       >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={visible} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
             <XAxis
               dataKey="month"
               ticks={ticks}
               tickFormatter={(m) => `${(m / 12).toFixed(0)}y`}
-              stroke="#475569"
-              tick={{ fill: '#94a3b8', fontSize: 11 }}
+              stroke="var(--chart-axis)"
+              tick={{ fill: 'var(--chart-tick)', fontSize: 11 }}
             />
             <YAxis
               domain={[yTickMin, yTickMax]}
               ticks={yTicks}
               tickFormatter={shortShekel}
-              stroke="#475569"
-              tick={{ fill: '#94a3b8', fontSize: 11 }}
+              stroke="var(--chart-axis)"
+              tick={{ fill: 'var(--chart-tick)', fontSize: 11 }}
               width={64}
             />
             <Tooltip content={({ active, payload, label }) => {
               if (!active || !payload?.length || label === undefined) return null
               return (
-                <div className="bg-slate-800/65 border border-slate-600 rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir="ltr">
-                  <p className="text-slate-400 mb-1">
+                <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir="ltr">
+                  <p className="text-[var(--c-muted)] mb-1">
                     {t.monthLabel} {label} · {t.yearLabel2} {(Number(label) / 12).toFixed(1)}
                   </p>
                   {payload.map((entry) => (
@@ -210,7 +210,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
                 </div>
               )
             }} />
-            <Legend formatter={(v) => <span style={{ color: '#94a3b8', fontSize: 12 }}>{v}</span>} />
+            <Legend formatter={(v) => <span style={{ color: 'var(--chart-tick)', fontSize: 12 }}>{v}</span>} />
 
             {/* Background color bands: green where apartment leads, blue where passive leads */}
             {bands.map(({ x1, x2, green }) => (
@@ -232,12 +232,12 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
                   <ReferenceLine
                     key={c.month}
                     x={c.month}
-                    stroke="#64748b"
+                    stroke="var(--chart-crossover)"
                     strokeDasharray="4 2"
                     label={{
                       value: `${t.yearLabel2} ${(c.month / 12).toFixed(1)}`,
                       position: 'insideTopRight',
-                      fill: '#94a3b8',
+                      fill: 'var(--chart-tick)',
                       fontSize: 10,
                     }}
                   />
@@ -247,17 +247,17 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
               </>
             ) : (
               <>
-                <ReferenceLine y={0} stroke="#475569" strokeDasharray="4 2" />
+                <ReferenceLine y={0} stroke="var(--chart-axis)" strokeDasharray="4 2" />
                 {visibleCrossovers.map((c, i) => (
                   <ReferenceLine
                     key={c.month}
                     x={c.month}
-                    stroke="#64748b"
+                    stroke="var(--chart-crossover)"
                     strokeDasharray="4 2"
                     label={{
                       value: `${t.yearLabel2} ${(c.month / 12).toFixed(1)}`,
                       position: 'insideTopRight',
-                      fill: '#94a3b8',
+                      fill: 'var(--chart-tick)',
                       fontSize: 10,
                     }}
                   />
@@ -269,11 +269,11 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
         </ResponsiveContainer>
       </div>
 
-      <p className="text-xs text-slate-600 text-center select-none">{t.scrollHint}</p>
+      <p className="text-xs text-[var(--c-dim)] text-center select-none">{t.scrollHint}</p>
 
-      <div className="flex items-center gap-2 pt-2 border-t border-slate-700/50">
+      <div className="flex items-center gap-2 pt-2 border-t border-[var(--c-border)]">
         <div className="flex items-center gap-1 w-28 shrink-0">
-          <span className="text-xs text-slate-400 leading-tight">{t.g0Label}</span>
+          <span className="text-xs text-[var(--c-muted)] leading-tight">{t.g0Label}</span>
           <InfoTooltip text={t.tooltips.G0} />
         </div>
         <input
@@ -285,7 +285,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
           onChange={(e) => onG0Change(Number(e.target.value))}
           className="flex-1 h-1"
         />
-        <span className="text-xs text-white w-10 text-right shrink-0 tabular-nums">{t.mulDisplay(G0)}</span>
+        <span className="text-xs text-[var(--c-text)] w-10 text-right shrink-0 tabular-nums">{t.mulDisplay(G0)}</span>
       </div>
     </div>
   )
