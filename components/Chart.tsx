@@ -287,6 +287,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
           value={G0}
           onChange={(e) => onG0Change(Number(e.target.value))}
           className="flex-1 h-1"
+          style={{ accentColor: GOAL }}
         />
         <span className="text-xs text-[var(--c-text)] w-10 text-right shrink-0 tabular-nums">{t.mulDisplay(G0)}</span>
       </div>
