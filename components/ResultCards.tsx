@@ -11,7 +11,7 @@ interface Props {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[#1e293b] border border-[#334155] rounded-lg p-4 flex flex-col gap-1">
+    <div className="bg-[#1e293b]/65 border border-[#334155] rounded-lg p-4 flex flex-col gap-1">
       <div className="text-xs text-slate-400 font-medium uppercase tracking-wide">{title}</div>
       {children}
     </div>
@@ -72,17 +72,6 @@ export default function ResultCards({ results, params, t }: Props) {
       <Card title={t.expensesTitle}>
         <div className="text-lg font-semibold text-white" dir="ltr">
           {shekel(Ep)}
-        </div>
-        <div className="text-xs text-slate-400 mt-1 flex flex-col gap-0.5">
-          <span dir="ltr">
-            {t.downPaymentCard}: {shekel(S0)} ({pct(params.p, 0)})
-          </span>
-          <span dir="ltr">
-            {t.purchaseTaxCard}: {shekel(Tp)} ({pct(Tp / params.Av0, 1)})
-          </span>
-          <span dir="ltr">
-            {t.addedCostsCard}: {shekel(Ep - S0 - Tp)} ({pct(params.purchaseCostsRate, 1)})
-          </span>
         </div>
       </Card>
     </div>

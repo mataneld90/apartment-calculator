@@ -19,6 +19,8 @@ import { shortShekel, shekel } from '@/lib/formatters'
 interface Props {
   points: ChartPoint[]
   crossovers: { month: number; value: number }[]
+  G0: number
+  onG0Change: (v: number) => void
   t: Translation
 }
 
@@ -53,7 +55,7 @@ function makeTicks(start: number, end: number): number[] {
   return ticks
 }
 
-export default function Chart({ points, crossovers, t }: Props) {
+export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) {
   const [domain, setDomain] = useState<[number, number]>([0, TOTAL])
   const divRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ startX: number; origS: number; span: number } | null>(null)
@@ -203,6 +205,20 @@ export default function Chart({ points, crossovers, t }: Props) {
       </div>
 
       <p className="text-xs text-slate-600 text-center select-none">Scroll to zoom · drag to pan</p>
+
+      <div className="flex items-center gap-2 pt-2 border-t border-slate-700/50">
+        <span className="text-xs text-slate-400 w-28 shrink-0">{t.g0Label}</span>
+        <input
+          type="range"
+          min={0}
+          max={4}
+          step={0.1}
+          value={G0}
+          onChange={(e) => onG0Change(Number(e.target.value))}
+          className="flex-1 h-1"
+        />
+        <span className="text-xs text-white w-10 text-right shrink-0 tabular-nums">{t.mulDisplay(G0)}</span>
+      </div>
     </div>
   )
 }

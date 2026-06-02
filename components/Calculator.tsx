@@ -11,7 +11,7 @@ import ResultCards from './ResultCards'
 const Chart = dynamic(() => import('./Chart'), {
   ssr: false,
   loading: () => (
-    <div style={{ height: 360, marginTop: 16 }} className="bg-[#1e293b] rounded-lg animate-pulse" />
+    <div style={{ height: 360, marginTop: 16 }} className="bg-[#1e293b]/65 rounded-lg animate-pulse" />
   ),
 })
 
@@ -56,8 +56,8 @@ export default function Calculator() {
 
         {/* Center: chart + result cards below — order-1 mobile, order-2 desktop */}
         <div className="order-1 lg:order-2 flex flex-col gap-3">
-          <div className="bg-[#1e293b] border border-[#334155] rounded-lg p-4">
-            <Chart points={results.points} crossovers={results.crossovers} t={t} />
+          <div className="bg-[#1e293b]/65 border border-[#334155] rounded-lg p-4">
+            <Chart points={results.points} crossovers={results.crossovers} G0={params.G0} onG0Change={(v) => update('G0', v)} t={t} />
           </div>
           <ResultCards results={results} params={params} t={t} />
         </div>
@@ -82,7 +82,7 @@ export default function Calculator() {
             results={results}
             t={t}
             isRTL={isRTL}
-            only={['costs', 'selling', 'misc']}
+            only={['costs', 'selling']}
           />
         </aside>
       </main>
