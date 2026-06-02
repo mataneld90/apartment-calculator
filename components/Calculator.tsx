@@ -81,10 +81,7 @@ export default function Calculator() {
             <button onClick={() => setMethodologyOpen(true)} className={BTN}>
               {t.methodologyTitle}
             </button>
-            <button
-              onClick={() => setIsDark(d => !d)}
-              className={isDark ? BTN : 'px-3 py-1.5 rounded bg-black border border-black text-white text-sm font-medium hover:bg-gray-900 transition-colors'}
-            >
+            <button onClick={() => setIsDark(d => !d)} className={BTN}>
               {isDark ? '☀️' : '🌙'}
             </button>
             <button onClick={() => setLang(l => l === 'en' ? 'he' : 'en')} className={BTN}>
