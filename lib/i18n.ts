@@ -61,8 +61,11 @@ export type Translation = {
   ofAptValue: string
   apartmentLine: string
   passiveLine: string
+  diffLine: string
   goalLine: string
   crossoverLabel: string
+  viewGains: string
+  viewDiff: string
   costsLiveEp: string
   costsLiveTp: string
   costsLiveAdded: string
@@ -137,8 +140,11 @@ export const LANG: Record<Lang, Translation> = {
     ofAptValue: 'of apartment value',
     apartmentLine: 'Apartment gain',
     passiveLine: 'Passive gain',
+    diffLine: 'Apartment − Passive',
     goalLine: 'Goal',
     crossoverLabel: 'Crossover',
+    viewGains: 'Gains',
+    viewDiff: 'Difference',
     costsLiveEp: 'Total paid to buy',
     costsLiveTp: 'Purchase tax',
     costsLiveAdded: 'Closing costs',
@@ -210,8 +216,11 @@ export const LANG: Record<Lang, Translation> = {
     ofAptValue: 'משווי הדירה',
     apartmentLine: 'רווח נקי – דירה',
     passiveLine: 'רווח נקי – פסיבי',
+    diffLine: 'דירה − פסיבי',
     goalLine: 'יעד',
     crossoverLabel: 'נקודת מעבר',
+    viewGains: 'רווחים',
+    viewDiff: 'הפרש',
     costsLiveEp: 'סה"כ עלות הרכישה',
     costsLiveTp: 'מס רכישה',
     costsLiveAdded: 'עלויות עסקה',

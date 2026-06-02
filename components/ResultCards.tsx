@@ -41,16 +41,31 @@ function MonthYearValue({
 
 export default function ResultCards({ results, params, t }: Props) {
   const { crossovers, goalMonth, Tp, Ep, S0 } = results
-  const firstCrossover = crossovers[0] ?? null
 
   return (
     <div className="grid grid-cols-3 gap-3">
       {/* Crossover card */}
       <Card title={t.crossoverTitle}>
-        {firstCrossover ? (
-          <MonthYearValue month={firstCrossover.month} value={firstCrossover.value} t={t} />
-        ) : (
+        {crossovers.length === 0 ? (
           <div className="text-sm text-slate-400 italic">{t.notWithin30}</div>
+        ) : crossovers.length === 1 ? (
+          <div className="flex flex-col gap-0.5">
+            <div className="text-lg font-semibold text-white" dir="ltr">
+              {t.monthLabel} {crossovers[0].month}
+            </div>
+            <div className="text-sm text-slate-300" dir="ltr">
+              {t.yearLabel2} {(crossovers[0].month / 12).toFixed(1)}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-0.5">
+            <div className="text-lg font-semibold text-white" dir="ltr">
+              {t.monthLabel} {crossovers[0].month} – {crossovers[1].month}
+            </div>
+            <div className="text-sm text-slate-300" dir="ltr">
+              {t.yearLabel2} {(crossovers[0].month / 12).toFixed(1)} – {(crossovers[1].month / 12).toFixed(1)}
+            </div>
+          </div>
         )}
       </Card>
 

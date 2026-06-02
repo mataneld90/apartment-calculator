@@ -24,6 +24,8 @@ interface Props {
   t: Translation
 }
 
+type View = 'gains' | 'diff'
+
 function CustomTooltip({ active, payload, label }: {
   active?: boolean
   payload?: { color: string; name: string; value: number }[]
@@ -57,6 +59,7 @@ function makeTicks(start: number, end: number): number[] {
 
 export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) {
   const [domain, setDomain] = useState<[number, number]>([0, TOTAL])
+  const [view, setView] = useState<View>('gains')
   const divRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ startX: number; origS: number; span: number } | null>(null)
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -126,9 +129,29 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
   const ticks = makeTicks(start, end)
   const visibleCrossovers = crossovers.filter(c => c.month >= start && c.month <= end)
 
+  const overtakesText = crossovers.length === 2
+    ? `Month ${crossovers[0].month} – ${crossovers[1].month} · Year ${(crossovers[0].month / 12).toFixed(1)} – ${(crossovers[1].month / 12).toFixed(1)}`
+    : null
+
   return (
     <div dir="ltr" className="w-full flex flex-col gap-1">
-      <div className="flex justify-end h-5">
+      {/* Header row: view toggle left, reset zoom right */}
+      <div className="flex items-center justify-between h-6">
+        <div className="flex gap-1">
+          {(['gains', 'diff'] as View[]).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                view === v
+                  ? 'border-slate-400 text-slate-200 bg-slate-700'
+                  : 'border-slate-700 text-slate-500 hover:text-slate-300 hover:border-slate-600'
+              }`}
+            >
+              {v === 'gains' ? t.viewGains : t.viewDiff}
+            </button>
+          ))}
+        </div>
         {isZoomed && (
           <button
             onClick={() => setDomain([0, TOTAL])}
@@ -138,6 +161,13 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
           </button>
         )}
       </div>
+
+      {/* Crossover range label — only in gains view when exactly 2 crossovers */}
+      {view === 'gains' && overtakesText && (
+        <p className="text-xs text-slate-400 text-center">
+          🏠 Apartment overtakes passive: <span className="text-slate-200">{overtakesText}</span>
+        </p>
+      )}
 
       <div
         ref={divRef}
@@ -166,40 +196,54 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
             <Tooltip content={<CustomTooltip />} />
             <Legend formatter={(v) => <span style={{ color: '#94a3b8', fontSize: 12 }}>{v}</span>} />
 
-            {/* Goal horizontal reference line */}
-            {goalValue > 0 && (
-              <ReferenceLine
-                y={goalValue}
-                stroke="#f59e0b"
-                strokeWidth={1.5}
-                strokeDasharray="6 3"
-                label={{
-                  value: t.goalLine,
-                  position: 'insideTopRight',
-                  fill: '#f59e0b',
-                  fontSize: 10,
-                }}
-              />
+            {view === 'gains' ? (
+              <>
+                {goalValue > 0 && (
+                  <ReferenceLine
+                    y={goalValue}
+                    stroke="#f59e0b"
+                    strokeWidth={1.5}
+                    strokeDasharray="6 3"
+                    label={{ value: t.goalLine, position: 'insideTopRight', fill: '#f59e0b', fontSize: 10 }}
+                  />
+                )}
+                {visibleCrossovers.map((c, i) => (
+                  <ReferenceLine
+                    key={c.month}
+                    x={c.month}
+                    stroke="#64748b"
+                    strokeDasharray="4 2"
+                    label={{
+                      value: crossovers.length > 1 ? `${t.crossoverLabel} ${i + 1}` : t.crossoverLabel,
+                      position: 'insideTopRight',
+                      fill: '#94a3b8',
+                      fontSize: 10,
+                    }}
+                  />
+                ))}
+                <Line type="monotone" dataKey="apartmentGain" name={t.apartmentLine} stroke="#16a34a" dot={false} strokeWidth={2} isAnimationActive={false} />
+                <Line type="monotone" dataKey="passiveGain" name={t.passiveLine} stroke="#2563eb" dot={false} strokeWidth={2} isAnimationActive={false} />
+              </>
+            ) : (
+              <>
+                <ReferenceLine y={0} stroke="#475569" strokeDasharray="4 2" />
+                {visibleCrossovers.map((c, i) => (
+                  <ReferenceLine
+                    key={c.month}
+                    x={c.month}
+                    stroke="#64748b"
+                    strokeDasharray="4 2"
+                    label={{
+                      value: crossovers.length > 1 ? `${t.crossoverLabel} ${i + 1}` : t.crossoverLabel,
+                      position: 'insideTopRight',
+                      fill: '#94a3b8',
+                      fontSize: 10,
+                    }}
+                  />
+                ))}
+                <Line type="monotone" dataKey="gainDiff" name={t.diffLine} stroke="#a78bfa" dot={false} strokeWidth={2} isAnimationActive={false} />
+              </>
             )}
-
-            {/* Vertical crossover lines */}
-            {visibleCrossovers.map((c, i) => (
-              <ReferenceLine
-                key={c.month}
-                x={c.month}
-                stroke="#64748b"
-                strokeDasharray="4 2"
-                label={{
-                  value: crossovers.length > 1 ? `${t.crossoverLabel} ${i + 1}` : t.crossoverLabel,
-                  position: 'insideTopRight',
-                  fill: '#94a3b8',
-                  fontSize: 10,
-                }}
-              />
-            ))}
-
-            <Line type="monotone" dataKey="apartmentGain" name={t.apartmentLine} stroke="#16a34a" dot={false} strokeWidth={2} isAnimationActive={false} />
-            <Line type="monotone" dataKey="passiveGain" name={t.passiveLine} stroke="#2563eb" dot={false} strokeWidth={2} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

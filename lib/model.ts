@@ -51,7 +51,7 @@ export function compute(params: Params): Results {
   // Month 0: rem=M0, F=0, gain<0 so masShvachTax=0
   const N0 = Av0 * (1 - Es) - Ep - M0
   const points: ChartPoint[] = [
-    { month: 0, apartmentGain: Math.round(N0), passiveGain: 0, goal: Math.round(G) },
+    { month: 0, apartmentGain: Math.round(N0), passiveGain: 0, gainDiff: Math.round(N0), goal: Math.round(G) },
   ]
 
   let F = 0
@@ -109,6 +109,7 @@ export function compute(params: Params): Results {
       month: x,
       apartmentGain: Math.round(N_x),
       passiveGain: Math.round(P_x),
+      gainDiff: Math.round(N_x - P_x),
       goal: Math.round(G),
     })
   }

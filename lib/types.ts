@@ -23,6 +23,7 @@ export interface ChartPoint {
   month: number
   apartmentGain: number
   passiveGain: number
+  gainDiff: number
   goal: number
 }
 
