@@ -164,9 +164,10 @@ interface SliderRowProps {
   displayValue: string
   onChange: (v: number) => void
   isRTL: boolean
+  accentColor?: string
 }
 
-function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChange, isRTL }: SliderRowProps) {
+function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChange, isRTL, accentColor }: SliderRowProps) {
   return (
     <div className="flex items-center gap-2 py-0.5 min-w-0">
       <div className="flex items-center gap-1 w-28 shrink-0">
@@ -181,7 +182,10 @@ function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChan
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="flex-1 h-1 min-w-0"
-        style={isRTL ? { transform: 'scaleX(-1)' } : undefined}
+        style={{
+          ...(isRTL ? { transform: 'scaleX(-1)' } : {}),
+          ...(accentColor ? { accentColor } : {}),
+        }}
       />
       <span className="text-xs text-[var(--c-text)] w-20 text-right shrink-0 tabular-nums" dir="ltr">
         {displayValue}
@@ -204,7 +208,10 @@ export default function Sliders({ params, update, results, t, isRTL, only }: Pro
   return (
     <div className="flex flex-col gap-3">
       {visibleGroups.map((group) => (
-        <div key={group.id} className="bg-[var(--bg-panel)] border border-[var(--c-border)] rounded-lg p-3">
+        <div
+          key={group.id}
+          className={`border border-[var(--c-border)] rounded-lg p-3 ${group.id === 'passive' ? 'bg-[rgba(249,115,22,0.08)]' : 'bg-[var(--bg-panel)]'}`}
+        >
           <div className="text-xs font-semibold text-[var(--c-muted)] uppercase tracking-wide mb-2">
             {group.getTitle(t)}
           </div>
@@ -253,6 +260,7 @@ export default function Sliders({ params, update, results, t, isRTL, only }: Pro
                 displayValue={def.display(params[def.key] as number, t)}
                 onChange={(v) => update(def.key, v as never)}
                 isRTL={isRTL}
+                accentColor={group.id === 'passive' ? '#f97316' : undefined}
               />
             ))}
           </div>
