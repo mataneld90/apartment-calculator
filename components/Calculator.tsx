@@ -18,9 +18,9 @@ const BTN = 'px-3 py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-b
 
 export default function Calculator() {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS)
-  const [lang, setLang] = useState<Lang>('en')
+  const [lang, setLang] = useState<Lang>('he')
   const [methodologyOpen, setMethodologyOpen] = useState(false)
-  const [isDark, setIsDark] = useState(true)
+  const [isDark, setIsDark] = useState(false)
 
   const results = useMemo(() => compute(params), [params])
   const t = LANG[lang]
