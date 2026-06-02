@@ -124,9 +124,9 @@ export function compute(params: Params): Results {
 }
 
 export const DEFAULT_PARAMS: Params = {
-  Av0: 2_825_000,
+  Av0: 3_000_000,
   p: 0.50,
-  R0: 6_050,
+  R0: 6_000,
   Y: 30,
   Ip: 0.078,
   V: 0.06,
