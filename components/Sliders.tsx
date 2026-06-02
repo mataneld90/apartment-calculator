@@ -197,7 +197,7 @@ export default function Sliders({ params, update, results, t, isRTL, only }: Pro
   return (
     <div className="flex flex-col gap-3">
       {visibleGroups.map((group) => (
-        <div key={group.id} className="bg-[#1e293b]/50 border border-[#334155] rounded-lg p-3">
+        <div key={group.id} className="bg-[rgba(30,41,59,0.75)] border border-[#334155] rounded-lg p-3">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
             {group.getTitle(t)}
           </div>
