@@ -27,6 +27,8 @@ export type Translation = {
   primeMinusLabel: string
   esLabel: string
   imLabel: string
+  primeFracLabel: string
+  primeFracDisplay: (v: number) => string
   ipLabel: string
   cgtLabel: string
   purchaseCostsRateLabel: string
@@ -46,6 +48,7 @@ export type Translation = {
     buyerTypeSingle: string
     masShvach: string
     Im: string
+    primeFrac: string
     G0: string
     R0: string
     purchaseCostsRate: string
@@ -114,6 +117,8 @@ export const LANG: Record<Lang, Translation> = {
     primeMinusLabel: 'Your spread below prime',
     esLabel: 'Selling costs',
     imLabel: 'Current fixed mortgage rate',
+    primeFracLabel: 'Prime track fraction',
+    primeFracDisplay: (v) => `${Math.round(v * 100)}% prime / ${Math.round((1 - v) * 100)}% fixed`,
     ipLabel: 'Passive return (net)',
     cgtLabel: 'Capital gains tax',
     purchaseCostsRateLabel: 'Purchase costs',
@@ -137,6 +142,7 @@ export const LANG: Record<Lang, Translation> = {
       masShvach:
         'Capital gains tax on real estate profit at sale: 25% of (net sale proceeds − tax basis). Exempt if this is your primary and only residence. For investment apartments, it typically applies. Consult a tax advisor about co-ownership or other exemptions.',
       Im: 'Used to calculate the early repayment fee (עמלת פירעון מוקדם) on your fixed-rate (קל"צ) track. The bank charges a fee when today\'s equivalent rate is lower than your locked rate — the larger the gap, the larger the fee. If the current rate is equal to or higher than your locked rate, the fee is ₪0.',
+      primeFrac: 'The portion of your mortgage on the prime-linked track, which carries no prepayment fee. Bank of Israel caps this at 33%. The remaining fraction (קל"צ + מל"צ tracks) is subject to early repayment fees.',
       G0: 'Target net profit as a multiple of your total purchase outlay. 0.5× = "I want to net back 50% of everything I spent buying this apartment."',
       R0: 'Rent at the time of purchase, before any annual increases. The model applies the yearly rent increase at the start of each subsequent year.',
       purchaseCostsRate: 'All purchase-related costs as % of apartment value, excluding purchase tax (מס רכישה). Typical breakdown: RE broker ~2% (+VAT), lawyer ~0.5% (+VAT), RE appraiser ~₪3,500, mortgage broker if applicable. Default 5% is a reasonable all-in estimate for most buyers.',
@@ -203,6 +209,8 @@ export const LANG: Record<Lang, Translation> = {
     primeMinusLabel: 'ההנחה שלך מהפריים',
     esLabel: 'עלויות מכירה',
     imLabel: 'ריבית שוק נוכחית (לחישוב פירעון מוקדם)',
+    primeFracLabel: 'חלק מסלול הפריים',
+    primeFracDisplay: (v) => `${Math.round(v * 100)}% פריים / ${Math.round((1 - v) * 100)}% קבוע`,
     ipLabel: 'תשואה פסיבית (נטו)',
     cgtLabel: 'מס רווח הון',
     purchaseCostsRateLabel: 'עלויות עסקה',
@@ -225,6 +233,7 @@ export const LANG: Record<Lang, Translation> = {
       masShvach:
         'מס על הרווח הריאלי בנדל"ן: 25% מ-(תמורה נטו − בסיס עלות). פטור אם זו דירתך היחידה. לדירת השקעה לרוב חל. יש להתייעץ עם עו"ד לגבי מבנה שותפות.',
       Im: 'משמש לחישוב עמלת פירעון מוקדם על מסלול הקל"צ. הבנק גובה עמלה כשהריבית הנוכחית נמוכה מהריבית הנעולה שלך — ככל שהפער גדול יותר, כך העמלה גדולה יותר. אם הריבית הנוכחית גבוהה מהנעולה, העמלה היא ₪0.',
+      primeFrac: 'החלק ממשכנתתך במסלול הפריים, הפטור מעמלת פירעון מוקדם לפי חוק. בנק ישראל מגביל מסלול זה ל-33%. יתרת ההלוואה (מסלולי קל"צ ומל"צ) חייבת בעמלה.',
       G0: 'יעד רווח נקי כמכפיל של סך הוצאות הרכישה. 0.5× = "אני רוצה לקבל בחזרה 50% מכל מה שהוצאתי."',
       R0: 'שכירות בעת הרכישה, לפני עליות שנתיות. המחשבון מחיל את עליית השכירות בתחילת כל שנה.',
       purchaseCostsRate: 'כל עלויות הרכישה כאחוז משווי הדירה, ללא מס רכישה. פירוט אופייני: מתווך ~2% (+מע"מ), עו"ד ~0.5% (+מע"מ), שמאי ~₪3,500, יועץ משכנתא לפי הסכמה. ברירת מחדל 5% מכסה את רוב הרוכשים.',

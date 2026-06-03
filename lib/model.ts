@@ -140,4 +140,5 @@ export const DEFAULT_PARAMS: Params = {
   cgt: 0.25,
   G0: 0.5,
   Im: 0.045,
+  primeFrac: 0.15,
 }

@@ -84,6 +84,13 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         min: 0, max: 0.03, step: 0.001,
         display: (v, t) => t.primeMinusDisplay(v),
       },
+      {
+        key: 'primeFrac',
+        getLabel: (t) => t.primeFracLabel,
+        getTooltip: (t) => t.tooltips.primeFrac,
+        min: 0, max: 0.33, step: 0.01,
+        display: (v, t) => t.primeFracDisplay(v),
+      },
     ],
   },
   {
@@ -206,7 +213,9 @@ interface Props {
 export default function Sliders({ params, update, results, t, isRTL, only }: Props) {
   const visibleGroups = only ? GROUPS.filter(g => only.includes(g.id)) : GROUPS
   const lockedRate = params.Ib + 0.015 - params.primeMinus
-  const prepayFee = Math.round(params.p * params.Av0 * Math.max(0, lockedRate - params.Im) * params.Y)
+  const M0 = params.p * params.Av0
+  const principalSubjectToFee = M0 * (1 - params.primeFrac)
+  const prepayFee = Math.round(Math.max(0, lockedRate - params.Im) * principalSubjectToFee * params.Y)
   return (
     <div className="flex flex-col gap-3">
       {visibleGroups.map((group) => (

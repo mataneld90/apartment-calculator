@@ -18,6 +18,7 @@ export interface Params {
   cgt: number
   G0: number
   Im: number
+  primeFrac: number
 }
 
 export interface ChartPoint {
