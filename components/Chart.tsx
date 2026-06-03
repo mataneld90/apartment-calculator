@@ -154,8 +154,8 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
               onClick={() => setView(v)}
               className={`text-xs px-2 py-0.5 rounded border transition-colors ${
                 view === v
-                  ? 'border-[var(--c-border-hover)] text-[var(--c-text-2)] bg-[var(--bg-control)]'
-                  : 'border-[var(--c-border)] text-[var(--c-dim)] hover:text-[var(--c-muted)] hover:border-[var(--c-border-hover)]'
+                  ? 'bg-slate-600 text-white border-slate-600'
+                  : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
               }`}
             >
               {v === 'gains' ? t.viewGains : t.viewDiff}
