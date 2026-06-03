@@ -194,7 +194,7 @@ function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChan
           ...(accentColor ? { accentColor } : {}),
         }}
       />
-      <span className="text-xs text-[var(--c-text)] w-20 text-right shrink-0 tabular-nums" dir="ltr">
+      <span className="text-xs text-[var(--c-text)] w-20 text-right shrink-0 tabular-nums overflow-hidden whitespace-nowrap" dir="ltr">
         {displayValue}
       </span>
     </div>

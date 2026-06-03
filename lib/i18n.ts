@@ -118,7 +118,7 @@ export const LANG: Record<Lang, Translation> = {
     esLabel: 'Selling costs',
     imLabel: 'Current fixed mortgage rate',
     primeFracLabel: 'Prime track fraction',
-    primeFracDisplay: (v) => `${Math.round(v * 100)}% prime / ${Math.round((1 - v) * 100)}% fixed`,
+    primeFracDisplay: (v) => `${Math.round(v * 100)}% / ${Math.round((1 - v) * 100)}%`,
     ipLabel: 'Passive return (net)',
     cgtLabel: 'Capital gains tax',
     purchaseCostsRateLabel: 'Purchase costs',
