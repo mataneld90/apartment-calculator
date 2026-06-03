@@ -39,7 +39,7 @@ const DIFF = '#a78bfa'  // violet-400 — for N-P difference line
 function colorBands(crossovers: { month: number }[], initialApt: boolean) {
   const bands: { x1: number; x2: number; apt: boolean }[] = []
   let apt = initialApt
-  let prev = 0
+  let prev = -1  // start before domain edge so Recharts doesn't clip the first band
   for (const c of crossovers) {
     bands.push({ x1: prev, x2: c.month, apt })
     apt = !apt
