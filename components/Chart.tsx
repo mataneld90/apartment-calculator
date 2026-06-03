@@ -59,7 +59,7 @@ function makeTicks(start: number, end: number): number[] {
 }
 
 export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) {
-  const [domain, setDomain] = useState<[number, number]>([0, TOTAL])
+  const [domain, setDomain] = useState<[number, number]>([0, 180])
   const [view, setView] = useState<View>('gains')
   const divRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ startX: number; origS: number; span: number } | null>(null)
@@ -272,6 +272,21 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
         </ResponsiveContainer>
       </div>
 
+      <p className="text-xs text-[var(--c-muted)] text-center select-none leading-snug">
+        {(() => {
+          if (crossovers.length === 0)
+            return initialApt ? t.summaryAptLeadsAll : t.summaryPassiveLeads
+          if (crossovers.length === 1 && !initialApt)
+            return t.summaryAptLeadsOnward((crossovers[0].month / 12).toFixed(1))
+          if (crossovers.length >= 2 && !initialApt) {
+            const y1 = (crossovers[0].month / 12).toFixed(1)
+            const y2 = (crossovers[1].month / 12).toFixed(1)
+            const dur = ((crossovers[1].month - crossovers[0].month) / 12).toFixed(1)
+            return t.summaryTwoXovers(y1, y2, dur)
+          }
+          return null
+        })()}
+      </p>
       <p className="text-xs text-[var(--c-dim)] text-center select-none">{t.scrollHint}</p>
 
       <div className="flex items-center gap-2 pt-2 border-t border-[var(--c-border)]">

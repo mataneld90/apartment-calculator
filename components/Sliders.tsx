@@ -205,6 +205,8 @@ interface Props {
 
 export default function Sliders({ params, update, results, t, isRTL, only }: Props) {
   const visibleGroups = only ? GROUPS.filter(g => only.includes(g.id)) : GROUPS
+  const lockedRate = params.Ib + 0.015 - params.primeMinus
+  const prepayFee = Math.round(params.p * params.Av0 * Math.max(0, lockedRate - params.Im) * params.Y)
   return (
     <div className="flex flex-col gap-3">
       {visibleGroups.map((group) => (
@@ -264,6 +266,16 @@ export default function Sliders({ params, update, results, t, isRTL, only }: Pro
               />
             ))}
           </div>
+
+          {/* Prepayment fee display — inside At Sale */}
+          {group.id === 'selling' && (
+            <div className="mt-3 pt-3 border-t border-[var(--c-border)] text-xs flex justify-between" dir="ltr">
+              <span className="text-[var(--c-muted)]">{t.prepaymentFeeLabel}</span>
+              <span className="tabular-nums text-[var(--c-text)]">
+                {prepayFee > 0 ? shekel(prepayFee) : `₪0  ${t.prepaymentFeeZero}`}
+              </span>
+            </div>
+          )}
 
           {/* Cost breakdown — inside At Purchase */}
           {group.id === 'costs' && (
