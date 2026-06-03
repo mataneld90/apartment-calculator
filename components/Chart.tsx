@@ -131,6 +131,9 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
   const visible = points.filter(p => p.month >= start && p.month <= end)
   const ticks = makeTicks(start, end)
   const visibleCrossovers = crossovers.filter(c => c.month >= start && c.month <= end)
+  const visibleBands = bands
+    .map(b => ({ ...b, x1: Math.max(b.x1, start || 1), x2: Math.min(b.x2, end) }))
+    .filter(b => b.x1 < b.x2)
 
   const YTICK = 2_000_000
   const yVals = view === 'diff'
@@ -216,7 +219,7 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
             <Legend formatter={(v) => <span style={{ color: 'var(--chart-tick)', fontSize: 12 }}>{v}</span>} />
 
             {/* Background color bands: green where apartment leads, blue where passive leads */}
-            {bands.map(({ x1, x2, apt }) => (
+            {visibleBands.map(({ x1, x2, apt }) => (
               <ReferenceArea key={x1} x1={x1} x2={x2} fill={apt ? APT : PAS} fillOpacity={0.08} stroke="none" />
             ))}
 
