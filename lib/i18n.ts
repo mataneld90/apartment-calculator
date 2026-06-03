@@ -210,7 +210,7 @@ export const LANG: Record<Lang, Translation> = {
     esLabel: 'עלויות מכירה',
     imLabel: 'ריבית שוק נוכחית (לחישוב פירעון מוקדם)',
     primeFracLabel: 'חלק מסלול הפריים',
-    primeFracDisplay: (v) => `${Math.round(v * 100)}% פריים / ${Math.round((1 - v) * 100)}% קבוע`,
+    primeFracDisplay: (v) => `${Math.round(v * 100)}% / ${Math.round((1 - v) * 100)}%`,
     ipLabel: 'תשואה פסיבית (נטו)',
     cgtLabel: 'מס רווח הון',
     purchaseCostsRateLabel: 'עלויות עסקה',
