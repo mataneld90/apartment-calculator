@@ -39,7 +39,7 @@ const DIFF = '#a78bfa'  // violet-400 — for N-P difference line
 function colorBands(crossovers: { month: number }[], initialApt: boolean) {
   const bands: { x1: number; x2: number; apt: boolean }[] = []
   let apt = initialApt
-  let prev = 0.001  // x=0 gets clipped at domain boundary; 0.001 months is invisible
+  let prev = 1  // x=0/near-0 bleeds into y-axis; month 1 is ~1px at full zoom
   for (const c of crossovers) {
     bands.push({ x1: prev, x2: c.month, apt })
     apt = !apt
@@ -185,7 +185,6 @@ export default function Chart({ points, crossovers, G0, onG0Change, t }: Props) 
             <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
             <XAxis
               dataKey="month"
-              domain={[start, end]}
               ticks={ticks}
               tickFormatter={(m) => `${(m / 12).toFixed(0)}y`}
               stroke="var(--chart-axis)"
