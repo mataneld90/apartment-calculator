@@ -44,7 +44,7 @@ export default function Calculator() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--c-text)]" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--c-text)] overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
 
       {/* Methodology modal */}
       {methodologyOpen && (
