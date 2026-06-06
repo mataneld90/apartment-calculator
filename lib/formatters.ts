@@ -1,4 +1,5 @@
 export function shekel(v: number): string {
+  if (v < 0) return '-₪' + Math.round(-v).toLocaleString('en-US')
   return '₪' + Math.round(v).toLocaleString('en-US')
 }
 

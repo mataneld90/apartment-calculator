@@ -4,11 +4,11 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Apartment vs. Passive Investment Calculator | Israel',
   description:
-    'See when buying an investment apartment in Israel beats investing in the S&P 500. Free calculator with Israeli mortgage, purchase tax, and מס שבח.',
+    'See when buying an investment apartment in Israel beats investing the same capital passively in the stock market. Free calculator with Israeli mortgage, purchase tax, and מס שבח.',
   openGraph: {
     title: 'Apartment vs. Passive Investment — When does buying win?',
     description:
-      'Israeli real estate vs. S&P 500 calculator. Find your crossover month.',
+      'Israeli real estate vs. passive investment calculator. Find your crossover month.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
 }

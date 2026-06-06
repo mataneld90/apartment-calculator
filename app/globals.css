@@ -38,6 +38,18 @@
   --tooltip-border: #e2e8f0;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: none;
+}
+
 html {
   overflow-x: hidden;
 }
@@ -63,4 +75,5 @@ input[type='range']::-webkit-slider-thumb {
 .recharts-wrapper svg,
 .recharts-surface {
   cursor: inherit !important;
+  overflow: visible !important;
 }

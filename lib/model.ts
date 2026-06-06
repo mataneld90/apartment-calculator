@@ -98,7 +98,7 @@ export function compute(params: Params): Results {
     )
 
     const yearsLeft = Math.max(0, (T - x) / 12)
-    const prepaymentFee = rem * Math.max(0, I - Im) * yearsLeft
+    const prepaymentFee = Math.max(0, (I - Im) * rem * yearsLeft)
     const N_x_adj = N_x - prepaymentFee
 
     // Detect every sign change in (N - P)
@@ -126,11 +126,11 @@ export function compute(params: Params): Results {
 export const DEFAULT_PARAMS: Params = {
   Av0: 3_000_000,
   p: 0.50,
-  R0: 6_000,
+  R0: 6_500,
   Y: 30,
-  Ip: 0.078,
+  Ip: 0.09,
   V: 0.06,
-  Ib: 0.04,
+  Ib: 0.0375,
   primeMinus: 0.009,
   Ri: 0.035,
   buyerType: 'investor',
@@ -140,5 +140,4 @@ export const DEFAULT_PARAMS: Params = {
   cgt: 0.25,
   G0: 0.5,
   Im: 0.045,
-  primeFrac: 0.15,
 }
