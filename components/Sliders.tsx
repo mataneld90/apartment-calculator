@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, type ReactNode } from 'react'
+import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import type { Params } from '@/lib/types'
-import { DEFAULT_PARAMS } from '@/lib/model'
+import { DEFAULT_PARAMS, purchaseTaxInvestor, purchaseTaxSingle } from '@/lib/model'
 import type { Results } from '@/lib/types'
 import type { Translation } from '@/lib/i18n'
 import type { ChartPalette } from '@/lib/colorPalette'
@@ -14,13 +14,12 @@ type NumericParamKey = keyof Omit<Params, 'buyerType' | 'masShvach'>
 
 type SliderDef = {
   key: NumericParamKey
-  getLabel: (t: Translation) => string
+  getLabel: (t: Translation, v?: number) => string
   getTooltip: (t: Translation) => string
   min: number
   max: number
   step: number
   display: (v: number, t: Translation, isRTL?: boolean) => ReactNode
-  accentColor?: string
 }
 
 const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: SliderDef[] }[] = [
@@ -68,22 +67,15 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: () => '',
         min: 5, max: 30, step: 1,
         display: (v, t, isRTL) => isRTL
-          ? <span style={{display:'inline-flex',flexDirection:'row',gap:'0.25em'}}><span>שנה</span><span>{v}</span></span>
+          ? <span style={{display:'inline-flex',flexDirection:'row',gap:'0.25em'}}><span>{t.yearWord}</span><span>{v}</span></span>
           : t.yearDisplay(v),
       },
       {
-        key: 'Ib',
-        getLabel: (t) => t.ibLabel,
-        getTooltip: (t) => t.tooltips.Ib,
-        min: 0, max: 0.1, step: 0.0025,
+        key: 'mortgageRate',
+        getLabel: (t) => t.mortgageRateLabel,
+        getTooltip: (t) => t.mortgageRateTooltip,
+        min: 0.02, max: 0.10, step: 0.0005,
         display: (v) => pct(v, 2),
-      },
-      {
-        key: 'primeMinus',
-        getLabel: (t) => t.primeMinusLabel,
-        getTooltip: (t) => t.tooltips.primeMinus,
-        min: 0, max: 0.03, step: 0.001,
-        display: (v, t) => t.primeMinusDisplay(v),
       },
     ],
   },
@@ -104,14 +96,6 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.tooltips.purchaseCostsRate,
         min: 0, max: 0.15, step: 0.005,
         display: (v) => pct(v),
-      },
-      {
-        key: 'G0',
-        getLabel: (t) => t.g0Label,
-        getTooltip: (t) => t.tooltips.G0,
-        min: 0, max: 4, step: 0.1,
-        display: (v, t) => t.mulDisplay(v),
-        accentColor: '#06b6d4',
       },
     ],
   },
@@ -168,18 +152,12 @@ function purchaseTaxRateLine(price: number, buyerType: string, t: Translation): 
   let rateStr: string
 
   if (buyerType === 'investor') {
-    tax = price <= B_INV
-      ? price * 0.08
-      : B_INV * 0.08 + (price - B_INV) * 0.10
+    tax = purchaseTaxInvestor(price)
     rateStr = price <= B_INV
       ? '8%'
       : `${t.taxRateUpTo('8%', shekel(B_INV))} ${t.taxRateThen('10%')}`
   } else {
-    tax = 0
-    if (price > B1) tax += Math.min(price - B1, B2 - B1) * 0.035
-    if (price > B2) tax += Math.min(price - B2, B3 - B2) * 0.05
-    if (price > B3) tax += Math.min(price - B3, B4 - B3) * 0.08
-    if (price > B4) tax += (price - B4) * 0.10
+    tax = purchaseTaxSingle(price)
 
     const segs: string[] = []
     if (price <= B1) {
@@ -256,15 +234,18 @@ interface Props {
   t: Translation
   isRTL: boolean
   only?: string[]
-  masShvachAutoUpdated: boolean
-  setMasShvachAutoUpdated: (v: boolean) => void
   palette: ChartPalette
+  continuous?: boolean
+  boiRate?: number | null
 }
 
-export default function Sliders({ params, update, results, t, isRTL, only, masShvachAutoUpdated, setMasShvachAutoUpdated, palette }: Props) {
-  const visibleGroups = only
-    ? only.map(id => GROUPS.find(g => g.id === id)).filter((g): g is typeof GROUPS[0] => g !== undefined)
-    : GROUPS
+export default function Sliders({ params, update, results, t, isRTL, only, palette, continuous, boiRate }: Props) {
+  const visibleGroups = useMemo(
+    () => only
+      ? only.map(id => GROUPS.find(g => g.id === id)).filter((g): g is typeof GROUPS[0] => g !== undefined)
+      : GROUPS,
+    [only]
+  )
 
   // ── Down-payment dual-input mode ─────────────────────────────────────────
   const [dpMode, setDpMode] = useState<'amount' | 'fraction'>('amount')
@@ -293,30 +274,31 @@ export default function Sliders({ params, update, results, t, isRTL, only, masSh
 
     const maxP  = params.buyerType === 'investor' ? 0.50 : 0.75
     const minDP = params.Av0 * (1 - maxP)
-    const maxDP = Math.floor(params.Av0 * 0.9 / 10_000) * 10_000  // keep at least 10% mortgage
     const clampedAmt = Math.max(dpAmountRef.current, minDP)
-    const roundedAmt = Math.round(Math.min(clampedAmt, maxDP) / 10_000) * 10_000
+    const roundedAmt = Math.round(Math.min(clampedAmt, params.Av0) / 10_000) * 10_000
 
     if (roundedAmt !== dpAmountRef.current) {
       setDownPaymentAmount(roundedAmt)
       setDpAdjustedNote(true)
       setTimeout(() => setDpAdjustedNote(false), 3_000)
     }
-    const newP = Math.max(0.1, Math.min(1 - roundedAmt / params.Av0, maxP))
+    const newP = Math.min(1 - roundedAmt / params.Av0, maxP)
     update('p', newP)
   }, [params.Av0, params.buyerType]) // intentional: omit dpMode/downPaymentAmount — read via refs
 
-  const lockedRate = params.Ib + 0.015 - params.primeMinus
-  const thresholdPct = `${(lockedRate * 100).toFixed(2)}%`
-  const M0 = params.p * params.Av0
-  const prepayFee = Math.round(Math.max(0, lockedRate - params.Im) * M0 * params.Y)
+  const thresholdPct = pct(results.lockedRate, 2)
   return (
-    <div className="flex flex-col gap-3">
+    <div className={continuous ? 'flex flex-col gap-2' : 'flex flex-col gap-3'}>
       {visibleGroups.map((group) => (
         <div
           key={group.id}
-          className="border border-[var(--c-border)] rounded-lg p-3"
-          style={{ backgroundColor: group.id === 'passive' ? palette.pasTint : palette.aptTint }}
+          className={continuous
+            ? 'rounded-lg p-3'
+            : 'border border-[var(--c-border)] rounded-lg p-3'}
+          style={{
+            backgroundColor: group.id === 'passive' ? palette.pasTint : palette.aptTint,
+            ...(continuous ? { boxShadow: '0 0 0 1px var(--sidebar-group-border)' } : {}),
+          }}
         >
           <div className="text-xs font-semibold text-[var(--c-muted)] uppercase tracking-wide mb-2">
             {group.getTitle(t)}
@@ -358,8 +340,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, masSh
                   const newType = v as Params['buyerType']
                   update('buyerType', newType)
                   if (newType === 'investor' && params.p > 0.50) update('p', 0.50)
-                  update('masShvach', newType === 'investor' ? '25%' : 'exempt')
-                  setMasShvachAutoUpdated(true)
+                  update('masShvach', '25%')
                 }}
               />
             </div>
@@ -377,16 +358,11 @@ export default function Sliders({ params, update, results, t, isRTL, only, masSh
                 ]}
                 onChange={(v) => {
                   update('masShvach', v as Params['masShvach'])
-                  setMasShvachAutoUpdated(false)
                 }}
               />
               {params.buyerType === 'investor' && params.masShvach === 'exempt' ? (
                 <div className="text-xs text-amber-500" dir={isRTL ? 'rtl' : 'ltr'}>
                   {t.masShvachInvestorExemptWarning}
-                </div>
-              ) : masShvachAutoUpdated ? (
-                <div className="text-xs text-slate-400" dir={isRTL ? 'rtl' : 'ltr'}>
-                  {t.masShvachAutoUpdatedNote}
                 </div>
               ) : null}
             </div>
@@ -399,66 +375,74 @@ export default function Sliders({ params, update, results, t, isRTL, only, masSh
             const dpClamped = Math.max(minDP, Math.min(downPaymentAmount, params.Av0))
             return (
               <div className="mb-2">
-                {/* Mode toggle — right-aligned above slider */}
-                <div className="flex justify-end mb-1.5" dir="ltr">
-                  <div className="flex text-xs gap-1">
-                    <button
-                      onClick={() => {
-                        if (dpMode === 'fraction')
-                          setDownPaymentAmount(Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000)
-                        setDpMode('amount')
-                      }}
-                      className={`px-2 py-0.5 rounded border transition-colors ${
-                        dpMode === 'amount'
-                          ? 'bg-slate-600 text-white border-slate-600'
-                          : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
-                      }`}
-                    >
-                      {t.dpModeAmount}
-                    </button>
-                    <button
-                      onClick={() => setDpMode('fraction')}
-                      className={`px-2 py-0.5 rounded border transition-colors ${
-                        dpMode === 'fraction'
-                          ? 'bg-slate-600 text-white border-slate-600'
-                          : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
-                      }`}
-                    >
-                      {t.dpModeFraction}
-                    </button>
-                  </div>
+                {/* Mode toggle — full width above slider */}
+                <div className="flex text-xs gap-1 mb-1.5" dir="ltr">
+                  <button
+                    onClick={() => {
+                      if (dpMode === 'fraction')
+                        setDownPaymentAmount(Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000)
+                      setDpMode('amount')
+                    }}
+                    className={`px-3 py-0.5 rounded border transition-colors text-center ${
+                      dpMode === 'amount'
+                        ? 'bg-slate-600 text-white border-slate-600'
+                        : 'bg-transparent text-[var(--c-muted)] border-[var(--c-toggle-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
+                    }`}
+                  >
+                    {t.dpModeAmount}
+                  </button>
+                  <button
+                    onClick={() => setDpMode('fraction')}
+                    className={`px-3 py-0.5 rounded border transition-colors text-center ${
+                      dpMode === 'fraction'
+                        ? 'bg-slate-600 text-white border-slate-600'
+                        : 'bg-transparent text-[var(--c-muted)] border-[var(--c-toggle-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
+                    }`}
+                  >
+                    {t.dpModeFraction}
+                  </button>
                 </div>
 
                 {dpMode === 'amount' ? (
-                  <SliderRow
-                    label={t.downPaymentCard}
-                    tooltip={params.buyerType === 'investor' ? t.tooltips.pInvestor : t.tooltips.pSingle}
-                    min={minDP}
-                    max={Math.floor(params.Av0 * 0.9 / 10_000) * 10_000}
-                    step={10_000}
-                    value={dpClamped}
-                    displayValue={shekel(dpClamped)}
-                    onChange={(v) => {
-                      const rounded = Math.round(v / 10_000) * 10_000
-                      setDownPaymentAmount(rounded)
-                      update('p', Math.max(0.1, Math.min(1 - rounded / params.Av0, maxP)))
-                    }}
-                    isRTL={isRTL}
-                    accentColor={palette.apt}
-                  />
+                  <>
+                    <SliderRow
+                      label={t.downPaymentCard}
+                      tooltip={params.buyerType === 'investor' ? t.tooltips.pInvestor : t.tooltips.pSingle}
+                      min={minDP}
+                      max={params.Av0}
+                      step={10_000}
+                      value={dpClamped}
+                      displayValue={shekel(dpClamped)}
+                      onChange={(v) => {
+                        const rounded = Math.round(v / 10_000) * 10_000
+                        setDownPaymentAmount(rounded)
+                        update('p', Math.min(1 - rounded / params.Av0, maxP))
+                      }}
+                      isRTL={isRTL}
+                      accentColor={palette.apt}
+                    />
+                    <p className="text-xs text-[var(--c-muted)] italic mt-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
+                      {t.dpDerivedFraction(pct(params.p, 0))}
+                    </p>
+                  </>
                 ) : (
-                  <SliderRow
-                    label={t.pLabel}
-                    tooltip={params.buyerType === 'investor' ? t.tooltips.pInvestor : t.tooltips.pSingle}
-                    min={0}
-                    max={maxP}
-                    step={0.01}
-                    value={params.p}
-                    displayValue={pct(params.p, 0)}
-                    onChange={(v) => update('p', v)}
-                    isRTL={isRTL}
-                    accentColor={palette.apt}
-                  />
+                  <>
+                    <SliderRow
+                      label={t.pLabel}
+                      tooltip={params.buyerType === 'investor' ? t.tooltips.pInvestor : t.tooltips.pSingle}
+                      min={0}
+                      max={maxP}
+                      step={0.01}
+                      value={params.p}
+                      displayValue={pct(params.p, 0)}
+                      onChange={(v) => update('p', v)}
+                      isRTL={isRTL}
+                      accentColor={palette.apt}
+                    />
+                    <p className="text-xs text-[var(--c-muted)] italic mt-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
+                      {t.dpDerivedAmount(shekel(Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000))}
+                    </p>
+                  </>
                 )}
 
                 {dpAdjustedNote && (
@@ -473,55 +457,39 @@ export default function Sliders({ params, update, results, t, isRTL, only, masSh
           <div className="flex flex-col divide-y divide-[var(--c-border)]">
             {group.sliders
               .filter(s =>
-                !(group.id === 'costs'    && (s.key === 'Av0' || s.key === 'G0')) &&
+                !(group.id === 'costs'    && s.key === 'Av0') &&
                 !(group.id === 'mortgage' && s.key === 'p')
               )
               .map((def) => (
-              <SliderRow
-                key={def.key}
-                label={def.getLabel(t)}
-                tooltip={def.getTooltip(t)}
-                min={def.min}
-                max={def.max}
-                step={def.step}
-                value={params[def.key] as number}
-                displayValue={def.display(params[def.key] as number, t, isRTL)}
-                onChange={(v) => update(def.key, v as never)}
-                isRTL={isRTL}
-                accentColor={group.id === 'passive' ? palette.pas : palette.apt}
-              />
+              <div key={def.key}>
+                <SliderRow
+                  label={def.getLabel(t, params[def.key] as number)}
+                  tooltip={def.getTooltip(t)}
+                  min={def.min}
+                  max={def.max}
+                  step={def.step}
+                  value={params[def.key] as number}
+                  displayValue={def.display(params[def.key] as number, t, isRTL)}
+                  onChange={(v) => update(def.key, v as never)}
+                  isRTL={isRTL}
+                  accentColor={group.id === 'passive' ? palette.pas : palette.apt}
+                />
+                {def.key === 'mortgageRate' && boiRate != null && (
+                  <p className="text-xs text-[var(--c-muted)] mt-0.5 pb-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
+                    {t.primeHelperLine(pct(boiRate, 2))}
+                  </p>
+                )}
+                {def.key === 'Im' && (
+                  <p className="text-xs text-[var(--c-muted)] mt-0.5 pb-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
+                    {t.prepaymentFeeThresholdNote(thresholdPct)}
+                  </p>
+                )}
+              </div>
             ))}
           </div>
 
-          {/* Effective mortgage rate — inside Mortgage */}
-          {group.id === 'mortgage' && (
-            <div className="mt-2 text-xs text-slate-400 flex items-center gap-1" dir={isRTL ? 'rtl' : 'ltr'}>
-              <span>{t.effectiveMortgageRateLabel}</span>
-              <span dir="ltr">
-                {t.effectiveMortgageRate(
-                  `${(lockedRate * 100).toFixed(2)}%`,
-                  `${(params.Ib * 100).toFixed(2)}%`,
-                  `${(params.primeMinus * 100).toFixed(1)}%`
-                )}
-              </span>
-            </div>
-          )}
-
-          {/* Prepayment fee display — inside At Sale */}
-          {group.id === 'selling' && (
-            <div className="mt-3 pt-3 border-t border-[var(--c-border)] text-xs flex justify-between" dir={isRTL ? 'rtl' : 'ltr'}>
-              <span className="text-[var(--c-muted)]">{t.prepaymentFeeLabel}</span>
-              <span className="tabular-nums text-[var(--c-text)]">
-                {prepayFee > 0
-                  ? <>{shekel(prepayFee)} <span className="text-[var(--c-muted)]">{t.prepaymentFeeHint(thresholdPct)}</span></>
-                  : <>₪0 ✓ <span className="text-[var(--c-muted)]">{t.prepaymentFeeZeroHint(thresholdPct)}</span></>
-                }
-              </span>
-            </div>
-          )}
-
-          {/* Cost breakdown — inside At Purchase */}
-          {group.id === 'costs' && (
+          {/* Cost breakdown — inside At Purchase (mobile only; desktop shows it in the summary bar) */}
+          {group.id === 'costs' && !continuous && (
             <div className="mt-3 pt-3 border-t border-[var(--c-border)] text-xs text-[var(--c-muted)] flex flex-col gap-1" dir={isRTL ? 'rtl' : 'ltr'}>
               <div className="flex justify-between text-[var(--c-text-3)] font-medium">
                 <span>{t.costsLiveEp}</span>
@@ -543,33 +511,6 @@ export default function Sliders({ params, update, results, t, isRTL, only, masSh
             </div>
           )}
 
-          {/* Goal multiple — inside At Purchase, after cost breakdown */}
-          {group.id === 'costs' && (() => {
-            const g0 = group.sliders.find(s => s.key === 'G0')
-            if (!g0) return null
-            return (
-              <div className="mt-2 pt-2 border-t border-[var(--c-border)]">
-                <SliderRow
-                  label={g0.getLabel(t)}
-                  tooltip={g0.getTooltip(t)}
-                  min={g0.min}
-                  max={g0.max}
-                  step={g0.step}
-                  value={params[g0.key] as number}
-                  displayValue={g0.display(params[g0.key] as number, t, isRTL)}
-                  onChange={(v) => update(g0.key, v as never)}
-                  isRTL={isRTL}
-                  accentColor={palette.apt}
-                />
-                <div className="mt-1 text-xs text-slate-400" dir={isRTL ? 'rtl' : 'ltr'}>
-                  <span dir="ltr">{results.goalMonth
-                    ? t.goalReachedLine((results.goalMonth.month / 12).toFixed(1), shekel(results.G))
-                    : t.goalNotReachedLine(shekel(results.G))
-                  }</span>
-                </div>
-              </div>
-            )
-          })()}
         </div>
       ))}
     </div>

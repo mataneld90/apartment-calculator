@@ -1,12 +1,12 @@
 import type { Params, ChartPoint, Results } from './types'
 
-function purchaseTaxInvestor(A: number): number {
+export function purchaseTaxInvestor(A: number): number {
   const b1 = 5_872_725
   if (A <= b1) return A * 0.08
   return b1 * 0.08 + (A - b1) * 0.10
 }
 
-function purchaseTaxSingle(A: number): number {
+export function purchaseTaxSingle(A: number): number {
   const b1 = 1_978_745
   const b2 = 2_347_040
   const b3 = 6_055_070
@@ -22,14 +22,14 @@ function purchaseTaxSingle(A: number): number {
 
 export function compute(params: Params): Results {
   const {
-    Av0, p, R0, Y, Ip, V, Ib, primeMinus, Ri,
+    Av0, p, R0, Y, Ip, V, mortgageRate, Ri,
     buyerType, purchaseCostsRate,
-    Es, masShvach, cgt, G0, Im,
+    Es, masShvach, cgt, Im,
   } = params
 
   const S0 = (1 - p) * Av0
   const M0 = p * Av0
-  const I = Ib + 0.015 - primeMinus
+  const I = mortgageRate
   const v = Math.pow(1 + V, 1 / 12) - 1
   const i = Math.pow(1 + I, 1 / 12) - 1
   const ip = Math.pow(1 + Ip, 1 / 12)  // factor, not rate
@@ -40,8 +40,8 @@ export function compute(params: Params): Results {
 
   const addedCosts = Tp + Av0 * purchaseCostsRate
   const Ep = S0 + addedCosts
-  const G = G0 * Ep
   const taxBasis = Av0 + addedCosts
+  const lockedRate = I
 
   const T = Y * 12
   const monthlyPayment = i > 0
@@ -53,18 +53,17 @@ export function compute(params: Params): Results {
   const fee0 = M0 * Math.max(0, I - Im) * Y
   const N0adj = N0 - fee0
   const points: ChartPoint[] = [
-    { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), goal: Math.round(G) },
+    { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), cashFlow: 0 },
   ]
 
   let F = 0
   let rem = M0
-  let intComp = 0  // Σ|f(t)|·ip^(x-t) — compounded injections
-  let intFlat = 0  // Σ|f(t)| — flat sum (cost basis of injections)
+  let intComp = 0  // Σmax(0,-f(t))·ip^(x-t) — compounded injections (mort>rent months only)
+  let intFlat = 0  // Σmax(0,-f(t)) — flat sum (cost basis of injections)
 
   let prevN = N0
   let prevP = 0
   const crossovers: Results['crossovers'] = []
-  let goalMonth: Results['goalMonth'] = null
 
   for (let x = 1; x <= 360; x++) {
     const rent = R0 * Math.pow(1 + Ri, Math.floor((x - 1) / 12))
@@ -80,9 +79,9 @@ export function compute(params: Params): Results {
     const flow = rent - mort
     F += flow
 
-    const afl = Math.abs(flow)
-    intComp = intComp * ip + afl
-    intFlat += afl
+    const injection = Math.max(0, -flow)
+    intComp = intComp * ip + injection
+    intFlat += injection
 
     const Av_x = Av0 * Math.pow(1 + v, x)
 
@@ -91,7 +90,7 @@ export function compute(params: Params): Results {
     const masShvachTax = (masShvach === '25%' && gain > 0) ? gain * 0.25 : 0
     const N_x = netProceeds + F - Ep - rem - masShvachTax
 
-    // ip^0=1 so P(0)=0; ip is a factor so Ep*(ip^x - 1) = compounded gain on Ep
+    // passive gain formula; at month 0 passiveGain is hardcoded to 0, not computed here
     const P_x = (1 - cgt) * (
       Ep * (Math.pow(ip, x) - 1) +
       (intComp - intFlat)
@@ -105,9 +104,6 @@ export function compute(params: Params): Results {
     if (Math.sign(prevN - prevP) !== Math.sign(N_x_adj - P_x) && N_x_adj !== P_x) {
       crossovers.push({ month: x, value: Math.round((N_x_adj + P_x) / 2) })
     }
-    if (!goalMonth && prevN < G && N_x_adj >= G) {
-      goalMonth = { month: x, value: Math.round(N_x_adj) }
-    }
     prevN = N_x_adj
     prevP = P_x
 
@@ -116,11 +112,11 @@ export function compute(params: Params): Results {
       apartmentGain: Math.round(N_x_adj),
       passiveGain: Math.round(P_x),
       gainDiff: Math.round(N_x_adj - P_x),
-      goal: Math.round(G),
+      cashFlow: Math.round(flow),
     })
   }
 
-  return { points, crossovers, goalMonth, Tp, M0, monthlyPayment, Ep, addedCosts, S0, G }
+  return { points, crossovers, Tp, M0, Ep, S0, lockedRate, prepayFee: Math.round(fee0) }
 }
 
 export const DEFAULT_PARAMS: Params = {
@@ -129,15 +125,13 @@ export const DEFAULT_PARAMS: Params = {
   R0: 6_500,
   Y: 30,
   Ip: 0.09,
-  V: 0.06,
-  Ib: 0.0375,
-  primeMinus: 0.009,
+  V: 0.07,
+  mortgageRate: 0.0435,
   Ri: 0.035,
   buyerType: 'investor',
   purchaseCostsRate: 0.05,
   Es: 0.03,
   masShvach: '25%',
   cgt: 0.25,
-  G0: 0.5,
-  Im: 0.045,
+  Im: 0.0435,
 }

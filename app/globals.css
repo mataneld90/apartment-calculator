@@ -2,6 +2,10 @@
 
 :root {
   --bg-page: #0f172a;
+  --c-toggle-border: #334155;
+  --sidebar-area-bg: transparent;
+  --sidebar-group-bg: transparent;
+  --sidebar-group-border: transparent;
   --bg-panel: rgba(30, 41, 59, 0.75);
   --bg-control: #1e293b;
   --c-border: #334155;
@@ -21,6 +25,11 @@
 
 .light {
   --bg-page: #f8fafc;
+  --chart-bg: #f8fafc;
+  --c-toggle-border: #cbd5e1;
+  --sidebar-area-bg: #f1f5f9;
+  --sidebar-group-bg: #ffffff;
+  --sidebar-group-border: #e2e8f0;
   --bg-panel: rgba(255, 255, 255, 0.85);
   --bg-control: #f1f5f9;
   --c-border: #e2e8f0;
@@ -30,7 +39,7 @@
   --c-text-3: #334155;
   --c-muted: #475569;
   --c-dim: #94a3b8;
-  --chart-grid: #e2e8f0;
+  --chart-grid: #cbd5e1;
   --chart-axis: #94a3b8;
   --chart-tick: #64748b;
   --chart-crossover: #94a3b8;
@@ -61,6 +70,24 @@ body {
   overflow-x: hidden;
 }
 
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-border) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--c-border);
+  border-radius: 2px;
+}
+
 input[type='range'] {
   accent-color: #2563eb;
   cursor: pointer;
@@ -76,4 +103,15 @@ input[type='range']::-webkit-slider-thumb {
 .recharts-surface {
   cursor: inherit !important;
   overflow: visible !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@keyframes subtlePulse {
+  0%   { box-shadow: 0 0 0 0 var(--hint-glow-start); }
+  50%  { box-shadow: 0 0 0 6px var(--hint-glow-mid); }
+  100% { box-shadow: 0 0 0 0 var(--hint-glow-end); }
+}
+.hint-pulse {
+  animation: subtlePulse 1s ease-out 2;
 }

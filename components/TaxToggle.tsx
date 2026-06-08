@@ -22,7 +22,7 @@ export default function TaxToggle({ label, tooltip, value, options, onChange }: 
             className={`flex items-center gap-1 px-3 py-1 text-xs font-medium rounded border transition-colors ${
               value === opt.value
                 ? 'bg-slate-600 text-white border-slate-600'
-                : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
+                : 'bg-transparent text-[var(--c-muted)] border-[var(--c-toggle-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
             }`}
           >
             {opt.label}

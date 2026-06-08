@@ -1,9 +1,12 @@
 'use client'
 
-import { useState, useEffect, useLayoutEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react'
 import {
   ResponsiveContainer,
   LineChart,
+  BarChart,
+  Bar,
+  Cell,
   Line,
   XAxis,
   YAxis,
@@ -17,7 +20,6 @@ import type { ChartPoint } from '@/lib/types'
 import type { Translation } from '@/lib/i18n'
 import type { ChartPalette } from '@/lib/colorPalette'
 import { shortShekel, shekel } from '@/lib/formatters'
-import InfoTooltip from './InfoTooltip'
 
 interface Props {
   points: ChartPoint[]
@@ -25,18 +27,19 @@ interface Props {
   t: Translation
   isRTL: boolean
   fill?: boolean
+  stretch?: boolean
   palette: ChartPalette
+  diffHintReady?: boolean
 }
 
-type View = 'gains' | 'diff'
+type View = 'gains' | 'diff' | 'cashflow'
 
 const TOTAL = 360
-// GOAL is derived from palette, not hardcoded — see const GOAL = palette.goal below
 
 function colorBands(crossovers: { month: number }[], initialApt: boolean) {
   const bands: { x1: number; x2: number; apt: boolean }[] = []
   let apt = initialApt
-  let prev = 1  // x=0/near-0 bleeds into y-axis; month 1 is ~1px at full zoom
+  let prev = 1
   for (const c of crossovers) {
     bands.push({ x1: prev, x2: c.month, apt })
     apt = !apt
@@ -66,16 +69,20 @@ function niceStep(range: number): number {
   return 10 * mag
 }
 
-export default function Chart({ points, crossovers, t, isRTL, fill, palette }: Props) {
+export default function Chart({ points, crossovers, t, isRTL, fill, stretch, palette, diffHintReady }: Props) {
   const APT  = palette.apt
   const PAS  = palette.pas
   const DIFF = palette.diffCurve
-  const GOAL = palette.goal
   const defaultEnd = TOTAL
   const [domain, setDomain] = useState<[number, number]>([0, TOTAL])
   const [view, setView] = useState<View>('gains')
   const [chartWidth, setChartWidth] = useState(480)
   const [chartHeight, setChartHeight] = useState(360)
+  const [measuredPlotHeight, setMeasuredPlotHeight] = useState<number | null>(null)
+  const [showHint, setShowHint] = useState(false)
+  const [hintVisible, setHintVisible] = useState(false)
+  const [showCashFlowHint, setShowCashFlowHint] = useState(false)
+  const [cashFlowHintVisible, setCashFlowHintVisible] = useState(false)
   const divRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ startX: number; origS: number; span: number } | null>(null)
   const domainRef = useRef<[number, number]>(domain)
@@ -86,11 +93,21 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
     | null
   >(null)
   const [tapMonth, setTapMonth] = useState<number | null>(null)
+  const [activeBarMonth, setActiveBarMonth] = useState<number | null>(null)
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isZoomed = domain[0] !== 0 || domain[1] !== defaultEnd
-  const goalValue = points[0]?.goal ?? 0
   const initialApt = (points[0]?.gainDiff ?? -1) >= 0
-  const bands = colorBands(crossovers, initialApt)
+  const bands = useMemo(() => colorBands(crossovers, initialApt), [crossovers, initialApt])
+
+  // First month where cashFlow transitions from negative to positive (skip month 0, which is always 0)
+  const cashFlowCrossover = useMemo(() => {
+    const rest = points.filter(p => p.month > 0)
+    if (rest.length === 0 || rest[0].cashFlow >= 0) return null
+    for (const pt of rest) {
+      if (pt.cashFlow >= 0) return pt.month
+    }
+    return null
+  }, [points])
 
   const setCursor = (c: string) => {
     if (divRef.current) divRef.current.style.cursor = c
@@ -148,7 +165,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
       if (!ts) return
       e.preventDefault()
       if (ts.type === 'drag' && e.touches.length >= 1) {
-        // Detect pan vs tap: suppress tooltip once finger moves more than 10px
         if (!ts.panning) {
           const dx = e.touches[0].clientX - ts.startX
           const dy = e.touches[0].clientY - ts.startY
@@ -158,6 +174,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
           }
         }
         if (ts.panning) {
+          const [curS, curE] = domainRef.current
+          if (curS === 0 && curE === defaultEnd) return
           const w = el.getBoundingClientRect().width
           const pxPerMonth = Math.max(1, (w - 68) / ts.span)
           const delta = Math.round((ts.startX - e.touches[0].clientX) / pxPerMonth)
@@ -224,7 +242,47 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
     return () => ro.disconnect()
   }, [])
 
+  // Measure actual recharts plot area height after render
+  useEffect(() => {
+    const el = divRef.current
+    if (!el) return
+    const frame = requestAnimationFrame(() => {
+      const grid = el.querySelector('.recharts-cartesian-grid')
+      if (!grid) return
+      const h = Math.round(grid.getBoundingClientRect().height)
+      if (h > 0) setMeasuredPlotHeight(prev => prev === h ? prev : h)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [chartWidth, chartHeight, view])
+
+  // Sequential first-visit hints: diff hint at 6s, cashflow hint at ~14.5s
+  useEffect(() => {
+    if (!diffHintReady) return
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    timers.push(setTimeout(() => setShowHint(true), 6000))
+    timers.push(setTimeout(() => setHintVisible(true), 6050))
+    timers.push(setTimeout(() => setHintVisible(false), 12050))
+    timers.push(setTimeout(() => {
+      setShowHint(false)
+      localStorage.setItem('hasSeenDifferenceHint', 'true')
+    }, 12550))
+
+    if (!localStorage.getItem('hasSeenCashFlowHint')) {
+      timers.push(setTimeout(() => setShowCashFlowHint(true), 14500))
+      timers.push(setTimeout(() => setCashFlowHintVisible(true), 14550))
+      timers.push(setTimeout(() => setCashFlowHintVisible(false), 20550))
+      timers.push(setTimeout(() => {
+        setShowCashFlowHint(false)
+        localStorage.setItem('hasSeenCashFlowHint', 'true')
+      }, 21050))
+    }
+
+    return () => timers.forEach(clearTimeout)
+  }, [diffHintReady])
+
   const onMouseDown = (e: React.MouseEvent) => {
+    if (domain[0] === 0 && domain[1] === defaultEnd) return
     setCursor('grabbing')
     const [s, en] = domain
     drag.current = { startX: e.clientX, origS: s, span: en - s }
@@ -232,6 +290,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
 
   const onMouseMove = (e: React.MouseEvent) => {
     if (!drag.current) return
+    if (domain[0] === 0 && domain[1] === defaultEnd) { drag.current = null; return }
     const { startX, origS, span } = drag.current
     const pxPerMonth = 480 / span
     const delta = Math.round((startX - e.clientX) / pxPerMonth)
@@ -245,42 +304,42 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
     setCursor('grab')
   }
 
-  // Peak of gainDiff (apartment's best lead over passive)
-  const allDiff = points.map(p => p.gainDiff)
-  const peakVal = allDiff.length ? Math.max(...allDiff) : 0
-  // Only show peak dot/label when apartment actually leads (never show passive trough)
+  // Peak of gainDiff
+  const { peakVal, peakMonth } = useMemo(() => {
+    const allDiff = points.map(p => p.gainDiff)
+    const val = allDiff.length ? Math.max(...allDiff) : 0
+    const extremePt = points.find(p => p.gainDiff === val)
+    return { peakVal: val, peakMonth: extremePt?.month ?? 0 }
+  }, [points])
   const showPeak = peakVal > 1
-  const extremePt = points.find(p => p.gainDiff === peakVal)
-  const peakMonth = extremePt?.month ?? 0
   const peakLabel = t.peakAdvantage(shortShekel(peakVal), (peakMonth / 12).toFixed(1))
 
-  // Gains view needs top margin for SVG labels; diff view labels are HTML overlays
   const MARGIN_TOP = view === 'gains' ? 40 : 20
-  const XAXIS_HEIGHT = 30  // Recharts XAxis default height
-  const LABEL_TOP = MARGIN_TOP + 20  // HTML overlay labels: at least 20px below first gridline
+  const XAXIS_HEIGHT = 30
+  const LABEL_TOP = MARGIN_TOP + 20
 
   const [start, end] = domain
   const visible = points.filter(p => p.month >= start && p.month <= end)
   const ticks = makeTicks(start, end)
   const visibleCrossovers = crossovers.filter(c => c.month >= start && c.month <= end)
   const peakVisible = showPeak && peakMonth >= start && peakMonth <= end
+  const visibleCashFlowCrossover = cashFlowCrossover !== null && cashFlowCrossover >= start && cashFlowCrossover <= end
+    ? cashFlowCrossover : null
 
-  // Pixel mapping for HTML overlay labels
-  const PLOT_LEFT_PX = 52  // YAxis width (52) + chart left margin (0)
+  const PLOT_LEFT_PX = 52
   const PLOT_RIGHT_PX = 16
   const plotAreaWidth = Math.max(1, chartWidth - PLOT_LEFT_PX - PLOT_RIGHT_PX)
   const diffSpan = (end - start) || 1
   const toPx = (month: number) => (month - start) / diffSpan * plotAreaWidth
   const toAbsX = (month: number) => PLOT_LEFT_PX + toPx(month)
 
-  // Clamped peak abs-x: matches what the HTML overlay actually renders
-  const PEAK_HALF_W = 110   // half of estimated peak label width (~220px)
-  const XOVER_W     = 70    // estimated crossover label width ("שנה XX.X")
-  const LABEL_GAP   = 12    // minimum horizontal gap between any two labels
+  const PEAK_HALF_W = 110
+  const XOVER_W     = 70
+  const LABEL_GAP   = 12
   const rawPeakAbsX   = toAbsX(peakMonth)
   const clampedPeakAbsX = peakVisible
     ? Math.max(PLOT_LEFT_PX + PEAK_HALF_W, Math.min(rawPeakAbsX, chartWidth - PEAK_HALF_W))
-    : -9999  // off-screen sentinel
+    : -9999
 
   const visibleBands = bands
     .map(b => ({ ...b, x1: Math.max(b.x1, start || 1), x2: Math.min(b.x2, end) }))
@@ -288,39 +347,38 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
 
   const yVals = view === 'diff'
     ? visible.map(p => p.gainDiff)
+    : view === 'cashflow'
+    ? visible.map(p => p.cashFlow)
     : visible.flatMap(p => [p.apartmentGain, p.passiveGain])
-  const yRawMin = yVals.length ? Math.min(...yVals) : 0
-  const yRawMax = yVals.length ? Math.max(...yVals) : 2_000_000 * 4
+
+  const yRawMin = view === 'cashflow'
+    ? Math.min(0, yVals.length ? Math.min(...yVals) : 0)
+    : (yVals.length ? Math.min(...yVals) : 0)
+  const yRawMax = view === 'cashflow'
+    ? Math.max(0, yVals.length ? Math.max(...yVals) : 0)
+    : (yVals.length ? Math.max(...yVals) : 2_000_000 * 4)
+
   const YTICK = niceStep(yRawMax - yRawMin)
   const yTickMin = Math.floor(yRawMin / YTICK) * YTICK
   const yTickMax = Math.ceil(yRawMax / YTICK) * YTICK
-  const baseDomainMax = yTickMax + YTICK * 0.25  // headroom so max Y-axis label stays inside painted area
+  const baseDomainMax = Math.max(yTickMax + YTICK * 0.25, yRawMax * 1.1)
   const plotHeightPx = Math.max(1, chartHeight - MARGIN_TOP - XAXIS_HEIGHT)
-  // Expand domain if peak label (23px above peak dot) would clip above the top gridline
   let yDomainMax = baseDomainMax
   if (view === 'diff' && peakVisible) {
     const labelHeightInDataUnits = (23 / plotHeightPx) * (baseDomainMax - yTickMin)
     const requiredYMax = peakVal + labelHeightInDataUnits * 1.5
     if (requiredYMax > baseDomainMax) yDomainMax = requiredYMax
   }
-  // Peak label y position: 23px above the peak dot in pixel space
   const peakYPx = MARGIN_TOP + (1 - (peakVal - yTickMin) / Math.max(1, yDomainMax - yTickMin)) * plotHeightPx
   const peakLabelTop = Math.max(2, peakYPx - 23)
 
-  // Crossover label offsets — LABEL_TOP baseline, push down only when needed
-  const LABEL_H = 13   // single-line label height in px
-  const VERT_GAP = 5   // minimum vertical gap between labels
+  const LABEL_H = 16
+  const VERT_GAP = 5
   const diffCrossoverOffsets = visibleCrossovers.reduce<number[]>((acc, c, i) => {
     const cLeft  = Math.min(toAbsX(c.month) + 4, chartWidth - XOVER_W)
     const cRight = cLeft + XOVER_W
     let off = 0
-
-    // Push down if crossover label is within 80px of the peak dot horizontally
-    if (peakVisible && Math.abs(toAbsX(c.month) - rawPeakAbsX) < 80) {
-      off = Math.max(off, 32)
-    }
-
-    // Push down to clear any earlier crossover label that vertically overlaps at current offset
+    if (peakVisible && Math.abs(toAbsX(c.month) - rawPeakAbsX) < 80) off = Math.max(off, 32)
     for (let j = 0; j < i; j++) {
       const prevOff = acc[j]
       const prevTop = LABEL_TOP + prevOff
@@ -334,7 +392,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
           off = Math.max(off, prevOff + LABEL_H + VERT_GAP)
       }
     }
-
     acc.push(Math.min(off, 96))
     return acc
   }, [])
@@ -342,24 +399,84 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
   const yTicks: number[] = []
   for (let v = yTickMin; v <= yTickMax; v += YTICK) yTicks.push(v)
 
+  const sharedAxisProps = {
+    xAxis: (
+      <XAxis
+        dataKey="month"
+        ticks={ticks}
+        tickFormatter={(m) => `${(m / 12).toFixed(0)}y`}
+        stroke="var(--chart-axis)"
+        tick={{ fill: 'var(--chart-tick)', fontSize: 13 }}
+      />
+    ),
+    yAxis: (
+      <YAxis
+        domain={[yTickMin, yDomainMax]}
+        ticks={yTicks}
+        tickFormatter={shortShekel}
+        stroke="var(--chart-axis)"
+        tick={{ fill: 'var(--chart-tick)', fontSize: 13 }}
+        width={52}
+      />
+    ),
+    grid: <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />,
+  }
+
+  const cashFlowTooltipContent = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length || label === undefined) return null
+    const val = payload[0]?.value as number
+    const positive = val >= 0
+    return (
+      <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
+        <p className="text-[var(--c-muted)] mb-1">
+          {isRTL
+            ? <span dir="ltr">{t.yearLabel2} {(Number(label) / 12).toFixed(1)} · {t.monthLabel} {label}</span>
+            : `${t.monthLabel} ${label} · ${t.yearLabel2} ${(Number(label) / 12).toFixed(1)}`
+          }
+        </p>
+        <p style={{ color: positive ? APT : PAS }}>
+          {t.cashFlowLabel}{' '}<span dir="ltr">{shekel(val)}</span>
+        </p>
+      </div>
+    )
+  }
+
   return (
-    <div dir="ltr" className={`w-full flex flex-col gap-1${fill ? ' h-full' : ''}`}>
-      {/* Header row: view toggle left, reset zoom right */}
-      <div className="flex items-center justify-between h-6">
-        <div className="flex gap-1">
-          {(['gains', 'diff'] as View[]).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`text-xs px-2 py-0.5 rounded border transition-colors ${
-                view === v
-                  ? 'bg-slate-600 text-white border-slate-600'
-                  : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
-              }`}
-            >
-              {v === 'gains' ? t.viewGains : t.viewDiff}
-            </button>
-          ))}
+    <div dir="ltr" className={`relative w-full flex flex-col gap-1${fill || stretch ? ' h-full' : ''}`}>
+      {/* Header row */}
+      <div className={`flex items-center justify-between h-6${isRTL ? ' flex-row-reverse' : ''}`}>
+        <div className={`flex items-center gap-2${isRTL ? ' flex-row-reverse' : ''}`}>
+          <span className="text-sm text-slate-400 font-normal whitespace-nowrap" dir={isRTL ? 'rtl' : 'ltr'}>{t.chartViewLabel}</span>
+          <div className={`flex gap-1${isRTL ? ' flex-row-reverse' : ''}`}>
+            {(['gains', 'diff', 'cashflow'] as View[]).map((v) => {
+              const isActive = view === v
+              const isDiff = v === 'diff'
+              const isCashFlow = v === 'cashflow'
+              const label = v === 'gains' ? t.viewGains : v === 'diff' ? t.viewDiff : t.viewCashFlow
+              const hinting = (isDiff && showHint && !isActive) || (isCashFlow && showCashFlowHint && !isActive)
+              const hintBright = (isDiff && hintVisible) || (isCashFlow && cashFlowHintVisible)
+              const hintColor = isDiff ? palette.pas : 'rgb(245,158,11)'
+              return (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                    isActive
+                      ? 'bg-slate-600 text-white border-slate-600'
+                      : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
+                  }`}
+                  style={hinting ? {
+                    backgroundColor: hintBright ? hintColor : undefined,
+                    color: hintBright ? 'white' : undefined,
+                    borderColor: hintBright ? hintColor : undefined,
+                    transition: `background-color ${hintBright ? '300ms' : '500ms'}, color ${hintBright ? '300ms' : '500ms'}, border-color ${hintBright ? '300ms' : '500ms'}`,
+                  } : undefined}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
         </div>
         {isZoomed && (
           <button
@@ -371,169 +488,251 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
         )}
       </div>
 
+      {/* Diff hint */}
+      {showHint && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 30,
+            ...(isRTL ? { right: 0 } : { left: 0 }),
+            zIndex: 10,
+            width: 'max-content',
+            maxWidth: 'min(500px, 100%)',
+            background: 'var(--bg-control)',
+            border: '1px solid var(--c-border)',
+            borderRadius: 8,
+            padding: '6px 12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.14)',
+            opacity: hintVisible ? 1 : 0,
+            transition: hintVisible ? 'opacity 300ms' : 'opacity 500ms',
+            pointerEvents: 'none',
+          }}
+          dir={isRTL ? 'rtl' : 'ltr'}
+        >
+          <span className="text-sm text-slate-400 italic">{t.diffHint}</span>
+        </div>
+      )}
+
+      {/* Cash flow hint */}
+      {showCashFlowHint && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 30,
+            ...(isRTL ? { right: 0 } : { left: 0 }),
+            zIndex: 10,
+            width: 'max-content',
+            maxWidth: 'min(500px, 100%)',
+            background: 'var(--bg-control)',
+            border: '1px solid var(--c-border)',
+            borderRadius: 8,
+            padding: '6px 12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.14)',
+            opacity: cashFlowHintVisible ? 1 : 0,
+            transition: cashFlowHintVisible ? 'opacity 300ms' : 'opacity 500ms',
+            pointerEvents: 'none',
+          }}
+          dir={isRTL ? 'rtl' : 'ltr'}
+        >
+          <span className="text-sm text-slate-400 italic">{t.cashFlowHint}</span>
+        </div>
+      )}
+
       <div
         ref={divRef}
-        style={{ width: '100%', touchAction: 'none', ...(fill ? {} : { height: 360 }) }}
-        className={`relative${fill ? ' flex-1 min-h-0' : ''}`}
+        style={{ width: '100%', touchAction: 'none', background: 'var(--chart-bg, transparent)', ...(fill || stretch ? {} : { height: 360 }) }}
+        className={`relative${fill || stretch ? ' flex-1 min-h-0' : ''}`}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
       >
-        {/* Background color bands as HTML — rendered before SVG so grid lines always show on top */}
-        <div className="absolute inset-0 pointer-events-none">
-          {visibleBands.map(({ x1, x2, apt }) => (
-            <div
-              key={x1}
-              style={{
-                position: 'absolute',
-                left: toAbsX(x1),
-                top: MARGIN_TOP,
-                width: Math.max(0, toAbsX(x2) - toAbsX(x1)),
-                height: plotHeightPx,
-                background: apt ? palette.npFill : palette.pnFill,
-                opacity: apt ? palette.npFillOpacity : palette.pnFillOpacity,
-              }}
-            />
-          ))}
-        </div>
+        {/* Background color bands — only for gains/diff views */}
+        {view !== 'cashflow' && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {visibleBands.map(({ x1, x2, apt }) => (
+              <div
+                key={x1}
+                style={{
+                  position: 'absolute',
+                  left: toAbsX(x1),
+                  top: MARGIN_TOP,
+                  width: Math.max(0, toAbsX(x2) - toAbsX(x1)),
+                  height: measuredPlotHeight ?? plotHeightPx,
+                  background: apt ? palette.npFill : palette.pnFill,
+                  opacity: apt ? palette.npFillOpacity : palette.pnFillOpacity,
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-            <XAxis
-              dataKey="month"
-              ticks={ticks}
-              tickFormatter={(m) => `${(m / 12).toFixed(0)}y`}
-              stroke="var(--chart-axis)"
-              tick={{ fill: 'var(--chart-tick)', fontSize: 11 }}
-            />
-            <YAxis
-              domain={[yTickMin, yDomainMax]}
-              ticks={yTicks}
-              tickFormatter={shortShekel}
-              stroke="var(--chart-axis)"
-              tick={{ fill: 'var(--chart-tick)', fontSize: 11 }}
-              width={52}
-            />
-            {!fill && <Tooltip content={({ active, payload, label }) => {
-              if (!active || !payload?.length || label === undefined) return null
-              return (
-                <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
-                  <p className="text-[var(--c-muted)] mb-1">
-                    {isRTL
-                      ? <span dir="ltr">{t.yearLabel2} {(Number(label) / 12).toFixed(1)} · {t.monthLabel} {label}</span>
-                      : `${t.monthLabel} ${label} · ${t.yearLabel2} ${(Number(label) / 12).toFixed(1)}`
-                    }
-                  </p>
-                  {payload.map((entry) => {
-                    const val = typeof entry.value === 'number' ? entry.value : null
-                    if (view === 'diff' && val !== null) {
-                      const aptLeads = val > 0
-                      const passiveLeads = val < 0
-                      const color = aptLeads ? APT : passiveLeads ? PAS : 'var(--c-text)'
-                      const lbl = aptLeads ? t.tooltipAptLeads : passiveLeads ? t.tooltipPassiveLeads : t.tooltipBreakEven
+          {view === 'cashflow' ? (
+            <BarChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }} barCategoryGap="0%"
+              onMouseMove={(state) => { if (state.activeLabel !== undefined) setActiveBarMonth(Number(state.activeLabel)) }}
+              onMouseLeave={() => setActiveBarMonth(null)}
+            >
+              {sharedAxisProps.grid}
+              {sharedAxisProps.xAxis}
+              {sharedAxisProps.yAxis}
+              {!fill && <Tooltip content={cashFlowTooltipContent} cursor={false} />}
+              {!fill && (
+                <Legend
+                  content={() => (
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--chart-tick)' }}>
+                      {[
+                        { label: t.cashFlowLegendPositive, color: APT },
+                        { label: t.cashFlowLegendNegative, color: PAS },
+                      ].map(({ label, color }) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                          <svg width="14" height="10" style={{ display: 'block', flexShrink: 0 }}>
+                            <rect x="0" y="0" width="14" height="10" rx="1" fill={color} />
+                          </svg>
+                          <span>{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                />
+              )}
+              <ReferenceLine y={0} stroke="var(--chart-axis)" strokeDasharray="4 2" />
+              {visibleCashFlowCrossover !== null && (
+                <ReferenceLine
+                  x={visibleCashFlowCrossover}
+                  stroke="var(--chart-crossover)"
+                  strokeDasharray="4 2"
+                />
+              )}
+              <Bar dataKey="cashFlow" isAnimationActive={false} maxBarSize={20}>
+                {visible.map((pt) => (
+                  <Cell key={pt.month} fill={pt.cashFlow >= 0 ? APT : PAS} />
+                ))}
+              </Bar>
+              {!fill && activeBarMonth !== null && (
+                <ReferenceLine x={activeBarMonth} stroke="var(--chart-tick)" strokeWidth={1} strokeOpacity={0.4} />
+              )}
+            </BarChart>
+          ) : (
+            <LineChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
+              {sharedAxisProps.grid}
+              {sharedAxisProps.xAxis}
+              {sharedAxisProps.yAxis}
+              {!fill && <Tooltip content={({ active, payload, label }) => {
+                if (!active || !payload?.length || label === undefined) return null
+                return (
+                  <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
+                    <p className="text-[var(--c-muted)] mb-1">
+                      {isRTL
+                        ? <span dir="ltr">{t.yearLabel2} {(Number(label) / 12).toFixed(1)} · {t.monthLabel} {label}</span>
+                        : `${t.monthLabel} ${label} · ${t.yearLabel2} ${(Number(label) / 12).toFixed(1)}`
+                      }
+                    </p>
+                    {payload.map((entry) => {
+                      const val = typeof entry.value === 'number' ? entry.value : null
+                      if (view === 'diff' && val !== null) {
+                        const aptLeads = val > 0
+                        const passiveLeads = val < 0
+                        const color = aptLeads ? APT : passiveLeads ? PAS : 'var(--c-text)'
+                        const lbl = aptLeads ? t.tooltipAptLeads : passiveLeads ? t.tooltipPassiveLeads : t.tooltipBreakEven
+                        return (
+                          <p key={entry.dataKey as string} style={{ color }}>
+                            {lbl}{' '}<span dir="ltr">{shekel(Math.abs(val))}</span>
+                          </p>
+                        )
+                      }
                       return (
-                        <p key={entry.dataKey as string} style={{ color }}>
-                          {lbl}{' '}<span dir="ltr">{shekel(Math.abs(val))}</span>
+                        <p key={entry.name} style={{ color: entry.color }}>
+                          {entry.name}{': '}
+                          <span dir="ltr">{val !== null ? shekel(val) : entry.value}</span>
                         </p>
                       )
-                    }
+                    })}
+                  </div>
+                )
+              }} />}
+              {!fill && (
+                <Legend
+                  content={({ payload }) => (
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--chart-tick)' }}>
+                      {payload?.map((entry) => (
+                        <div key={entry.value} style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                          <svg width="20" height="3" style={{ display: 'block', flexShrink: 0 }}>
+                            <line x1="0" y1="1.5" x2="20" y2="1.5" stroke={entry.color} strokeWidth="2.5" />
+                          </svg>
+                          <span>{entry.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                />
+              )}
+
+              {view === 'gains' ? (
+                <>
+                  <ReferenceLine y={0} stroke="var(--chart-crossover)" strokeDasharray="4 2" />
+                  {visibleCrossovers.map((c, i) => {
+                    const [s, e] = domain
+                    const span = e - s || 1
+                    const tooClose = i > 0 && Math.abs((c.month - visibleCrossovers[i - 1].month) / span * chartWidth) < 80
+                    const yOff = tooClose ? 24 : 0
                     return (
-                      <p key={entry.name} style={{ color: entry.color }}>
-                        {entry.name}{': '}
-                        <span dir="ltr">
-                          {val !== null ? shekel(val) : entry.value}
-                        </span>
-                      </p>
+                      <ReferenceLine
+                        key={c.month}
+                        x={c.month}
+                        stroke="var(--chart-crossover)"
+                        strokeDasharray="4 2"
+                        label={(props: any) => {
+                          if (!props?.viewBox) return null
+                          const { x, y } = props.viewBox
+                          const nearRight = x + 56 > chartWidth - 16
+                          return (
+                            <text
+                              x={nearRight ? x - 4 : x + 4}
+                              y={y + 14 + yOff}
+                              fill="var(--chart-tick)"
+                              fontSize={13}
+                              textAnchor={nearRight ? 'end' : 'start'}
+                            >
+                              {`${t.yearLabel2} ${(c.month / 12).toFixed(1)}`}
+                            </text>
+                          )
+                        }}
+                      />
                     )
                   })}
-                </div>
-              )
-            }} />}
-            {!fill && <Legend formatter={(v) => <span style={{ color: 'var(--chart-tick)', fontSize: 12 }}>{v}</span>} />}
-
-            {view === 'gains' ? (
-              <>
-                {goalValue > 0 && (
-                  <ReferenceLine
-                    y={goalValue}
-                    stroke={GOAL}
-                    strokeWidth={1.5}
-                    strokeDasharray="4 2"
-                    label={(props: any) => {
-                      if (!props?.viewBox) return null
-                      const { x, y, width } = props.viewBox
-                      return (
-                        <text x={x + width - 4} y={y - 4} fill={GOAL} fontSize={10} textAnchor="end">
-                          {t.goalLine}
-                        </text>
-                      )
-                    }}
-                  />
-                )}
-                <ReferenceLine y={0} stroke="var(--chart-crossover)" strokeDasharray="4 2" />
-                {visibleCrossovers.map((c, i) => {
-                  const [s, e] = domain
-                  const span = e - s || 1
-                  const tooClose = i > 0 && Math.abs((c.month - visibleCrossovers[i - 1].month) / span * chartWidth) < 80
-                  const yOff = tooClose ? 24 : 0
-                  return (
+                  <Line type="monotone" dataKey="apartmentGain" name={fill ? t.apartmentShort : t.apartmentLine} stroke={APT} dot={false} activeDot={fill ? false : { r: 5, fill: APT, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="passiveGain" name={fill ? t.passiveShort : t.passiveLine} stroke={PAS} dot={false} activeDot={fill ? false : { r: 5, fill: PAS, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} />
+                </>
+              ) : (
+                <>
+                  <ReferenceLine y={0} stroke="var(--chart-axis)" strokeDasharray="4 2" />
+                  {visibleCrossovers.map((c) => (
                     <ReferenceLine
                       key={c.month}
                       x={c.month}
                       stroke="var(--chart-crossover)"
                       strokeDasharray="4 2"
-                      label={(props: any) => {
-                        if (!props?.viewBox) return null
-                        const { x, y } = props.viewBox
-                        const nearRight = x + 56 > chartWidth - 16
-                        return (
-                          <text
-                            x={nearRight ? x - 4 : x + 4}
-                            y={y + 12 + yOff}
-                            fill="var(--chart-tick)"
-                            fontSize={10}
-                            textAnchor={nearRight ? 'end' : 'start'}
-                          >
-                            {`${t.yearLabel2} ${(c.month / 12).toFixed(1)}`}
-                          </text>
-                        )
-                      }}
                     />
-                  )
-                })}
-                <Line type="monotone" dataKey="apartmentGain" name={fill ? t.apartmentShort : t.apartmentLine} stroke={APT} dot={false} activeDot={false} strokeWidth={2} isAnimationActive={false} />
-                <Line type="monotone" dataKey="passiveGain" name={fill ? t.passiveShort : t.passiveLine} stroke={PAS} dot={false} activeDot={false} strokeWidth={2} isAnimationActive={false} />
-              </>
-            ) : (
-              <>
-                <ReferenceLine y={0} stroke="var(--chart-axis)" strokeDasharray="4 2" />
-                {visibleCrossovers.map((c) => (
-                  <ReferenceLine
-                    key={c.month}
-                    x={c.month}
-                    stroke="var(--chart-crossover)"
-                    strokeDasharray="4 2"
-                  />
-                ))}
-                <Line type="monotone" dataKey="gainDiff" name={t.diffLine} stroke={DIFF} dot={false} activeDot={false} strokeWidth={2} isAnimationActive={false} />
-                {peakVisible && (
-                  <ReferenceDot
-                    x={peakMonth}
-                    y={peakVal}
-                    r={4}
-                    fill={DIFF}
-                    stroke="white"
-                    strokeWidth={1.5}
-                  />
-                )}
-              </>
-            )}
-          </LineChart>
+                  ))}
+                  <Line type="monotone" dataKey="gainDiff" name={t.diffLine} stroke={DIFF} dot={false} activeDot={fill ? false : { r: 5, fill: DIFF, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} />
+                  {peakVisible && (
+                    <ReferenceDot
+                      x={peakMonth}
+                      y={peakVal}
+                      r={4}
+                      fill={DIFF}
+                      stroke="white"
+                      strokeWidth={1.5}
+                    />
+                  )}
+                </>
+              )}
+            </LineChart>
+          )}
         </ResponsiveContainer>
 
-        {/* HTML overlay for diff-view labels — bypasses SVG clipPath entirely */}
+        {/* HTML overlay: diff-view labels */}
         {view === 'diff' && (
           <div className="absolute inset-0 pointer-events-none">
             {peakVisible && (
@@ -544,7 +743,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
                   top: peakLabelTop,
                   transform: 'translateX(-50%)',
                   color: 'var(--c-text)',
-                  fontSize: 10,
+                  fontSize: 13,
                   whiteSpace: 'nowrap',
                   direction: isRTL ? 'rtl' : 'ltr',
                 }}
@@ -553,7 +752,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
               </div>
             )}
             {visibleCrossovers.map((c, i) => {
-              // Clamp so short crossover label (~70px wide) doesn't overflow right
               const rawX = toAbsX(c.month) + 4
               const clampedX = Math.min(rawX, chartWidth - 70)
               return (
@@ -564,7 +762,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
                     left: clampedX,
                     top: LABEL_TOP + diffCrossoverOffsets[i],
                     color: 'var(--chart-tick)',
-                    fontSize: 10,
+                    fontSize: 13,
                     whiteSpace: 'nowrap',
                   }}
                 >
@@ -575,7 +773,26 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
           </div>
         )}
 
-        {/* Mobile tap tooltip — rendered last so it paints above all other overlays */}
+        {/* HTML overlay: cashflow annotation */}
+        {view === 'cashflow' && visibleCashFlowCrossover !== null && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div
+              style={{
+                position: 'absolute',
+                left: Math.min(toAbsX(visibleCashFlowCrossover) + 4, chartWidth - 150),
+                top: LABEL_TOP,
+                color: 'var(--chart-tick)',
+                fontSize: 13,
+                whiteSpace: 'nowrap',
+                direction: isRTL ? 'rtl' : 'ltr',
+              }}
+            >
+              {t.cashFlowAnnotation((visibleCashFlowCrossover / 12).toFixed(1))}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile tap tooltip */}
         {fill && tapMonth !== null && (() => {
           const pt = points.find(p => p.month === tapMonth)
           if (!pt) return null
@@ -585,13 +802,14 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
           const bubbleLeft = Math.min(Math.max(lineX, 80), chartWidth - 80)
           return (
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div style={{ position: 'absolute', left: lineX, top: MARGIN_TOP, bottom: 0, width: 1, background: 'var(--c-muted)', opacity: 0.7 }} />
+              <div style={{ position: 'absolute', left: lineX, top: MARGIN_TOP, height: plotHeightPx, width: 1, background: 'var(--c-muted)', opacity: 0.7 }} />
               {(() => {
                 const r = 3
                 const yFor = (v: number) => MARGIN_TOP + (1 - (v - yTickMin) / Math.max(1, yDomainMax - yTickMin)) * plotHeightPx
                 const dot = (color: string, val: number) => (
                   <div key={color} style={{ position: 'absolute', left: lineX - r, top: yFor(val) - r, width: r * 2, height: r * 2, borderRadius: '50%', background: color, border: '1.5px solid white', boxSizing: 'border-box' }} />
                 )
+                if (view === 'cashflow') return null
                 return view === 'diff'
                   ? dot(DIFF, pt.gainDiff)
                   : <>{dot(APT, pt.apartmentGain)}{dot(PAS, pt.passiveGain)}</>
@@ -622,7 +840,11 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
                     : `${t.monthLabel} ${tapMonth} · ${t.yearLabel2} ${(tapMonth / 12).toFixed(1)}`
                   }
                 </p>
-                {view === 'diff' ? (() => {
+                {view === 'cashflow' ? (
+                  <p style={{ color: pt.cashFlow >= 0 ? APT : PAS }}>
+                    {t.cashFlowLabel}{' '}<span dir="ltr">{shekel(pt.cashFlow)}</span>
+                  </p>
+                ) : view === 'diff' ? (() => {
                   const val = pt.gainDiff
                   const aptLeads = val > 0
                   const passiveLeads = val < 0
@@ -641,23 +863,43 @@ export default function Chart({ points, crossovers, t, isRTL, fill, palette }: P
         })()}
       </div>
 
-      <p className="text-xs text-[var(--c-muted)] text-center select-none leading-snug">
-        {(() => {
-          if (crossovers.length === 0)
-            return initialApt ? t.summaryAptLeadsAll : t.summaryPassiveLeads
-          if (crossovers.length === 1 && !initialApt)
-            return t.summaryAptLeadsOnward((crossovers[0].month / 12).toFixed(1))
-          if (crossovers.length >= 2 && !initialApt) {
-            const y1 = (crossovers[0].month / 12).toFixed(1)
-            const y2 = (crossovers[1].month / 12).toFixed(1)
-            const dur = ((crossovers[1].month - crossovers[0].month) / 12).toFixed(1)
-            return t.summaryTwoXovers(y1, y2, dur)
-          }
-          return null
-        })()}
-      </p>
+      {/* Summary sentence */}
+      {view === 'cashflow' ? (() => {
+        const firstReal = points.find(p => p.month > 0)
+        const alwaysPositive = (firstReal?.cashFlow ?? -1) >= 0
+        let text: string
+        let color: string
+        if (alwaysPositive) {
+          text = t.cashFlowSummaryAlways
+          color = APT
+        } else if (cashFlowCrossover !== null) {
+          text = t.cashFlowSummaryPositive((cashFlowCrossover / 12).toFixed(1))
+          color = APT
+        } else {
+          text = t.cashFlowSummaryNegative
+          color = PAS
+        }
+        return <p className="text-base font-bold text-center select-none leading-snug" style={{ color }}>{text}</p>
+      })() : (() => {
+        let summaryText: string | null = null
+        if (crossovers.length === 0)
+          summaryText = initialApt ? t.summaryAptLeadsAll : t.summaryPassiveLeads
+        else if (crossovers.length === 1 && !initialApt)
+          summaryText = t.summaryAptLeadsOnward((crossovers[0].month / 12).toFixed(1))
+        else if (crossovers.length >= 2 && !initialApt) {
+          const y1 = (crossovers[0].month / 12).toFixed(1)
+          const y2 = (crossovers[1].month / 12).toFixed(1)
+          const dur = ((crossovers[1].month - crossovers[0].month) / 12).toFixed(1)
+          summaryText = t.summaryTwoXovers(y1, y2, dur)
+        }
+        const summaryColor = crossovers.length === 0 && !initialApt ? PAS : APT
+        return summaryText ? (
+          <p className="text-base font-bold text-center select-none leading-snug" style={{ color: summaryColor }}>
+            {summaryText}
+          </p>
+        ) : null
+      })()}
       {!fill && <p className="text-xs text-[var(--c-dim)] text-center select-none">{t.scrollHint}</p>}
-
     </div>
   )
 }

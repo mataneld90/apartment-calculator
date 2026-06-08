@@ -5,7 +5,6 @@ export interface ChartPalette {
   apt: string
   pas: string
   diffCurve: string     // diff-view curve color; semantically = apt color
-  goal: string          // goal horizontal line color
   npFill: string        // background fill when apartment leads (N > P)
   npFillOpacity: number
   pnFill: string        // background fill when passive leads (P > N)
@@ -18,10 +17,9 @@ const DEFAULT_LIGHT: ChartPalette = {
   apt: '#16a34a',
   pas: '#6366f1',
   diffCurve: '#1e293b',
-  goal: '#f59e0b',
-  npFill: 'rgba(22,163,74,0.06)',
+  npFill: 'rgba(22,163,74,0.084)',
   npFillOpacity: 1,
-  pnFill: '#eef2ff',
+  pnFill: 'rgba(99,102,241,0.084)',
   pnFillOpacity: 1,
   aptTint: 'rgba(22,163,74,0.06)',
   pasTint: 'rgba(99,102,241,0.06)',
@@ -31,7 +29,6 @@ const DEFAULT_DARK: ChartPalette = {
   apt: '#22c55e',
   pas: '#818cf8',
   diffCurve: '#f1f5f9',
-  goal: '#f59e0b',
   npFill: 'rgb(5,46,22)',
   npFillOpacity: 0.25,
   pnFill: 'rgb(30,27,75)',
@@ -44,7 +41,6 @@ const COLORBLIND: ChartPalette = {
   apt: '#2563eb',
   pas: '#f97316',
   diffCurve: '#1e293b',  // overridden in getChartPalette based on isDark
-  goal: '#f43f5e',
   npFill: '#2563eb',
   npFillOpacity: 0.06,
   pnFill: '#f97316',
