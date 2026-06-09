@@ -223,14 +223,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         display: (v, t, rtl) => rtl ? pct(v) : pct(v) + ' ' + t.perYear,
         editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
       },
-      {
-        key: 'cgt',
-        getLabel: (t) => t.cgtLabel,
-        getTooltip: (t) => t.tooltips.cgt,
-        min: 0, max: 0.5, step: 0.05,
-        display: (v) => pct(v, 0),
-        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 0, suffix: '%', inputSize: 2 },
-      },
+
     ],
   },
 ]
@@ -437,6 +430,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
             <div className="mb-3">
               <TaxToggle
                 label={t.purchaseTaxLabel}
+                isRTL={isRTL}
                 value={params.buyerType}
                 options={[
                   { value: 'single', label: t.firstApt, tooltip: t.tooltips.buyerTypeSingle },
@@ -457,6 +451,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
             <div className="mb-3 flex flex-col gap-2">
               <TaxToggle
                 label={t.masShvachLabel}
+                isRTL={isRTL}
                 value={params.masShvach}
                 options={[
                   { value: 'exempt', label: t.exempt0, tooltip: t.exemptTooltip },
@@ -482,31 +477,24 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
             return (
               <div className="mb-2">
                 {/* Mode toggle — full width above slider */}
-                <div className="flex text-xs gap-1 mb-1.5" dir="ltr">
-                  <button
-                    onClick={() => {
-                      if (dpMode === 'fraction')
-                        setDownPaymentAmount(Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000)
-                      setDpMode('amount')
-                    }}
-                    className={`px-3 py-0.5 rounded border transition-colors text-center ${
-                      dpMode === 'amount'
-                        ? 'bg-slate-600 text-white border-slate-600'
-                        : 'bg-transparent text-[var(--c-muted)] border-[var(--c-toggle-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
-                    }`}
-                  >
-                    {t.dpModeAmount}
-                  </button>
-                  <button
-                    onClick={() => setDpMode('fraction')}
-                    className={`px-3 py-0.5 rounded border transition-colors text-center ${
-                      dpMode === 'fraction'
-                        ? 'bg-slate-600 text-white border-slate-600'
-                        : 'bg-transparent text-[var(--c-muted)] border-[var(--c-toggle-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
-                    }`}
-                  >
-                    {t.dpModeFraction}
-                  </button>
+                <div className={`flex text-xs gap-1 mb-1.5${isRTL ? ' justify-end' : ''}`} dir="ltr">
+                  {(isRTL ? ['fraction', 'amount'] as const : ['amount', 'fraction'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => {
+                        if (mode === 'amount' && dpMode === 'fraction')
+                          setDownPaymentAmount(Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000)
+                        setDpMode(mode)
+                      }}
+                      className={`px-3 py-0.5 rounded border transition-colors text-center ${
+                        dpMode === mode
+                          ? 'bg-slate-600 text-white border-slate-600'
+                          : 'bg-transparent text-[var(--c-muted)] border-[var(--c-toggle-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
+                      }`}
+                    >
+                      {mode === 'amount' ? t.dpModeAmount : t.dpModeFraction}
+                    </button>
+                  ))}
                 </div>
 
                 {dpMode === 'amount' ? (
@@ -598,6 +586,10 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
           </div>
 
           {/* Cost breakdown — inside At Purchase (mobile only; desktop shows it in the summary bar) */}
+          {group.id === 'passive' && (
+            <p className="text-xs text-[var(--c-muted)] mt-2" dir={isRTL ? 'rtl' : 'ltr'}>{t.cgtNote}</p>
+          )}
+
           {group.id === 'costs' && !continuous && (
             <div className="mt-3 pt-3 border-t border-[var(--c-border)] text-xs text-[var(--c-muted)] flex flex-col gap-1" dir={isRTL ? 'rtl' : 'ltr'}>
               <div className="flex justify-between text-[var(--c-text-3)] font-medium">

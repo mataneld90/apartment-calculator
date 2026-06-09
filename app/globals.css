@@ -113,5 +113,5 @@ input[type='range']::-webkit-slider-thumb {
   100% { box-shadow: 0 0 0 0 var(--hint-glow-end); }
 }
 .hint-pulse {
-  animation: subtlePulse 1s ease-out 2;
+  animation: subtlePulse 1s ease-out 3;
 }

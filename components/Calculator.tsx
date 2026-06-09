@@ -373,8 +373,7 @@ function MethodologyPageEN({ page }: { page: number }) {
         capital (down payment + all purchase costs) in the stock market. In months where the
         mortgage payment exceeds rent, the negative cash flow is also invested in securities. In
         months where rent exceeds the mortgage, no additional investment is made to the passive
-        portfolio. The passive gain is the net return after capital gains tax at realization (25%
-        by default, adjustable).
+        portfolio. The passive gain is the net return after capital gains tax at realization (25%).
       </p>
     </div>
   )
@@ -388,10 +387,8 @@ function MethodologyPageEN({ page }: { page: number }) {
       </p>
       <p>
         In the passive scenario, the full purchase outlay — down payment + purchase tax + transaction
-        costs — is invested in the stock market on the day of purchase. In this example:{' '}
-        <span dir="ltr">₪1,000,000</span> down payment + <span dir="ltr">₪160,000</span> purchase
-        tax + <span dir="ltr">₪40,000</span> transaction costs = <span dir="ltr">₪1,200,000</span>{' '}
-        invested on day 1.
+        costs — is invested in the stock market on day of purchase. In this example that totals{' '}
+        <span dir="ltr">₪1,200,000</span> invested on day 1.
       </p>
       <p>
         At some month: rental income <span dir="ltr">₪5,000</span>, mortgage payment <span dir="ltr">₪6,000</span> — a
@@ -449,8 +446,7 @@ function MethodologyPageHE({ page }: { page: number }) {
         <strong className="text-[var(--c-text-3)]">תרחיש פסיבי: </strong>משקיעים את אותו ההון
         (הון עצמי + כל עלויות הרכישה) בשוק ההון. בכל חודש שבו תשלום המשכנתה עולה על שכר הדירה,
         התזרים השלילי מושקע אף הוא בניירות ערך. בחודשים שבהם השכירות עולה על המשכנתה, אין השקעה
-        נוספת בתיק הפסיבי. הרווח הפסיבי הוא הרווח הנקי לאחר מס רווח הון במימוש (25% כברירת
-        מחדל, ניתן לשינוי).
+        נוספת בתיק הפסיבי. הרווח הפסיבי הוא הרווח הנקי לאחר מס רווח הון במימוש (25%).
       </p>
     </div>
   )
@@ -462,7 +458,7 @@ function MethodologyPageHE({ page }: { page: number }) {
         נניח דירה במחיר <span dir="ltr">₪2,000,000</span> עם הון עצמי של <span dir="ltr">₪1,000,000</span> ומשכנתה של <span dir="ltr">₪1,000,000</span>.
       </p>
       <p>
-        בתרחיש הפסיבי, כל ההון שהוצא ביום הרכישה — הון עצמי + מס רכישה + עלויות עסקה — מושקע בשוק ההון ביום הרכישה. בדוגמה זו: <span dir="ltr">₪1,000,000</span> הון עצמי + <span dir="ltr">₪160,000</span> מס רכישה + <span dir="ltr">₪40,000</span> עלויות עסקה = <span dir="ltr">₪1,200,000</span> מושקעים ביום הראשון.
+        בתרחיש הפסיבי, כל ההון שהוצא ביום הרכישה — הון עצמי + מס רכישה + עלויות עסקה — מושקע בשוק ההון ביום הרכישה. בדוגמה זו הסכום הכולל הוא <span dir="ltr">₪1,200,000</span> המושקעים ביום הראשון.
       </p>
       <p>
         בחודש מסוים: הכנסה משכירות <span dir="ltr">₪5,000</span>, תשלום משכנתה <span dir="ltr">₪6,000</span> — תזרים שלילי של <span dir="ltr">₪1,000</span>. בתרחיש הפסיבי, <span dir="ltr">₪1,000</span> אלו מושקעים אף הם בשוק ההון — כסף שהיה יוצא מכיסכם בתרחיש הדירה.

@@ -69,6 +69,42 @@ function niceStep(range: number): number {
   return 10 * mag
 }
 
+function CompactLegend({ view, APT, PAS, DIFF, isRTL, t }: {
+  view: View
+  APT: string
+  PAS: string
+  DIFF: string
+  isRTL: boolean
+  t: Translation
+}) {
+  const dir = isRTL ? 'rtl' : 'ltr'
+  const swatch = (color: string, isCashFlow: boolean) => (
+    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: isCashFlow ? 1 : '50%', background: color, flexShrink: 0 }} />
+  )
+  if (view === 'diff') {
+    return (
+      <div className="flex justify-center items-center gap-1.5 text-xs text-slate-400 select-none" style={{ height: 20 }} dir={dir}>
+        {swatch(DIFF, false)}
+        <span>{t.compactLegendDiff}</span>
+      </div>
+    )
+  }
+  const isCashFlow = view === 'cashflow'
+  const items = isCashFlow
+    ? [{ color: APT, label: t.compactLegendRentPos }, { color: PAS, label: t.compactLegendRentNeg }]
+    : [{ color: APT, label: t.apartmentShort }, { color: PAS, label: t.passiveShort }]
+  return (
+    <div className="flex justify-center items-center gap-4 text-xs text-slate-400 select-none" style={{ height: 20 }} dir={dir}>
+      {items.map(({ color, label }) => (
+        <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          {swatch(color, isCashFlow)}
+          <span>{label}</span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export default function Chart({ points, crossovers, t, isRTL, fill, stretch, palette, diffHintReady }: Props) {
   const APT  = palette.apt
   const PAS  = palette.pas
@@ -936,6 +972,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
           )
         })()}
       </div>
+
+      {fill && <CompactLegend view={view} APT={APT} PAS={PAS} DIFF={DIFF} isRTL={isRTL} t={t} />}
 
       {/* Summary sentence */}
       {view === 'cashflow' ? (

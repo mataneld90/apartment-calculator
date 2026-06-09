@@ -36,6 +36,7 @@ Next.js 15 · TypeScript · Tailwind CSS · Recharts · Firebase Hosting
 
 ## License
 
-© 2026 Matan Eldar. Licensed under 
-[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).  
-Free for personal use. Commercial use is not permitted.
+© 2026 Matan Eldar.
+
+Free to use and adapt with attribution — credit the original project and author in any derivative work.  
+Commercial use of this code requires prior permission — open a GitHub issue or contact me directly.

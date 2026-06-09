@@ -15,7 +15,7 @@ export interface Params {
   purchaseCostsRate: number
   Es: number
   masShvach: MasShvach
-  cgt: number
+
   Im: number
 }
 

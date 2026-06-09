@@ -32,7 +32,8 @@ export type Translation = {
   esLabel: string
   imLabel: string
   ipLabel: string
-  cgtLabel: string
+  cgtNote: string
+
   purchaseCostsRateLabel: string
   yearDisplay: (v: number) => string
   yearWord: string
@@ -43,7 +44,7 @@ export type Translation = {
     Ip: (defaultPct: string) => string
     V: string
     Es: string
-    cgt: string
+
     buyerTypeInvestor: string
     buyerTypeSingle: string
     masShvach: string
@@ -115,6 +116,9 @@ export type Translation = {
   dpDerivedAmount: (a: string) => string
   apartmentShort: string
   passiveShort: string
+  compactLegendDiff: string
+  compactLegendRentPos: string
+  compactLegendRentNeg: string
 }
 
 export const LANG: Record<Lang, Translation> = {
@@ -148,7 +152,8 @@ export const LANG: Record<Lang, Translation> = {
     esLabel: 'Selling costs',
     imLabel: 'Current fixed mortgage rate',
     ipLabel: 'Passive return (net)',
-    cgtLabel: 'Capital gains tax',
+    cgtNote: 'Passive gain is calculated net of 25% capital gains tax at realization',
+
     purchaseCostsRateLabel: 'Transaction costs',
     yearDisplay: (v) => `${v} yr`,
     yearWord: 'yr',
@@ -156,10 +161,10 @@ export const LANG: Record<Lang, Translation> = {
     tooltips: {
       pInvestor: 'Israeli law caps mortgage financing at 50% of apartment value for a non-primary residence. If this will become your primary residence and you sell your current apartment within 18 months, the 75% cap may apply — consult a mortgage advisor.',
       pSingle: 'Israeli law caps mortgage financing at 75% of apartment value for a primary residence.',
-      Ip: (pct) => `Expected annual return in ILS on a passive stock market investment (e.g. S&P 500 or MSCI World), net of fund fees. Default ${pct} = ~10% in USD, minus ~0.8% annual shekel appreciation against the dollar (historical trend 2006–2026, linear regression on Bank of Israel data), minus ~0.2% fund management fees.`,
-      V: 'Expected annual increase in apartment value. In major Israeli cities, the historical average has been approximately 5–8% per year over the past decade, with significant variation by area.',
+      Ip: (pct) => `Expected annual return in ILS on a passive stock market investment (e.g. S&P 500 or MSCI World), net of fund fees. Default ${pct} = ~10% in USD, minus ~0.7–0.8% annual shekel appreciation against the dollar (historical trend 2006–2024, linear regression on Bank of Israel data), minus ~0.2% fund management fees.`,
+      V: 'Expected annual increase in apartment value. In major Israeli cities, the historical average was approximately 5–8% per year in the decade 2012–2022, with significant variation by area and period.',
       Es: 'Selling costs as a percentage of the apartment value at sale. Typical breakdown: agent ~2%, lawyer ~0.5%, plus incidental costs. Common range: 2.5–3%.',
-      cgt: 'Israeli tax on investment gains — charged only at realization (when sold). Standard rate: 25%. Lower rates may apply in certain investment vehicles.',
+
       buyerTypeInvestor:
         'Applies to buyers who already own another apartment and are not selling it before purchase. Purchase tax: 8% up to ₪5,872,725, then 10% on the excess. If this will become your primary residence and you sell your current apartment within 18 months, a 75% mortgage cap may apply — consult a mortgage advisor.',
       buyerTypeSingle:
@@ -168,7 +173,7 @@ export const LANG: Record<Lang, Translation> = {
         'Tax on real estate sale profit: 25% of net gain (sale proceeds minus purchase cost and recognized expenses). For an investment apartment — usually applies. For a primary residence — usually exempt. Co-ownership structures may qualify for exemption — consult a lawyer.',
       Im: 'Used to calculate the early repayment fee (עמלת פירעון מוקדם). The bank charges a fee when the current market rate is below your locked rate — the larger the gap, the higher the fee. If the market rate is above your locked rate, the fee is ₪0. Note: the calculation uses the full remaining principal — in practice the prime track carries no prepayment fee, so the actual fee may be slightly lower.',
       R0: 'Monthly rent at the time of purchase, before annual increases. The calculator applies the rent increase once per year.',
-      purchaseCostsRate: 'Transaction costs as a percentage of apartment value, excluding purchase tax. Typical breakdown: agent ~2% + VAT, lawyer ~0.5% + VAT, appraiser ~₪3,500, mortgage advisor by agreement. The default 5% suits most buyers.',
+      purchaseCostsRate: 'Transaction costs as a percentage of apartment value, excluding purchase tax. Typical breakdown: agent ~2% + VAT, lawyer ~0.5% + VAT, appraiser ~₪3,500–₪5,000, mortgage advisor by agreement. The default 5% suits most buyers.',
     },
     monthLabel: 'Month',
     yearLabel2: 'Year',
@@ -234,6 +239,9 @@ export const LANG: Record<Lang, Translation> = {
     dpDerivedAmount: (a) => `Down payment: ${a} (auto-calculated)`,
     apartmentShort: 'Apartment',
     passiveShort: 'Passive',
+    compactLegendDiff: 'Apt. vs. passive advantage',
+    compactLegendRentPos: 'Rent > mortgage',
+    compactLegendRentNeg: 'Mortgage > rent',
   },
   he: {
     title: 'דירה מול השקעה פסיבית',
@@ -265,7 +273,8 @@ export const LANG: Record<Lang, Translation> = {
     esLabel: 'עלויות מכירה',
     imLabel: 'ריבית שוק נוכחית',
     ipLabel: 'תשואה פסיבית (נטו) / שנה',
-    cgtLabel: 'מס רווח הון',
+    cgtNote: 'הרווח הפסיבי מחושב נטו לאחר מס רווח הון 25% במימוש',
+
     purchaseCostsRateLabel: 'עלויות עסקה',
     yearDisplay: (v) => `${v} שנה`,
     yearWord: 'שנה',
@@ -273,17 +282,17 @@ export const LANG: Record<Lang, Translation> = {
     tooltips: {
       pInvestor: 'החוק בישראל מגביל מימון משכנתה ל-50% משווי הדירה עבור דירה שאינה מגורים עיקריים. אם הדירה החדשה תשמש כמגוריכם העיקריים ותמכרו את הדירה הקיימת תוך 18 חודשים, עשויה לחול תקרת מימון של 75% — מומלץ להתייעץ עם יועץ משכנתאות.',
       pSingle: 'החוק בישראל מגביל מימון משכנתה ל-75% משווי הדירה עבור דירת מגורים עיקריים.',
-      Ip: (pct) => `תשואה שנתית צפויה בשקלים על השקעה פסיבית במדד מניות (כגון S&P 500 או MSCI World), נטו מדמי ניהול. ברירת המחדל ${pct} = ~10% בדולרים, פחות ~0.8% התחזקות שקל מול דולר (מגמה היסטורית 2006–2026, רגרסיה לינארית על נתוני בנק ישראל) ופחות ~0.2% דמי ניהול.`,
-      V: 'עלייה שנתית צפויה בשווי הדירה. בערים גדולות בישראל עמד הממוצע על כ-5–8% בעשור האחרון, עם שונות משמעותית בין אזורים.',
+      Ip: (pct) => `תשואה שנתית צפויה בשקלים על השקעה פסיבית במדד מניות (כגון S&P 500 או MSCI World), נטו מדמי ניהול. ברירת המחדל ${pct} = ~10% בדולרים, פחות ~0.7–0.8% התחזקות שקל מול דולר (מגמה היסטורית 2006–2024, רגרסיה לינארית על נתוני בנק ישראל) ופחות ~0.2% דמי ניהול.`,
+      V: 'עלייה שנתית צפויה בשווי הדירה. בערים גדולות בישראל עמד הממוצע על כ-5–8% בשנה בעשור 2012–2022, עם שונות משמעותית בין אזורים ותקופות.',
       Es: 'עלויות מכירה כאחוז משווי הדירה בעת המכירה. פירוט אופייני: מתווך ~2%, עו"ד ~0.5%, ועלויות נלוות נוספות. טווח מקובל: 2.5–3%.',
-      cgt: 'מס ישראלי על רווחי השקעה — נגבה רק בעת מימוש (מכירה). שיעור רגיל: 25%. ייתכנו שיעורים נמוכים יותר במסלולים מסוימים.',
+
       buyerTypeInvestor: 'חל על מי שמחזיקים בדירה נוספת ואינם מוכרים אותה לפני הרכישה. מס רכישה: 8% עד ₪5,872,725, ו-10% על החלק שמעבר. אם הדירה החדשה תשמש כמגוריכם העיקריים ותמכרו את הדירה הקיימת תוך 18 חודשים, עשויה לחול תקרת מימון של 75% — מומלץ להתייעץ עם יועץ משכנתאות.',
       buyerTypeSingle: 'חל על מי שאין בבעלותם דירה נוספת, או שמוכרים את דירתם הקיימת תוך 18 חודשים מהרכישה. שיעורי המס מדורגים ונמוכים משמעותית מהמסלול החלופי.',
       masShvach:
         'מס על רווח המכירה בנדל"ן: 25% מהרווח הנקי (תמורת המכירה פחות הוצאות הרכישה והוצאות מוכרות). לדירת השקעה — לרוב חל. לדירה עיקרית — לרוב פטור. במבנה שותפות ייתכנו פטורים — התייעצו עם עורך דין.',
       Im: 'משמשת לחישוב עמלת פירעון מוקדם. הבנק גובה עמלה כשריבית השוק הנוכחית נמוכה מהריבית הנעולה שלכם — ככל שהפער גדול יותר, כך העמלה גבוהה יותר. אם ריבית השוק גבוהה מהנעולה, העמלה היא ₪0. שימו לב: החישוב מבוצע על יתרת המשכנתה המלאה — בפועל, מסלול הפריים אינו חייב בעמלה, כך שהעמלה האמיתית עשויה להיות נמוכה במקצת.',
       R0: 'שכירות חודשית בעת הרכישה, לפני עדכוני שכירות שנתיים. המחשבון מעדכן את השכירות אחת לשנה.',
-      purchaseCostsRate: 'עלויות הרכישה כאחוז משווי הדירה, ללא מס רכישה. פירוט אופייני: מתווך ~2% + מע"מ, עו"ד ~0.5% + מע"מ, שמאי ~₪3,500, יועץ משכנתאות לפי הסכמה. ברירת המחדל 5% מתאימה לרוב הרוכשים.',
+      purchaseCostsRate: 'עלויות הרכישה כאחוז משווי הדירה, ללא מס רכישה. פירוט אופייני: מתווך ~2% + מע"מ, עו"ד ~0.5% + מע"מ, שמאי ~₪3,500–₪5,000, יועץ משכנתאות לפי הסכמה. ברירת המחדל 5% מתאימה לרוב הרוכשים.',
     },
     monthLabel: 'חודש',
     yearLabel2: 'שנה',
@@ -349,5 +358,8 @@ export const LANG: Record<Lang, Translation> = {
     dpDerivedAmount: (a) => `הון עצמי: ${a} (מחושב אוטומטית)`,
     apartmentShort: 'דירה',
     passiveShort: 'פסיבי',
+    compactLegendDiff: 'יתרון דירה על פסיבי',
+    compactLegendRentPos: 'שכירות > משכנתה',
+    compactLegendRentNeg: 'משכנתה > שכירות',
   },
 }

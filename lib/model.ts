@@ -1,5 +1,7 @@
 import type { Params, ChartPoint, Results } from './types'
 
+const CGT = 0.25
+
 export function purchaseTaxInvestor(A: number): number {
   const b1 = 5_872_725
   if (A <= b1) return A * 0.08
@@ -24,7 +26,7 @@ export function compute(params: Params): Results {
   const {
     Av0, p, R0, Y, Ip, V, mortgageRate, Ri, maintenanceRate,
     buyerType, purchaseCostsRate,
-    Es, masShvach, cgt, Im,
+    Es, masShvach, Im,
   } = params
 
   const S0 = (1 - p) * Av0
@@ -92,7 +94,7 @@ export function compute(params: Params): Results {
     const N_x = netProceeds + F - Ep - rem - masShvachTax
 
     // passive gain formula; at month 0 passiveGain is hardcoded to 0, not computed here
-    const P_x = (1 - cgt) * (
+    const P_x = (1 - CGT) * (
       Ep * (Math.pow(ip, x) - 1) +
       (intComp - intFlat)
     )
@@ -136,6 +138,5 @@ export const DEFAULT_PARAMS: Params = {
   purchaseCostsRate: 0.05,
   Es: 0.03,
   masShvach: '25%',
-  cgt: 0.25,
   Im: 0.0435,
 }

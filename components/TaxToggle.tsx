@@ -6,16 +6,17 @@ interface TaxToggleProps {
   value: string
   options: { value: string; label: string; tooltip?: string }[]
   onChange: (v: string) => void
+  isRTL?: boolean
 }
 
-export default function TaxToggle({ label, tooltip, value, options, onChange }: TaxToggleProps) {
+export default function TaxToggle({ label, tooltip, value, options, onChange, isRTL }: TaxToggleProps) {
   return (
     <div className="flex items-center gap-3 flex-wrap">
       <span className="flex items-center gap-1 text-sm text-[var(--c-text-3)] shrink-0">
         {label}{tooltip && <InfoTooltip text={tooltip} />}
       </span>
-      <div className="flex gap-1">
-        {options.map((opt) => (
+      <div className="flex gap-1" {...(isRTL ? { dir: 'ltr' } : {})}>
+        {(isRTL ? options : [...options].reverse()).map((opt) => (
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
