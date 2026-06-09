@@ -22,7 +22,7 @@ export function purchaseTaxSingle(A: number): number {
 
 export function compute(params: Params): Results {
   const {
-    Av0, p, R0, Y, Ip, V, mortgageRate, Ri,
+    Av0, p, R0, Y, Ip, V, mortgageRate, Ri, maintenanceRate,
     buyerType, purchaseCostsRate,
     Es, masShvach, cgt, Im,
   } = params
@@ -53,7 +53,7 @@ export function compute(params: Params): Results {
   const fee0 = M0 * Math.max(0, I - Im) * Y
   const N0adj = N0 - fee0
   const points: ChartPoint[] = [
-    { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), cashFlow: 0 },
+    { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), cashFlow: 0, monthlyRent: Math.round(R0), monthlyMortgage: Math.round(M0 > 0 ? monthlyPayment : 0) },
   ]
 
   let F = 0
@@ -67,6 +67,7 @@ export function compute(params: Params): Results {
 
   for (let x = 1; x <= 360; x++) {
     const rent = R0 * Math.pow(1 + Ri, Math.floor((x - 1) / 12))
+    const effectiveRent = rent * (1 - maintenanceRate / 12)
 
     let mort = 0
     if (x <= T && rem > 0) {
@@ -76,7 +77,7 @@ export function compute(params: Params): Results {
       mort = monthlyPayment
     }
 
-    const flow = rent - mort
+    const flow = effectiveRent - mort
     F += flow
 
     const injection = Math.max(0, -flow)
@@ -113,6 +114,8 @@ export function compute(params: Params): Results {
       passiveGain: Math.round(P_x),
       gainDiff: Math.round(N_x_adj - P_x),
       cashFlow: Math.round(flow),
+      monthlyRent: Math.round(rent),
+      monthlyMortgage: Math.round(mort),
     })
   }
 
@@ -127,7 +130,8 @@ export const DEFAULT_PARAMS: Params = {
   Ip: 0.09,
   V: 0.07,
   mortgageRate: 0.0435,
-  Ri: 0.035,
+  Ri: 0.02,
+  maintenanceRate: 0.02,
   buyerType: 'investor',
   purchaseCostsRate: 0.05,
   Es: 0.03,

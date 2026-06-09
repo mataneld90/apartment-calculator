@@ -1,6 +1,79 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
+
+interface EditConfig {
+  fromStored: (v: number) => number  // stored value → input number (e.g. v*100 for %)
+  toStored: (n: number) => number    // input number → stored value
+  decimals: number
+  prefix?: string  // shown before input (₪)
+  suffix?: string  // shown after input (%)
+  inputSize: number  // input width in ch
+}
+
+function EditableValue({ displayNode, rawValue, min, max, config, onCommit }: {
+  displayNode: ReactNode
+  rawValue: number
+  min: number
+  max: number
+  config: EditConfig
+  onCommit: (v: number) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function startEdit() {
+    const n = config.fromStored(rawValue)
+    setDraft(config.decimals === 0
+      ? String(Math.round(n))
+      : parseFloat(n.toFixed(config.decimals)).toString()
+    )
+    setEditing(true)
+  }
+
+  useEffect(() => { if (editing) inputRef.current?.select() }, [editing])
+
+  function commit() {
+    const n = parseFloat(draft)
+    if (!isNaN(n)) {
+      const stored = Math.min(max, Math.max(min, config.toStored(n)))
+      if (stored !== rawValue) onCommit(stored)
+    }
+    setEditing(false)
+  }
+
+  if (!editing) {
+    return (
+      <span onClick={startEdit} className="cursor-text border-b border-dashed border-[var(--c-muted)]">
+        {displayNode}
+      </span>
+    )
+  }
+
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 1 }} dir="ltr">
+      {config.prefix && <span>{config.prefix}</span>}
+      <input
+        ref={inputRef}
+        inputMode="decimal"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') { e.preventDefault(); commit() }
+          if (e.key === 'Escape') setEditing(false)
+        }}
+        style={{
+          background: 'transparent', border: 'none', borderBottom: '1px solid currentColor',
+          outline: 'none', fontSize: 'inherit', color: 'inherit', fontFamily: 'inherit',
+          fontVariantNumeric: 'tabular-nums', padding: 0, width: `${config.inputSize}ch`,
+        }}
+      />
+      {config.suffix && <span>{config.suffix}</span>}
+    </span>
+  )
+}
 import type { Params } from '@/lib/types'
 import { DEFAULT_PARAMS, purchaseTaxInvestor, purchaseTaxSingle } from '@/lib/model'
 import type { Results } from '@/lib/types'
@@ -20,6 +93,7 @@ type SliderDef = {
   max: number
   step: number
   display: (v: number, t: Translation, isRTL?: boolean) => ReactNode
+  editConfig: EditConfig
 }
 
 const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: SliderDef[] }[] = [
@@ -33,6 +107,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.tooltips.V,
         min: 0, max: 0.15, step: 0.005,
         display: (v) => pct(v),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
       },
       {
         key: 'R0',
@@ -40,13 +115,23 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.tooltips.R0,
         min: 0, max: 15_000, step: 100,
         display: (v) => shekel(v),
+        editConfig: { fromStored: v => v, toStored: n => n, decimals: 0, prefix: '₪', inputSize: 5 },
       },
       {
         key: 'Ri',
         getLabel: (t) => t.riLabel,
-        getTooltip: () => '',
+        getTooltip: (t) => t.riTooltip,
         min: 0, max: 0.1, step: 0.005,
         display: (v) => pct(v),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
+      },
+      {
+        key: 'maintenanceRate',
+        getLabel: (t) => t.maintenanceRateLabel,
+        getTooltip: (t) => t.maintenanceRateTooltip,
+        min: 0, max: 0.15, step: 0.005,
+        display: (v) => pct(v),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
       },
     ],
   },
@@ -60,6 +145,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: () => '',
         min: 0.1, max: 0.75, step: 0.01,
         display: (v) => pct(v, 0),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 0, suffix: '%', inputSize: 2 },
       },
       {
         key: 'Y',
@@ -69,6 +155,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         display: (v, t, isRTL) => isRTL
           ? <span style={{display:'inline-flex',flexDirection:'row',gap:'0.25em'}}><span>{t.yearWord}</span><span>{v}</span></span>
           : t.yearDisplay(v),
+        editConfig: { fromStored: v => v, toStored: n => n, decimals: 0, inputSize: 2 },
       },
       {
         key: 'mortgageRate',
@@ -76,6 +163,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.mortgageRateTooltip,
         min: 0.02, max: 0.10, step: 0.0005,
         display: (v) => pct(v, 2),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 },
       },
     ],
   },
@@ -89,6 +177,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: () => '',
         min: 500_000, max: 10_000_000, step: 50_000,
         display: (v) => shekel(v),
+        editConfig: { fromStored: v => v, toStored: n => n, decimals: 0, prefix: '₪', inputSize: 7 },
       },
       {
         key: 'purchaseCostsRate',
@@ -96,6 +185,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.tooltips.purchaseCostsRate,
         min: 0, max: 0.15, step: 0.005,
         display: (v) => pct(v),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
       },
     ],
   },
@@ -109,6 +199,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.tooltips.Es,
         min: 0, max: 0.1, step: 0.005,
         display: (v) => pct(v),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
       },
       {
         key: 'Im',
@@ -116,6 +207,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.tooltips.Im,
         min: 0, max: 0.10, step: 0.001,
         display: (v) => pct(v),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
       },
     ],
   },
@@ -129,6 +221,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.tooltips.Ip(`${(DEFAULT_PARAMS.Ip * 100).toFixed(1)}%`),
         min: 0.02, max: 0.2, step: 0.005,
         display: (v, t, rtl) => rtl ? pct(v) : pct(v) + ' ' + t.perYear,
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
       },
       {
         key: 'cgt',
@@ -136,6 +229,7 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getTooltip: (t) => t.tooltips.cgt,
         min: 0, max: 0.5, step: 0.05,
         display: (v) => pct(v, 0),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 0, suffix: '%', inputSize: 2 },
       },
     ],
   },
@@ -198,9 +292,20 @@ interface SliderRowProps {
   onChange: (v: number) => void
   isRTL: boolean
   accentColor?: string
+  editConfig?: EditConfig
 }
 
-function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChange, isRTL, accentColor }: SliderRowProps) {
+function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChange, isRTL, accentColor, editConfig }: SliderRowProps) {
+  const valueNode = editConfig ? (
+    <EditableValue
+      displayNode={displayValue}
+      rawValue={value}
+      min={min}
+      max={max}
+      config={editConfig}
+      onCommit={onChange}
+    />
+  ) : displayValue
   return (
     <div className="flex items-center gap-2 py-0.5 min-w-0">
       <div className="flex items-center gap-1 w-28 shrink-0">
@@ -220,8 +325,8 @@ function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChan
           ...(accentColor ? { accentColor } : {}),
         }}
       />
-      <span className="text-xs text-[var(--c-text)] w-20 text-right shrink-0 tabular-nums overflow-hidden whitespace-nowrap" dir="ltr">
-        {displayValue}
+      <span className="text-xs text-[var(--c-text)] w-20 text-right shrink-0 tabular-nums whitespace-nowrap" dir="ltr">
+        {valueNode}
       </span>
     </div>
   )
@@ -321,6 +426,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                   onChange={(v) => update(av0.key, v as never)}
                   isRTL={isRTL}
                   accentColor={palette.apt}
+                  editConfig={av0.editConfig}
                 />
               </div>
             )
@@ -420,6 +526,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                       }}
                       isRTL={isRTL}
                       accentColor={palette.apt}
+                      editConfig={{ fromStored: v => v, toStored: n => Math.round(n / 10_000) * 10_000, decimals: 0, prefix: '₪', inputSize: 7 }}
                     />
                     <p className="text-xs text-[var(--c-muted)] italic mt-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
                       {t.dpDerivedFraction(pct(params.p, 0))}
@@ -438,6 +545,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                       onChange={(v) => update('p', v)}
                       isRTL={isRTL}
                       accentColor={palette.apt}
+                      editConfig={{ fromStored: v => v * 100, toStored: n => n / 100, decimals: 0, suffix: '%', inputSize: 2 }}
                     />
                     <p className="text-xs text-[var(--c-muted)] italic mt-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
                       {t.dpDerivedAmount(shekel(Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000))}
@@ -473,6 +581,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                   onChange={(v) => update(def.key, v as never)}
                   isRTL={isRTL}
                   accentColor={group.id === 'passive' ? palette.pas : palette.apt}
+                  editConfig={def.editConfig}
                 />
                 {def.key === 'mortgageRate' && boiRate != null && (
                   <p className="text-xs text-[var(--c-muted)] mt-0.5 pb-0.5" dir={isRTL ? 'rtl' : 'ltr'}>

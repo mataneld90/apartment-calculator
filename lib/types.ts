@@ -10,6 +10,7 @@ export interface Params {
   V: number
   mortgageRate: number
   Ri: number
+  maintenanceRate: number
   buyerType: BuyerType
   purchaseCostsRate: number
   Es: number
@@ -24,6 +25,8 @@ export interface ChartPoint {
   passiveGain: number
   gainDiff: number
   cashFlow: number
+  monthlyRent: number
+  monthlyMortgage: number
 }
 
 export interface Results {

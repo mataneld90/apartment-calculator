@@ -23,6 +23,9 @@ export type Translation = {
   yLabel: string
   vLabel: string
   riLabel: string
+  riTooltip: string
+  maintenanceRateLabel: string
+  maintenanceRateTooltip: string
   mortgageRateLabel: string
   mortgageRateTooltip: string
   primeHelperLine: (boiRate: string) => string
@@ -61,12 +64,19 @@ export type Translation = {
   viewGains: string
   viewDiff: string
   viewCashFlow: string
+  cashFlowSubViewRent: string
+  cashFlowSubViewBars: string
+  cashFlowPositiveFrom: (year: string) => string
   chartViewLabel: string
   diffHint: string
   cashFlowHint: string
   cashFlowLabel: string
   cashFlowLegendPositive: string
   cashFlowLegendNegative: string
+  cashFlowRentLegend: string
+  cashFlowMortgageLegend: string
+  cashFlowRentLabel: string
+  cashFlowMortgageLabel: string
   cashFlowAnnotation: (year: string) => string
   cashFlowSummaryPositive: (year: string) => string
   cashFlowSummaryNegative: string
@@ -129,6 +139,9 @@ export const LANG: Record<Lang, Translation> = {
     yLabel: 'Mortgage period',
     vLabel: 'Apartment appreciation',
     riLabel: 'Yearly rent increase',
+    riTooltip: "Expected annual rent increase. The 2% default matches the Bank of Israel's inflation target.",
+    maintenanceRateLabel: 'Annual maintenance',
+    maintenanceRateTooltip: 'Annual maintenance cost as a percentage of rent — repairs, wear, and ongoing costs. Deducted from rental income each month.',
     mortgageRateLabel: 'Effective mortgage rate',
     mortgageRateTooltip: 'The blended effective rate across all your mortgage tracks. You can get this figure from your mortgage advisor or bank pre-approval. The default is calculated as the current Bank of Israel rate + 1.5% (prime spread) − 0.9% (a typical good mortgage offer). Typical range in Israel: 3.5%–5.5%.',
     primeHelperLine: (boi) => `Default based on current Bank of Israel rate (${boi})`,
@@ -170,12 +183,19 @@ export const LANG: Record<Lang, Translation> = {
     viewGains: 'Gains',
     viewDiff: 'Difference',
     viewCashFlow: 'Cash flow',
+    cashFlowSubViewRent: 'Rent vs Mortgage',
+    cashFlowSubViewBars: 'Monthly flow',
+    cashFlowPositiveFrom: (year) => `Positive flow from year ${year}`,
     chartViewLabel: 'Chart view:',
     diffHint: '💡 Try the Difference view — it shows the gap between both scenarios at each point in time',
     cashFlowHint: '💡 The Cash flow view shows the monthly gap between rent and mortgage — and how long until it turns positive',
     cashFlowLabel: 'Cash flow:',
     cashFlowLegendPositive: 'Rent exceeds mortgage',
     cashFlowLegendNegative: 'Mortgage exceeds rent',
+    cashFlowRentLegend: 'Monthly rental income',
+    cashFlowMortgageLegend: 'Monthly mortgage payment',
+    cashFlowRentLabel: 'Rental income:',
+    cashFlowMortgageLabel: 'Mortgage payment:',
     cashFlowAnnotation: (year) => `Positive flow from year ${year}`,
     cashFlowSummaryPositive: (year) => `Monthly cash flow turns positive at year ${year} — until then, the shortfall is invested in the passive scenario`,
     cashFlowSummaryNegative: 'Monthly cash flow remains negative throughout the mortgage period',
@@ -236,6 +256,9 @@ export const LANG: Record<Lang, Translation> = {
     yLabel: 'תקופת משכנתה',
     vLabel: 'עליית ערך שנתית',
     riLabel: 'עליית שכירות שנתית',
+    riTooltip: 'עליית שכר דירה שנתית צפויה. ברירת המחדל 2% תואמת את יעד האינפלציה של בנק ישראל.',
+    maintenanceRateLabel: 'תחזוקה שנתית',
+    maintenanceRateTooltip: 'עלות תחזוקה שנתית כאחוז מהשכירות — תיקונים, בלאי, ועלויות שוטפות. מנוכה מהכנסת השכירות בכל חודש.',
     mortgageRateLabel: 'ריבית משכנתה אפקטיבית',
     mortgageRateTooltip: 'הריבית האפקטיבית הממוצעת על המשכנתה שלכם, לאחר שקלול כל המסלולים. ניתן לקבל נתון זה מיועץ המשכנתאות או מהאישור העקרוני של הבנק. ברירת המחדל מחושבת לפי ריבית בנק ישראל הנוכחית + 1.5% (פריים) − 0.9% (מרווח אופייני טוב). ריבית אופיינית בישראל: 3.5%–5.5%.',
     primeHelperLine: (boi) => `ברירת מחדל מבוססת על ריבית בנק ישראל עדכנית (${boi})`,
@@ -275,12 +298,19 @@ export const LANG: Record<Lang, Translation> = {
     viewGains: 'רווחים',
     viewDiff: 'הפרש',
     viewCashFlow: 'תזרים',
+    cashFlowSubViewRent: 'שכירות / משכנתה',
+    cashFlowSubViewBars: 'תזרים חודשי',
+    cashFlowPositiveFrom: (year) => `תזרים חיובי החל משנה ${year}`,
     chartViewLabel: 'תצוגת גרף:',
     diffHint: '💡 נסו את תצוגת ההפרש — היא מציגה את הפער בין שני התרחישים בכל נקודת זמן',
     cashFlowHint: '💡 תצוגת התזרים מציגה את ההפרש החודשי בין שכירות למשכנתה — וכמה זמן עד שהוא הופך לחיובי',
     cashFlowLabel: 'תזרים:',
     cashFlowLegendPositive: 'הכנסה עולה על משכנתה',
     cashFlowLegendNegative: 'משכנתה עולה על הכנסה',
+    cashFlowRentLegend: 'הכנסה חודשית משכירות',
+    cashFlowMortgageLegend: 'תשלום משכנתה חודשי',
+    cashFlowRentLabel: 'הכנסה משכירות:',
+    cashFlowMortgageLabel: 'תשלום משכנתה:',
     cashFlowAnnotation: (year) => `תזרים חיובי משנה ${year}`,
     cashFlowSummaryPositive: (year) => `התזרים החודשי הופך לחיובי בשנה ${year} — עד אז, ההפרש מושקע בתרחיש הפסיבי`,
     cashFlowSummaryNegative: 'התזרים החודשי שלילי לאורך כל תקופת המשכנתה',

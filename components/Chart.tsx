@@ -4,7 +4,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react'
 import {
   ResponsiveContainer,
   LineChart,
-  BarChart,
+  ComposedChart,
   Bar,
   Cell,
   Line,
@@ -94,6 +94,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
   >(null)
   const [tapMonth, setTapMonth] = useState<number | null>(null)
   const [activeBarMonth, setActiveBarMonth] = useState<number | null>(null)
+  const [cashFlowSubView, setCashFlowSubView] = useState<'rentmort' | 'bars'>('rentmort')
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isZoomed = domain[0] !== 0 || domain[1] !== defaultEnd
   const initialApt = (points[0]?.gainDiff ?? -1) >= 0
@@ -255,6 +256,11 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
     return () => cancelAnimationFrame(frame)
   }, [chartWidth, chartHeight, view])
 
+  // Reset cash flow sub-view to default when leaving cashflow tab
+  useEffect(() => {
+    if (view !== 'cashflow') setCashFlowSubView('rentmort')
+  }, [view])
+
   // Sequential first-visit hints: diff hint at 6s, cashflow hint at ~14.5s
   useEffect(() => {
     if (!diffHintReady) return
@@ -348,11 +354,13 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
   const yVals = view === 'diff'
     ? visible.map(p => p.gainDiff)
     : view === 'cashflow'
-    ? visible.map(p => p.cashFlow)
+    ? cashFlowSubView === 'rentmort'
+      ? visible.flatMap(p => [p.monthlyRent, p.monthlyMortgage])
+      : visible.map(p => p.cashFlow)
     : visible.flatMap(p => [p.apartmentGain, p.passiveGain])
 
   const yRawMin = view === 'cashflow'
-    ? Math.min(0, yVals.length ? Math.min(...yVals) : 0)
+    ? cashFlowSubView === 'bars' ? Math.min(0, yVals.length ? Math.min(...yVals) : 0) : 0
     : (yVals.length ? Math.min(...yVals) : 0)
   const yRawMax = view === 'cashflow'
     ? Math.max(0, yVals.length ? Math.max(...yVals) : 0)
@@ -399,6 +407,16 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
   const yTicks: number[] = []
   for (let v = yTickMin; v <= yTickMax; v += YTICK) yTicks.push(v)
 
+  // Rent vs Mortgage sub-view: independent domain, bypasses niceStep
+  const rmRents = visible.map(p => p.monthlyRent)
+  const rmMorts = visible.map(p => p.monthlyMortgage).filter(v => v > 0)
+  const rmDataMin = Math.min(
+    rmRents.length ? Math.min(...rmRents) : Infinity,
+    rmMorts.length ? Math.min(...rmMorts) : Infinity,
+  )
+  const rmDataMax = rmRents.length ? Math.max(...rmRents) : 0
+  const rentMortYDomain: [number, number] = [rmDataMin * 0.9, rmDataMax * 1.1]
+
   const sharedAxisProps = {
     xAxis: (
       <XAxis
@@ -422,10 +440,22 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
     grid: <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />,
   }
 
+  const rentMortRows = (rent: number, mortgage: number, cashFlow: number) => (
+    <>
+      <p style={{ color: APT }}>{t.cashFlowRentLabel}{' '}<span dir="ltr">{shekel(rent)}</span></p>
+      <p style={{ color: PAS }}>{t.cashFlowMortgageLabel}{' '}<span dir="ltr">{shekel(mortgage)}</span></p>
+      <p style={{ color: cashFlow >= 0 ? APT : PAS }}>{t.cashFlowLabel}{' '}<span dir="ltr">{shekel(cashFlow)}</span></p>
+    </>
+  )
+
+  const barsRow = (cashFlow: number) => (
+    <p style={{ color: cashFlow >= 0 ? APT : PAS }}>{t.cashFlowLabel}{' '}<span dir="ltr">{shekel(cashFlow)}</span></p>
+  )
+
   const cashFlowTooltipContent = ({ active, payload, label }: any) => {
     if (!active || !payload?.length || label === undefined) return null
-    const val = payload[0]?.value as number
-    const positive = val >= 0
+    const pt = visible.find(p => p.month === Number(label))
+    if (!pt) return null
     return (
       <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
         <p className="text-[var(--c-muted)] mb-1">
@@ -434,9 +464,10 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
             : `${t.monthLabel} ${label} · ${t.yearLabel2} ${(Number(label) / 12).toFixed(1)}`
           }
         </p>
-        <p style={{ color: positive ? APT : PAS }}>
-          {t.cashFlowLabel}{' '}<span dir="ltr">{shekel(val)}</span>
-        </p>
+        {cashFlowSubView === 'rentmort'
+          ? rentMortRows(pt.monthlyRent, pt.monthlyMortgage, pt.cashFlow)
+          : barsRow(pt.cashFlow)
+        }
       </div>
     )
   }
@@ -538,6 +569,24 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
         </div>
       )}
 
+      {view === 'cashflow' && (
+        <div dir="ltr" className={`flex gap-1 h-6${isRTL ? ' justify-end' : ' justify-start'}`}>
+          {(isRTL ? (['bars', 'rentmort'] as const) : (['rentmort', 'bars'] as const)).map((sv) => (
+            <button
+              key={sv}
+              onClick={() => setCashFlowSubView(sv)}
+              className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                cashFlowSubView === sv
+                  ? 'bg-slate-600 text-white border-slate-600'
+                  : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
+              }`}
+            >
+              {sv === 'rentmort' ? t.cashFlowSubViewRent : t.cashFlowSubViewBars}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div
         ref={divRef}
         style={{ width: '100%', touchAction: 'none', background: 'var(--chart-bg, transparent)', ...(fill || stretch ? {} : { height: 360 }) }}
@@ -569,25 +618,36 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
 
         <ResponsiveContainer width="100%" height="100%">
           {view === 'cashflow' ? (
-            <BarChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }} barCategoryGap="0%"
+            <ComposedChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }} barCategoryGap="0%"
               onMouseMove={(state) => { if (state.activeLabel !== undefined) setActiveBarMonth(Number(state.activeLabel)) }}
               onMouseLeave={() => setActiveBarMonth(null)}
             >
               {sharedAxisProps.grid}
               {sharedAxisProps.xAxis}
-              {sharedAxisProps.yAxis}
+              {cashFlowSubView === 'rentmort'
+                ? <YAxis domain={rentMortYDomain} tickFormatter={shortShekel} stroke="var(--chart-axis)" tick={{ fill: 'var(--chart-tick)', fontSize: 13 }} width={52} />
+                : sharedAxisProps.yAxis
+              }
               {!fill && <Tooltip content={cashFlowTooltipContent} cursor={false} />}
               {!fill && (
                 <Legend
                   content={() => (
                     <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--chart-tick)' }}>
-                      {[
-                        { label: t.cashFlowLegendPositive, color: APT },
-                        { label: t.cashFlowLegendNegative, color: PAS },
-                      ].map(({ label, color }) => (
+                      {(cashFlowSubView === 'bars' ? [
+                        { label: t.cashFlowLegendPositive, color: APT, type: 'bar' as const },
+                        { label: t.cashFlowLegendNegative, color: PAS, type: 'bar' as const },
+                      ] : [
+                        { label: t.cashFlowRentLegend, color: APT, type: 'line' as const },
+                        { label: t.cashFlowMortgageLegend, color: PAS, type: 'dashed' as const },
+                      ]).map(({ label, color, type }) => (
                         <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-                          <svg width="14" height="10" style={{ display: 'block', flexShrink: 0 }}>
-                            <rect x="0" y="0" width="14" height="10" rx="1" fill={color} />
+                          <svg width="20" height="10" style={{ display: 'block', flexShrink: 0 }}>
+                            {type === 'bar'
+                              ? <rect x="3" y="0" width="14" height="10" rx="1" fill={color} />
+                              : type === 'line'
+                              ? <line x1="0" y1="5" x2="20" y2="5" stroke={color} strokeWidth="2" />
+                              : <line x1="0" y1="5" x2="20" y2="5" stroke={color} strokeWidth="2" strokeDasharray="6 3" />
+                            }
                           </svg>
                           <span>{label}</span>
                         </div>
@@ -597,22 +657,36 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
                 />
               )}
               <ReferenceLine y={0} stroke="var(--chart-axis)" strokeDasharray="4 2" />
-              {visibleCashFlowCrossover !== null && (
+              {cashFlowSubView === 'bars' && visibleCashFlowCrossover !== null && (
                 <ReferenceLine
                   x={visibleCashFlowCrossover}
                   stroke="var(--chart-crossover)"
                   strokeDasharray="4 2"
                 />
               )}
-              <Bar dataKey="cashFlow" isAnimationActive={false} maxBarSize={20}>
-                {visible.map((pt) => (
-                  <Cell key={pt.month} fill={pt.cashFlow >= 0 ? APT : PAS} />
-                ))}
-              </Bar>
+              {cashFlowSubView === 'bars' && (
+                <Bar dataKey="cashFlow" isAnimationActive={false} maxBarSize={20}>
+                  {visible.map((pt) => (
+                    <Cell key={pt.month} fill={pt.cashFlow >= 0 ? APT : PAS} />
+                  ))}
+                </Bar>
+              )}
+              {cashFlowSubView === 'rentmort' && (
+                <Line dataKey="monthlyRent" dot={false} isAnimationActive={false}
+                  stroke={APT} strokeWidth={2}
+                  activeDot={{ r: 4, fill: APT, stroke: '#fff', strokeWidth: 2 }}
+                />
+              )}
+              {cashFlowSubView === 'rentmort' && (
+                <Line dataKey="monthlyMortgage" dot={false} isAnimationActive={false}
+                  stroke={PAS} strokeWidth={2} strokeDasharray="6 3"
+                  activeDot={{ r: 4, fill: PAS, stroke: '#fff', strokeWidth: 2 }}
+                />
+              )}
               {!fill && activeBarMonth !== null && (
                 <ReferenceLine x={activeBarMonth} stroke="var(--chart-tick)" strokeWidth={1} strokeOpacity={0.4} />
               )}
-            </BarChart>
+            </ComposedChart>
           ) : (
             <LineChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
               {sharedAxisProps.grid}
@@ -841,9 +915,9 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
                   }
                 </p>
                 {view === 'cashflow' ? (
-                  <p style={{ color: pt.cashFlow >= 0 ? APT : PAS }}>
-                    {t.cashFlowLabel}{' '}<span dir="ltr">{shekel(pt.cashFlow)}</span>
-                  </p>
+                  cashFlowSubView === 'rentmort'
+                    ? rentMortRows(pt.monthlyRent, pt.monthlyMortgage, pt.cashFlow)
+                    : barsRow(pt.cashFlow)
                 ) : view === 'diff' ? (() => {
                   const val = pt.gainDiff
                   const aptLeads = val > 0
@@ -864,23 +938,11 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
       </div>
 
       {/* Summary sentence */}
-      {view === 'cashflow' ? (() => {
-        const firstReal = points.find(p => p.month > 0)
-        const alwaysPositive = (firstReal?.cashFlow ?? -1) >= 0
-        let text: string
-        let color: string
-        if (alwaysPositive) {
-          text = t.cashFlowSummaryAlways
-          color = APT
-        } else if (cashFlowCrossover !== null) {
-          text = t.cashFlowSummaryPositive((cashFlowCrossover / 12).toFixed(1))
-          color = APT
-        } else {
-          text = t.cashFlowSummaryNegative
-          color = PAS
-        }
-        return <p className="text-base font-bold text-center select-none leading-snug" style={{ color }}>{text}</p>
-      })() : (() => {
+      {view === 'cashflow' ? (
+        cashFlowCrossover !== null
+          ? <p className="text-base font-bold text-center select-none leading-snug" style={{ color: APT }}>{t.cashFlowPositiveFrom((cashFlowCrossover / 12).toFixed(1))}</p>
+          : null
+      ) : (() => {
         let summaryText: string | null = null
         if (crossovers.length === 0)
           summaryText = initialApt ? t.summaryAptLeadsAll : t.summaryPassiveLeads

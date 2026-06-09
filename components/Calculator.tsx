@@ -341,6 +341,19 @@ export default function Calculator() {
 
         </section>
       </div>
+
+      {/* Legal disclaimer footer */}
+      <footer className="shrink-0 px-4 py-2 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
+        <p className="text-xs text-slate-400">
+          {isRTL
+            ? 'למטרות מידע בלבד. אינו מהווה ייעוץ פיננסי, מיסויי או משפטי. יש להתייעץ עם אנשי מקצוע לפני קבלת החלטות.'
+            : 'For informational purposes only. Not financial, tax, or legal advice. Consult professionals before making decisions.'
+          }
+        </p>
+        <p className="text-xs text-[var(--c-muted)] text-center">
+          {isRTL ? '© 2026 מתן אלדר · לשימוש אישי בחינם' : '© 2026 Matan Eldar · Free for personal use'}
+        </p>
+      </footer>
     </div>
   )
 }
@@ -374,8 +387,11 @@ function MethodologyPageEN({ page }: { page: number }) {
         payment and <span dir="ltr">₪1,000,000</span> mortgage.
       </p>
       <p>
-        In the passive scenario, the <span dir="ltr">₪1,000,000</span> down payment is invested in the stock market on
-        the day of purchase.
+        In the passive scenario, the full purchase outlay — down payment + purchase tax + transaction
+        costs — is invested in the stock market on the day of purchase. In this example:{' '}
+        <span dir="ltr">₪1,000,000</span> down payment + <span dir="ltr">₪160,000</span> purchase
+        tax + <span dir="ltr">₪40,000</span> transaction costs = <span dir="ltr">₪1,200,000</span>{' '}
+        invested on day 1.
       </p>
       <p>
         At some month: rental income <span dir="ltr">₪5,000</span>, mortgage payment <span dir="ltr">₪6,000</span> — a
@@ -402,6 +418,7 @@ function MethodologyPageEN({ page }: { page: number }) {
       <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
         <li><strong className="text-[var(--c-text-3)]">Gains</strong> — shows both curves side by side: the apartment&apos;s net gain at realisation versus the passive investment&apos;s net gain at realisation. The points where the curves intersect are the moments when one scenario overtakes the other.</li>
         <li><strong className="text-[var(--c-text-3)]">Difference</strong> — shows the gap between the two scenarios (apartment minus passive). When the curve is above zero, the apartment is ahead. When below zero, passive investment is ahead. The height of the curve at any point shows the size of the advantage.</li>
+        <li><strong className="text-[var(--c-text-3)]">Cash flow</strong> — shows monthly rent income and mortgage payment as lines, and the net monthly cash flow as bars. Negative bars (months where mortgage exceeds rent) represent money invested in the passive scenario.</li>
       </ul>
       <p className="font-medium text-[var(--c-text-3)]">Key assumptions:</p>
       <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
@@ -412,6 +429,9 @@ function MethodologyPageEN({ page }: { page: number }) {
         <li>All figures are nominal ILS — no inflation adjustment. Both scenarios are affected by inflation similarly, so the comparison remains valid</li>
         <li>This models a rental investment scenario (purchase → rent → sell)</li>
       </ul>
+      <div className="border-t border-slate-700 pt-3">
+        <p className="text-xs text-slate-400">For informational purposes only. Not financial, tax, or legal advice. Consult professionals before making decisions.</p>
+      </div>
     </div>
   )
 }
@@ -442,7 +462,7 @@ function MethodologyPageHE({ page }: { page: number }) {
         נניח דירה במחיר <span dir="ltr">₪2,000,000</span> עם הון עצמי של <span dir="ltr">₪1,000,000</span> ומשכנתה של <span dir="ltr">₪1,000,000</span>.
       </p>
       <p>
-        בתרחיש הפסיבי, <span dir="ltr">₪1,000,000</span> — סכום ההון העצמי — מושקעים בשוק ההון ביום הרכישה.
+        בתרחיש הפסיבי, כל ההון שהוצא ביום הרכישה — הון עצמי + מס רכישה + עלויות עסקה — מושקע בשוק ההון ביום הרכישה. בדוגמה זו: <span dir="ltr">₪1,000,000</span> הון עצמי + <span dir="ltr">₪160,000</span> מס רכישה + <span dir="ltr">₪40,000</span> עלויות עסקה = <span dir="ltr">₪1,200,000</span> מושקעים ביום הראשון.
       </p>
       <p>
         בחודש מסוים: הכנסה משכירות <span dir="ltr">₪5,000</span>, תשלום משכנתה <span dir="ltr">₪6,000</span> — תזרים שלילי של <span dir="ltr">₪1,000</span>. בתרחיש הפסיבי, <span dir="ltr">₪1,000</span> אלו מושקעים אף הם בשוק ההון — כסף שהיה יוצא מכיסכם בתרחיש הדירה.
@@ -462,16 +482,20 @@ function MethodologyPageHE({ page }: { page: number }) {
       <ul className="list-disc list-inside flex flex-col gap-1 mr-2">
         <li><strong className="text-[var(--c-text-3)]">רווחים</strong> — מציג את שני העקומות במקביל: רווח נקי במימוש של הדירה מול רווח נקי במימוש של ההשקעה הפסיבית. נקודות החציה בין העקומות הן הרגעים שבהם אחד התרחישים עולה על השני.</li>
         <li><strong className="text-[var(--c-text-3)]">הפרש</strong> — מציג את ההפרש בין שני התרחישים (דירה פחות פסיבי). כשהעקומה מעל האפס — הדירה עדיפה. כשהיא מתחת לאפס — ההשקעה הפסיבית עדיפה. גובה העקומה בכל נקודה מראה את גודל היתרון.</li>
+        <li><strong className="text-[var(--c-text-3)]">תזרים</strong> — מציג את הכנסת השכירות ותשלום המשכנתה כקווים, ואת התזרים החודשי הנקי כעמודות. עמודות שליליות (חודשים שבהם המשכנתה עולה על השכירות) מייצגות כסף המושקע בתרחיש הפסיבי.</li>
       </ul>
       <p className="font-medium text-[var(--c-text-3)]">הנחות מרכזיות:</p>
       <ul className="list-disc list-inside flex flex-col gap-1 mr-2">
-        <li>שיטת שפיצר — תשלום חודשי קבוע, סטנדרט בישראל</li>
+        <li>שיטת שפיצר — תשלום משכנתה חודשי קבוע, סטנדרט בישראל</li>
         <li>מס רכישה: 8% גורף לדירה נוספת (10% מעל ₪5,872,725); מדרגות לדירה יחידה</li>
         <li>מס שבח: 25% על רווח הנדל&quot;ן במימוש, או פטור בהתאם למצב</li>
         <li>מס רווח הון על השקעה פסיבית: 25% במימוש בלבד — לא שנתי</li>
         <li>כל הנתונים בשקלים נומינליים — ללא התאמה לאינפלציה. שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה ביניהם תקפה</li>
         <li>המחשבון מדמה תרחיש של רכישה, השכרה ומכירה</li>
       </ul>
+      <div className="border-t border-slate-700 pt-3">
+        <p className="text-xs text-slate-400">למטרות מידע בלבד. אינו מהווה ייעוץ פיננסי, מיסויי או משפטי. יש להתייעץ עם אנשי מקצוע לפני קבלת החלטות.</p>
+      </div>
     </div>
   )
 }
