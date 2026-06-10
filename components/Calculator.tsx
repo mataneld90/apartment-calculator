@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { compute, DEFAULT_PARAMS } from '@/lib/model'
 import type { Params } from '@/lib/types'
 import { LANG, type Lang } from '@/lib/i18n'
-import { useColorPalette } from '@/lib/colorPalette'
+import { getChartPalette } from '@/lib/colorPalette'
 import { shekel } from '@/lib/formatters'
 import dynamic from 'next/dynamic'
 import Sliders from './Sliders'
@@ -53,7 +53,7 @@ export default function Calculator() {
   const [diffHintReady, setDiffHintReady] = useState(false)
   const [showHowItWorksHint, setShowHowItWorksHint] = useState(false)
   const [isDark, setIsDark] = useState(() => { const h = new Date().getHours(); return h >= 19 || h < 7 })
-  const { palette, colorblindMode, toggleColorblind } = useColorPalette(isDark)
+  const palette = getChartPalette(false, isDark)
   const results = useMemo(() => compute(params), [params])
   const t = LANG[lang]
   const isRTL = lang === 'he'
@@ -237,22 +237,7 @@ export default function Calculator() {
             >
               {isDark ? '☀️' : '🌙'}
             </button>
-            <button
-              onClick={toggleColorblind}
-              title={isRTL ? 'צבעים נגישים' : 'Accessible colors'}
-              className={`px-2 py-0.5 sm:px-3 sm:py-1.5 rounded border text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 ${
-                colorblindMode
-                  ? 'bg-slate-600 text-white border-slate-600'
-                  : 'bg-[var(--bg-control)] border-[var(--c-border)] text-[var(--c-text-3)] hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)]'
-              }`}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              <span className="hidden sm:inline">{isRTL ? 'צבעים נגישים' : 'Accessible colors'}</span>
-            </button>
-            <button onClick={() => setLang(l => l === 'en' ? 'he' : 'en')} className="px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors">
+<button onClick={() => setLang(l => l === 'en' ? 'he' : 'en')} className="px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors">
               {t.langToggle}
             </button>
           </div>
@@ -262,9 +247,24 @@ export default function Calculator() {
       {/* Mobile split layout — only visible below 1024px */}
       <div className="lg:hidden flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Top: chart fixed at ~55dvh */}
-        <div className="shrink-0 h-[55dvh] overflow-hidden p-3 pb-1.5">
+        <div className="shrink-0 h-[55dvh] overflow-hidden pt-0 px-3 pb-1.5">
           <div className="border border-[var(--c-border)] rounded-lg p-3 h-full" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill palette={palette} diffHintReady={diffHintReady} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} />
+          </div>
+        </div>
+        {/* Summary bar */}
+        <div className="shrink-0 mx-3 mb-1.5 bg-[var(--bg-panel)] border border-[var(--c-border)] rounded-lg px-3 py-1"
+          style={isDark ? {} : { backgroundColor: 'var(--sidebar-group-bg)', borderColor: 'var(--sidebar-group-border)' }}>
+          <div className="flex items-center gap-x-3 text-xs text-[var(--c-muted)]" dir={isRTL ? 'rtl' : 'ltr'}>
+            <span>
+              {t.costsLiveEp}:{' '}
+              <span className="text-[var(--c-text)] font-medium tabular-nums">{shekel(results.Ep)}</span>
+            </span>
+            <span className="text-[var(--c-border)]" aria-hidden>·</span>
+            <span>
+              {t.downPaymentCard}:{' '}
+              <span className="text-[var(--c-text-3)] tabular-nums">{shekel(results.S0)}</span>
+            </span>
           </div>
         </div>
         {/* Bottom: sliders, independently scrollable */}
@@ -273,6 +273,7 @@ export default function Calculator() {
             params={params} update={update} results={results} t={t} isRTL={isRTL}
             only={SLIDER_GROUPS}
             palette={palette}
+            continuous
             boiRate={boiRate}
           />
         </div>
@@ -336,7 +337,7 @@ export default function Calculator() {
 
           {/* Chart — fills remaining height */}
           <div className="flex-1 min-h-0 border border-[var(--c-border)] rounded-lg p-4 flex flex-col" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch palette={palette} diffHintReady={diffHintReady} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} />
           </div>
 
         </section>
@@ -351,7 +352,10 @@ export default function Calculator() {
           }
         </p>
         <p className="text-xs text-[var(--c-muted)] text-center">
-          {isRTL ? '© 2026 מתן אלדר · לשימוש אישי בחינם' : '© 2026 Matan Eldar · Free for personal use'}
+          {isRTL
+            ? <>© 2026 <a href="https://www.linkedin.com/in/matan-eldar-5796321b5/" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">מתן אלדר</a> · לשימוש אישי בחינם</>
+            : <>© 2026 <a href="https://www.linkedin.com/in/matan-eldar-5796321b5/" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">Matan Eldar</a> · Free for personal use</>
+          }
         </p>
       </footer>
     </div>
@@ -366,7 +370,8 @@ function MethodologyPageEN({ page }: { page: number }) {
         <strong className="text-[var(--c-text-3)]">Apartment scenario:</strong> You buy an
         apartment with a mortgage and rent it out. The gain at each month is what you would walk
         away with if you sold then — sale price minus remaining mortgage, total purchase costs,
-        selling costs, and real estate capital gains tax (מס שבח) if applicable.
+        cumulative cash flow over the period (total mortgage payments minus total rent received),
+        selling costs, and מס שבח if applicable.
       </p>
       <p>
         <strong className="text-[var(--c-text-3)]">Passive scenario:</strong> You invest the same
@@ -391,20 +396,15 @@ function MethodologyPageEN({ page }: { page: number }) {
         <span dir="ltr">₪1,200,000</span> invested on day 1.
       </p>
       <p>
-        At some month: rental income <span dir="ltr">₪5,000</span>, mortgage payment <span dir="ltr">₪6,000</span> — a
-        negative cash flow of <span dir="ltr">₪1,000</span>. In the passive scenario, that <span dir="ltr">₪1,000</span> is
+        Mortgage payment: <span dir="ltr">₪6,000</span>, rental income: <span dir="ltr">₪5,500</span> — a
+        negative cash flow of <span dir="ltr">₪500</span>. In the passive scenario, that <span dir="ltr">₪500</span> is
         also invested in the market — money that would have come out of pocket in the apartment
         scenario.
       </p>
       <p>
-        A few years later: rental income <span dir="ltr">₪5,800</span>, mortgage payment <span dir="ltr">₪5,500</span> —
-        a positive cash flow of <span dir="ltr">₪300</span>. In the passive scenario, nothing is added to the portfolio
-        that month — rental income does not exist in this scenario, so there is no additional
-        investment.
-      </p>
-      <p>
-        The chart shows the net gain you would receive in any given month if you sold — in both
-        scenarios — allowing you to compare them over time.
+        A few years later: mortgage payment still <span dir="ltr">₪6,000</span>, rental income <span dir="ltr">₪6,200</span>{' '}
+        (rent has increased over time) — a positive cash flow of <span dir="ltr">₪200</span>. In the passive scenario,
+        nothing is added to the portfolio that month.
       </p>
     </div>
   )
@@ -440,7 +440,7 @@ function MethodologyPageHE({ page }: { page: number }) {
       <p>
         <strong className="text-[var(--c-text-3)]">תרחיש דירה: </strong>קונים דירה עם משכנתה
         ומשכירים אותה. הרווח בכל חודש הוא הרווח הנקי אם תמכרו אז — מחיר המכירה בניכוי יתרת
-        המשכנתה, כל הוצאות הרכישה, עלויות המכירה, ומס שבח (אם רלוונטי).
+        המשכנתה, כל הוצאות הרכישה, התזרים המצטבר לאורך התקופה (סך תשלומי המשכנתה פחות סך הכנסות השכירות), עלויות המכירה, ומס שבח (אם רלוונטי).
       </p>
       <p>
         <strong className="text-[var(--c-text-3)]">תרחיש פסיבי: </strong>משקיעים את אותו ההון
@@ -461,13 +461,10 @@ function MethodologyPageHE({ page }: { page: number }) {
         בתרחיש הפסיבי, כל ההון שהוצא ביום הרכישה — הון עצמי + מס רכישה + עלויות עסקה — מושקע בשוק ההון ביום הרכישה. בדוגמה זו הסכום הכולל הוא <span dir="ltr">₪1,200,000</span> המושקעים ביום הראשון.
       </p>
       <p>
-        בחודש מסוים: הכנסה משכירות <span dir="ltr">₪5,000</span>, תשלום משכנתה <span dir="ltr">₪6,000</span> — תזרים שלילי של <span dir="ltr">₪1,000</span>. בתרחיש הפסיבי, <span dir="ltr">₪1,000</span> אלו מושקעים אף הם בשוק ההון — כסף שהיה יוצא מכיסכם בתרחיש הדירה.
+        תשלום משכנתה: <span dir="ltr">₪6,000</span>, הכנסה משכירות: <span dir="ltr">₪5,500</span> — תזרים שלילי של <span dir="ltr">₪500</span>. בתרחיש הפסיבי, <span dir="ltr">₪500</span> אלו מושקעים אף הם בשוק ההון — כסף שהיה יוצא מכיסכם בתרחיש הדירה.
       </p>
       <p>
-        כעבור כמה שנים: הכנסה משכירות <span dir="ltr">₪5,800</span>, תשלום משכנתה <span dir="ltr">₪5,500</span> — תזרים חיובי של <span dir="ltr">₪300</span>. בתרחיש הפסיבי, חודש זה לא מוסיף דבר לתיק — הכנסה משכירות אינה קיימת בתרחיש זה, ולכן אין השקעה נוספת.
-      </p>
-      <p>
-        הגרף מציג את הרווח הנקי שהייתם מקבלים בכל חודש נתון אילו מכרתם — בתרחיש הדירה ובתרחיש הפסיבי — ומאפשר להשוות ביניהם לאורך זמן.
+        כעבור כמה שנים: תשלום המשכנתה עדיין <span dir="ltr">₪6,000</span>, הכנסה משכירות <span dir="ltr">₪6,200</span> (השכירות עלתה עם הזמן) — תזרים חיובי של <span dir="ltr">₪200</span>. בתרחיש הפסיבי, חודש זה לא מוסיף דבר לתיק.
       </p>
     </div>
   )
@@ -476,7 +473,7 @@ function MethodologyPageHE({ page }: { page: number }) {
     <div className="flex flex-col gap-3">
       <p className="font-medium text-[var(--c-text-3)]">תצוגות הגרף:</p>
       <ul className="list-disc list-inside flex flex-col gap-1 mr-2">
-        <li><strong className="text-[var(--c-text-3)]">רווחים</strong> — מציג את שני העקומות במקביל: רווח נקי במימוש של הדירה מול רווח נקי במימוש של ההשקעה הפסיבית. נקודות החציה בין העקומות הן הרגעים שבהם אחד התרחישים עולה על השני.</li>
+        <li><strong className="text-[var(--c-text-3)]">רווחים</strong> — מציג שתי עקומות במקביל: רווח נקי במימוש של הדירה מול רווח נקי במימוש של ההשקעה הפסיבית. נקודות החציה בין העקומות הן הרגעים שבהם אחד התרחישים עולה על השני.</li>
         <li><strong className="text-[var(--c-text-3)]">הפרש</strong> — מציג את ההפרש בין שני התרחישים (דירה פחות פסיבי). כשהעקומה מעל האפס — הדירה עדיפה. כשהיא מתחת לאפס — ההשקעה הפסיבית עדיפה. גובה העקומה בכל נקודה מראה את גודל היתרון.</li>
         <li><strong className="text-[var(--c-text-3)]">תזרים</strong> — מציג את הכנסת השכירות ותשלום המשכנתה כקווים, ואת התזרים החודשי הנקי כעמודות. עמודות שליליות (חודשים שבהם המשכנתה עולה על השכירות) מייצגות כסף המושקע בתרחיש הפסיבי.</li>
       </ul>

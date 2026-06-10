@@ -18,7 +18,7 @@ import {
 } from 'recharts'
 import type { ChartPoint } from '@/lib/types'
 import type { Translation } from '@/lib/i18n'
-import type { ChartPalette } from '@/lib/colorPalette'
+import { getChartPalette } from '@/lib/colorPalette'
 import { shortShekel, shekel } from '@/lib/formatters'
 
 interface Props {
@@ -28,7 +28,7 @@ interface Props {
   isRTL: boolean
   fill?: boolean
   stretch?: boolean
-  palette: ChartPalette
+  isDark: boolean
   diffHintReady?: boolean
 }
 
@@ -105,7 +105,8 @@ function CompactLegend({ view, APT, PAS, DIFF, isRTL, t }: {
   )
 }
 
-export default function Chart({ points, crossovers, t, isRTL, fill, stretch, palette, diffHintReady }: Props) {
+export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady }: Props) {
+  const palette = getChartPalette(false, isDark)
   const APT  = palette.apt
   const PAS  = palette.pas
   const DIFF = palette.diffCurve
@@ -362,6 +363,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
 
   const [start, end] = domain
   const visible = points.filter(p => p.month >= start && p.month <= end)
+  const yearlyPoints = visible.filter(p => p.month % 12 === 0)
   const ticks = makeTicks(start, end)
   const visibleCrossovers = crossovers.filter(c => c.month >= start && c.month <= end)
   const peakVisible = showPeak && peakMonth >= start && peakMonth <= end
@@ -496,8 +498,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
       <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
         <p className="text-[var(--c-muted)] mb-1">
           {isRTL
-            ? <span dir="ltr">{t.yearLabel2} {(Number(label) / 12).toFixed(1)} · {t.monthLabel} {label}</span>
-            : `${t.monthLabel} ${label} · ${t.yearLabel2} ${(Number(label) / 12).toFixed(1)}`
+            ? <span dir="ltr">{t.yearLabel2} {(Number(label) / 12).toFixed(cashFlowSubView === 'bars' ? 0 : 1)} · {t.monthLabel} {label}</span>
+            : `${t.monthLabel} ${label} · ${t.yearLabel2} ${(Number(label) / 12).toFixed(cashFlowSubView === 'bars' ? 0 : 1)}`
           }
         </p>
         {cashFlowSubView === 'rentmort'
@@ -509,7 +511,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
   }
 
   return (
-    <div dir="ltr" className={`relative w-full flex flex-col gap-1${fill || stretch ? ' h-full' : ''}`}>
+    <div dir="ltr" className={`relative w-full flex flex-col gap-0 lg:gap-1${fill || stretch ? ' h-full' : ''}`}>
       {/* Header row */}
       <div className={`flex items-center justify-between h-6${isRTL ? ' flex-row-reverse' : ''}`}>
         <div className={`flex items-center gap-2${isRTL ? ' flex-row-reverse' : ''}`}>
@@ -654,7 +656,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
 
         <ResponsiveContainer width="100%" height="100%">
           {view === 'cashflow' ? (
-            <ComposedChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }} barCategoryGap="0%"
+            <ComposedChart data={cashFlowSubView === 'bars' ? yearlyPoints : visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }} barCategoryGap="0%"
               onMouseMove={(state) => { if (state.activeLabel !== undefined) setActiveBarMonth(Number(state.activeLabel)) }}
               onMouseLeave={() => setActiveBarMonth(null)}
             >
@@ -701,8 +703,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
                 />
               )}
               {cashFlowSubView === 'bars' && (
-                <Bar dataKey="cashFlow" isAnimationActive={false} maxBarSize={20}>
-                  {visible.map((pt) => (
+                <Bar dataKey="cashFlow" isAnimationActive={false} barSize={18}>
+                  {yearlyPoints.map((pt) => (
                     <Cell key={pt.month} fill={pt.cashFlow >= 0 ? APT : PAS} />
                   ))}
                 </Bar>
@@ -978,7 +980,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
       {/* Summary sentence */}
       {view === 'cashflow' ? (
         cashFlowCrossover !== null
-          ? <p className="text-base font-bold text-center select-none leading-snug" style={{ color: APT }}>{t.cashFlowPositiveFrom((cashFlowCrossover / 12).toFixed(1))}</p>
+          ? <p className="mt-2 lg:mt-0 text-sm font-semibold lg:text-base lg:font-bold text-center select-none leading-snug" style={{ color: APT }}>{t.cashFlowPositiveFrom((cashFlowCrossover / 12).toFixed(1))}</p>
           : null
       ) : (() => {
         let summaryText: string | null = null
@@ -994,7 +996,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, pal
         }
         const summaryColor = crossovers.length === 0 && !initialApt ? PAS : APT
         return summaryText ? (
-          <p className="text-base font-bold text-center select-none leading-snug" style={{ color: summaryColor }}>
+          <p className="mt-2 lg:mt-0 text-sm font-semibold lg:text-base lg:font-bold text-center select-none leading-snug" style={{ color: summaryColor }}>
             {summaryText}
           </p>
         ) : null

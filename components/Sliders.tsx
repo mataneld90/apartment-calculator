@@ -300,7 +300,7 @@ function SliderRow({ label, tooltip, min, max, step, value, displayValue, onChan
     />
   ) : displayValue
   return (
-    <div className="flex items-center gap-2 py-0.5 min-w-0">
+    <div className="flex items-center gap-2 py-2 lg:py-0.5 min-w-0">
       <div className="flex items-center gap-1 w-28 shrink-0">
         <span className="text-xs text-[var(--c-text-3)] leading-tight">{label}</span>
         {tooltip && <InfoTooltip text={tooltip} />}
