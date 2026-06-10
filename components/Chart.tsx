@@ -86,16 +86,16 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t }: {
     return (
       <div className="flex justify-center items-center gap-1.5 text-xs text-slate-400 select-none" style={{ height: 20 }} dir={dir}>
         {swatch(DIFF, false)}
-        <span>{t.compactLegendDiff}</span>
+        <span>{t.diffLine}</span>
       </div>
     )
   }
   const isCashFlow = view === 'cashflow'
   const items = isCashFlow
     ? cashFlowSubView === 'bars'
-      ? [{ color: APT, label: t.compactLegendRentPos, square: true }, { color: PAS, label: t.compactLegendRentNeg, square: true }]
+      ? [{ color: APT, label: t.cashFlowLegendPositive, square: true }, { color: PAS, label: t.cashFlowLegendNegative, square: true }]
       : [{ color: APT, label: t.cashFlowRentLegend, square: false }, { color: PAS, label: t.cashFlowMortgageLegend, square: false }]
-    : [{ color: APT, label: t.apartmentShort, square: false }, { color: PAS, label: t.passiveShort, square: false }]
+    : [{ color: APT, label: t.apartmentLine, square: false }, { color: PAS, label: t.passiveLine, square: false }]
   return (
     <div className="flex justify-center items-center gap-4 text-xs text-slate-400 select-none" style={{ height: 20 }} dir={dir}>
       {items.map(({ color, label, square }) => (
@@ -533,7 +533,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
               const label = v === 'gains' ? t.viewGains : v === 'diff' ? t.viewDiff : t.viewCashFlow
               const hinting = (isDiff && showHint && !isActive) || (isCashFlow && showCashFlowHint && !isActive)
               const hintBright = (isDiff && hintVisible) || (isCashFlow && cashFlowHintVisible)
-              const hintColor = isDiff ? palette.pas : 'rgb(245,158,11)'
+              const hintColor = palette.pas
               return (
                 <button
                   key={v}

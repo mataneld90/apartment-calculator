@@ -335,9 +335,11 @@ interface Props {
   palette: ChartPalette
   continuous?: boolean
   boiRate?: number | null
+  dpMode: 'amount' | 'fraction'
+  onDpModeChange: (m: 'amount' | 'fraction') => void
 }
 
-export default function Sliders({ params, update, results, t, isRTL, only, palette, continuous, boiRate }: Props) {
+export default function Sliders({ params, update, results, t, isRTL, only, palette, continuous, boiRate, dpMode, onDpModeChange }: Props) {
   const visibleGroups = useMemo(
     () => only
       ? only.map(id => GROUPS.find(g => g.id === id)).filter((g): g is typeof GROUPS[0] => g !== undefined)
@@ -346,13 +348,10 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
   )
 
   // ── Down-payment dual-input mode ─────────────────────────────────────────
-  const [dpMode, setDpMode] = useState<'amount' | 'fraction'>('amount')
   const [downPaymentAmount, setDownPaymentAmount] = useState(() =>
-    Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000
+    Math.round((1 - params.p) * params.Av0 / 25_000) * 25_000
   )
-  const [dpAdjustedNote, setDpAdjustedNote] = useState(false)
 
-  // Refs so the effect can read current values without re-triggering
   const dpModeRef = useRef(dpMode)
   dpModeRef.current = dpMode
   const dpAmountRef = useRef(downPaymentAmount)
@@ -360,29 +359,23 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
   const prevAv0Ref = useRef(params.Av0)
   const prevBuyerTypeRef = useRef(params.buyerType)
 
-  // When Av0 or buyerType changes while in Amount mode: keep ₪ fixed, re-derive p
+  // Amount mode only: when price/buyerType changes, keep ₪ fixed; clamp up to legal minimum
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const av0Changed = params.Av0 !== prevAv0Ref.current
     const btChanged  = params.buyerType !== prevBuyerTypeRef.current
-    prevAv0Ref.current      = params.Av0
+    prevAv0Ref.current       = params.Av0
     prevBuyerTypeRef.current = params.buyerType
 
     if (dpModeRef.current !== 'amount' || (!av0Changed && !btChanged)) return
 
-    const maxP  = params.buyerType === 'investor' ? 0.50 : 0.75
-    const minDP = params.Av0 * (1 - maxP)
-    const clampedAmt = Math.max(dpAmountRef.current, minDP)
-    const roundedAmt = Math.round(Math.min(clampedAmt, params.Av0) / 10_000) * 10_000
+    const maxP   = params.buyerType === 'investor' ? 0.50 : 0.75
+    const minDP  = params.Av0 * (1 - maxP)
+    const effDP  = Math.min(Math.max(dpAmountRef.current, minDP), params.Av0)
 
-    if (roundedAmt !== dpAmountRef.current) {
-      setDownPaymentAmount(roundedAmt)
-      setDpAdjustedNote(true)
-      setTimeout(() => setDpAdjustedNote(false), 3_000)
-    }
-    const newP = Math.min(1 - roundedAmt / params.Av0, maxP)
-    update('p', newP)
-  }, [params.Av0, params.buyerType]) // intentional: omit dpMode/downPaymentAmount — read via refs
+    if (effDP !== dpAmountRef.current) setDownPaymentAmount(effDP)
+    update('p', 1 - effDP / params.Av0)
+  }, [params.Av0, params.buyerType])
 
   const thresholdPct = pct(results.lockedRate, 2)
   return (
@@ -471,8 +464,8 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
 
           {/* Custom dual-mode down-payment / mortgage-fraction slider — mortgage group only */}
           {group.id === 'mortgage' && (() => {
-            const maxP  = params.buyerType === 'investor' ? 0.50 : 0.75
-            const minDP = Math.ceil(params.Av0 * (1 - maxP) / 10_000) * 10_000
+            const maxP    = params.buyerType === 'investor' ? 0.50 : 0.75
+            const minDP   = Math.ceil(params.Av0 * (1 - maxP) / 25_000) * 25_000
             const dpClamped = Math.max(minDP, Math.min(downPaymentAmount, params.Av0))
             return (
               <div className="mb-2">
@@ -483,8 +476,8 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                       key={mode}
                       onClick={() => {
                         if (mode === 'amount' && dpMode === 'fraction')
-                          setDownPaymentAmount(Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000)
-                        setDpMode(mode)
+                          setDownPaymentAmount(Math.round((1 - params.p) * params.Av0 / 25_000) * 25_000)
+                        onDpModeChange(mode)
                       }}
                       className={`px-3 py-0.5 rounded border transition-colors text-center ${
                         dpMode === mode
@@ -504,17 +497,16 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                       tooltip={params.buyerType === 'investor' ? t.tooltips.pInvestor : t.tooltips.pSingle}
                       min={minDP}
                       max={params.Av0}
-                      step={10_000}
+                      step={25_000}
                       value={dpClamped}
                       displayValue={shekel(dpClamped)}
                       onChange={(v) => {
-                        const rounded = Math.round(v / 10_000) * 10_000
-                        setDownPaymentAmount(rounded)
-                        update('p', Math.min(1 - rounded / params.Av0, maxP))
+                        setDownPaymentAmount(v)
+                        update('p', Math.min(1 - v / params.Av0, maxP))
                       }}
                       isRTL={isRTL}
                       accentColor={palette.apt}
-                      editConfig={{ fromStored: v => v, toStored: n => Math.round(n / 10_000) * 10_000, decimals: 0, prefix: '₪', inputSize: 7 }}
+                      editConfig={{ fromStored: v => v, toStored: n => Math.round(n / 25_000) * 25_000, decimals: 0, prefix: '₪', inputSize: 7 }}
                     />
                     <p className="text-xs text-[var(--c-muted)] italic mt-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
                       {t.dpDerivedFraction(pct(params.p, 0))}
@@ -536,16 +528,11 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                       editConfig={{ fromStored: v => v * 100, toStored: n => n / 100, decimals: 0, suffix: '%', inputSize: 2 }}
                     />
                     <p className="text-xs text-[var(--c-muted)] italic mt-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
-                      {t.dpDerivedAmount(shekel(Math.round((1 - params.p) * params.Av0 / 10_000) * 10_000))}
+                      {t.dpDerivedAmount(shekel(Math.round((1 - params.p) * params.Av0 / 25_000) * 25_000))}
                     </p>
                   </>
                 )}
 
-                {dpAdjustedNote && (
-                  <p className="text-[10px] text-amber-500 mt-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
-                    {t.dpAdjustedToMin}
-                  </p>
-                )}
               </div>
             )
           })()}

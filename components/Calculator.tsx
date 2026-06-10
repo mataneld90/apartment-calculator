@@ -44,6 +44,7 @@ function hexToRgba(hex: string, alpha: number): string {
 
 export default function Calculator() {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS)
+  const [dpMode, setDpMode] = useState<'amount' | 'fraction'>('amount')
   const [boiRate, setBoiRate] = useState<number | null>(null)
   const [lang, setLang] = useState<Lang>('he')
   const [methodologyOpen, setMethodologyOpen] = useState(false)
@@ -253,8 +254,8 @@ export default function Calculator() {
 
       {/* Mobile split layout — only visible below 1024px */}
       <div className="lg:hidden flex-1 flex flex-col overflow-hidden min-h-0">
-        {/* Top: chart fixed at ~55dvh */}
-        <div className="shrink-0 h-[55dvh] overflow-hidden pt-0 px-3 pb-1.5">
+        {/* Top: chart fixed at ~48dvh */}
+        <div className="shrink-0 h-[54dvh] overflow-hidden pt-0 px-3 pb-1.5">
           <div className="border border-[var(--c-border)] rounded-lg p-3 h-full" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
             <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} />
           </div>
@@ -282,6 +283,7 @@ export default function Calculator() {
             palette={palette}
             continuous
             boiRate={boiRate}
+            dpMode={dpMode} onDpModeChange={setDpMode}
           />
         </div>
       </div>
@@ -301,6 +303,7 @@ export default function Calculator() {
                 only={SLIDER_GROUPS}
                 palette={palette}
                 continuous
+                dpMode={dpMode} onDpModeChange={setDpMode}
               />
             </div>
           ) : (
@@ -309,6 +312,7 @@ export default function Calculator() {
               only={SLIDER_GROUPS}
               palette={palette}
               continuous
+              dpMode={dpMode} onDpModeChange={setDpMode}
             />
           )}
         </aside>
