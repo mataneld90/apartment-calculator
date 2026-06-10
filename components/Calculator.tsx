@@ -231,11 +231,18 @@ export default function Calculator() {
             </button>
             <button
               onClick={() => setIsDark(d => !d)}
-              className={isDark
-                ? 'px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors'
-                : 'px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-slate-500 border border-slate-500 text-white text-xs sm:text-sm font-medium hover:bg-slate-600 transition-colors'}
+              className="px-2 py-0.5 sm:px-3 sm:py-1.5 sm:inline-flex sm:items-center rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors"
             >
-              {isDark ? '☀️' : '🌙'}
+              {isDark ? (
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="#facc15" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                  <circle cx="12" cy="12" r="4" fill="#facc15" stroke="none" />
+                  <path d="M12 2v2M12 20v2m-7.07-14.93 1.41 1.41m12.73 12.73 1.41 1.41M2 12h2m16 0h2m-14.14 7.07-1.41 1.41m15.56-15.56-1.41 1.41" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="#facc15" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+              )}
             </button>
 <button onClick={() => setLang(l => l === 'en' ? 'he' : 'en')} className="px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors">
               {t.langToggle}
