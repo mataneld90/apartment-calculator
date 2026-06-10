@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 export default function InfoTooltip({ text }: { text: string }) {
   if (!text) return null
@@ -14,8 +14,19 @@ export default function InfoTooltip({ text }: { text: string }) {
     setPos({ top: r.top, left: Math.max(4, left) })
   }
 
+  // Close when tapping outside on mobile
+  useEffect(() => {
+    if (!pos) return
+    function handleOutside() { setPos(null) }
+    document.addEventListener('click', handleOutside)
+    return () => document.removeEventListener('click', handleOutside)
+  }, [pos])
+
   return (
-    <span className="inline-flex shrink-0 items-center">
+    <span
+      className="inline-flex shrink-0 items-center p-2 -m-2 lg:p-0 lg:m-0"
+      onClick={(e) => { e.stopPropagation(); pos ? setPos(null) : show() }}
+    >
       <svg
         ref={ref}
         width="13" height="13" viewBox="0 0 20 20" fill="currentColor"
