@@ -4,7 +4,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react'
 import {
   ResponsiveContainer,
   LineChart,
-  ComposedChart,
+  BarChart,
   Bar,
   Cell,
   Line,
@@ -69,8 +69,9 @@ function niceStep(range: number): number {
   return 10 * mag
 }
 
-function CompactLegend({ view, APT, PAS, DIFF, isRTL, t }: {
+function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t }: {
   view: View
+  cashFlowSubView: 'rentmort' | 'bars'
   APT: string
   PAS: string
   DIFF: string
@@ -78,8 +79,8 @@ function CompactLegend({ view, APT, PAS, DIFF, isRTL, t }: {
   t: Translation
 }) {
   const dir = isRTL ? 'rtl' : 'ltr'
-  const swatch = (color: string, isCashFlow: boolean) => (
-    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: isCashFlow ? 1 : '50%', background: color, flexShrink: 0 }} />
+  const swatch = (color: string, square: boolean) => (
+    <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: square ? 1 : '50%', background: color, flexShrink: 0 }} />
   )
   if (view === 'diff') {
     return (
@@ -91,13 +92,15 @@ function CompactLegend({ view, APT, PAS, DIFF, isRTL, t }: {
   }
   const isCashFlow = view === 'cashflow'
   const items = isCashFlow
-    ? [{ color: APT, label: t.compactLegendRentPos }, { color: PAS, label: t.compactLegendRentNeg }]
-    : [{ color: APT, label: t.apartmentShort }, { color: PAS, label: t.passiveShort }]
+    ? cashFlowSubView === 'bars'
+      ? [{ color: APT, label: t.compactLegendRentPos, square: true }, { color: PAS, label: t.compactLegendRentNeg, square: true }]
+      : [{ color: APT, label: t.cashFlowRentLegend, square: false }, { color: PAS, label: t.cashFlowMortgageLegend, square: false }]
+    : [{ color: APT, label: t.apartmentShort, square: false }, { color: PAS, label: t.passiveShort, square: false }]
   return (
     <div className="flex justify-center items-center gap-4 text-xs text-slate-400 select-none" style={{ height: 20 }} dir={dir}>
-      {items.map(({ color, label }) => (
+      {items.map(({ color, label, square }) => (
         <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          {swatch(color, isCashFlow)}
+          {swatch(color, square)}
           <span>{label}</span>
         </span>
       ))}
@@ -145,6 +148,11 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
       if (pt.cashFlow >= 0) return pt.month
     }
     return null
+  }, [points])
+
+  const cashFlowAlwaysPositive = useMemo(() => {
+    const rest = points.filter(p => p.month > 0)
+    return rest.length > 0 && rest[0].cashFlow >= 0
   }, [points])
 
   const setCursor = (c: string) => {
@@ -357,14 +365,15 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const showPeak = peakVal > 1
   const peakLabel = t.peakAdvantage(shortShekel(peakVal), (peakMonth / 12).toFixed(1))
 
-  const MARGIN_TOP = view === 'gains' ? 40 : 20
+  const MARGIN_TOP = 30
   const XAXIS_HEIGHT = 30
   const LABEL_TOP = MARGIN_TOP + 20
 
   const [start, end] = domain
   const visible = points.filter(p => p.month >= start && p.month <= end)
-  const yearlyPoints = visible.filter(p => p.month % 12 === 0)
+  const yearlyPoints = visible.filter(p => p.month % 12 === 11)
   const ticks = makeTicks(start, end)
+  const cashFlowTicks = yearlyPoints.filter(p => (p.month + 1) % 60 === 0).map(p => p.month)
   const visibleCrossovers = crossovers.filter(c => c.month >= start && c.month <= end)
   const peakVisible = showPeak && peakMonth >= start && peakMonth <= end
   const visibleCashFlowCrossover = cashFlowCrossover !== null && cashFlowCrossover >= start && cashFlowCrossover <= end
@@ -498,8 +507,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
       <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
         <p className="text-[var(--c-muted)] mb-1">
           {isRTL
-            ? <span dir="ltr">{t.yearLabel2} {(Number(label) / 12).toFixed(cashFlowSubView === 'bars' ? 0 : 1)} · {t.monthLabel} {label}</span>
-            : `${t.monthLabel} ${label} · ${t.yearLabel2} ${(Number(label) / 12).toFixed(cashFlowSubView === 'bars' ? 0 : 1)}`
+            ? <span dir="ltr">{t.yearLabel2} {(Number(label) + 1) / 12}</span>
+            : `${t.yearLabel2} ${(Number(label) + 1) / 12}`
           }
         </p>
         {cashFlowSubView === 'rentmort'
@@ -608,7 +617,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
       )}
 
       {view === 'cashflow' && (
-        <div dir="ltr" className={`flex gap-1 h-6${isRTL ? ' justify-end' : ' justify-start'}`}>
+        <div dir="ltr" className={`flex gap-1 h-6 mt-1${isRTL ? ' justify-end' : ' justify-start'}`}>
           {(isRTL ? (['bars', 'rentmort'] as const) : (['rentmort', 'bars'] as const)).map((sv) => (
             <button
               key={sv}
@@ -656,75 +665,82 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
 
         <ResponsiveContainer width="100%" height="100%">
           {view === 'cashflow' ? (
-            <ComposedChart data={cashFlowSubView === 'bars' ? yearlyPoints : visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }} barCategoryGap="0%"
-              onMouseMove={(state) => { if (state.activeLabel !== undefined) setActiveBarMonth(Number(state.activeLabel)) }}
-              onMouseLeave={() => setActiveBarMonth(null)}
-            >
-              {sharedAxisProps.grid}
-              {sharedAxisProps.xAxis}
-              {cashFlowSubView === 'rentmort'
-                ? <YAxis domain={rentMortYDomain} tickFormatter={shortShekel} stroke="var(--chart-axis)" tick={{ fill: 'var(--chart-tick)', fontSize: 13 }} width={52} />
-                : sharedAxisProps.yAxis
-              }
-              {!fill && <Tooltip content={cashFlowTooltipContent} cursor={false} />}
-              {!fill && (
-                <Legend
-                  content={() => (
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--chart-tick)' }}>
-                      {(cashFlowSubView === 'bars' ? [
-                        { label: t.cashFlowLegendPositive, color: APT, type: 'bar' as const },
-                        { label: t.cashFlowLegendNegative, color: PAS, type: 'bar' as const },
-                      ] : [
-                        { label: t.cashFlowRentLegend, color: APT, type: 'line' as const },
-                        { label: t.cashFlowMortgageLegend, color: PAS, type: 'dashed' as const },
-                      ]).map(({ label, color, type }) => (
-                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
-                          <svg width="20" height="10" style={{ display: 'block', flexShrink: 0 }}>
-                            {type === 'bar'
-                              ? <rect x="3" y="0" width="14" height="10" rx="1" fill={color} />
-                              : type === 'line'
-                              ? <line x1="0" y1="5" x2="20" y2="5" stroke={color} strokeWidth="2" />
-                              : <line x1="0" y1="5" x2="20" y2="5" stroke={color} strokeWidth="2" strokeDasharray="6 3" />
-                            }
-                          </svg>
-                          <span>{label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                />
-              )}
-              <ReferenceLine y={0} stroke="var(--chart-axis)" strokeDasharray="4 2" />
-              {cashFlowSubView === 'bars' && visibleCashFlowCrossover !== null && (
-                <ReferenceLine
-                  x={visibleCashFlowCrossover}
-                  stroke="var(--chart-crossover)"
-                  strokeDasharray="4 2"
-                />
-              )}
-              {cashFlowSubView === 'bars' && (
+            cashFlowSubView === 'bars' ? (
+              <BarChart data={yearlyPoints} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }} barCategoryGap="0%"
+                onMouseMove={(state) => { if (state.activeLabel !== undefined) setActiveBarMonth(Number(state.activeLabel)) }}
+                onMouseLeave={() => setActiveBarMonth(null)}
+              >
+                {sharedAxisProps.grid}
+                <XAxis dataKey="month" ticks={cashFlowTicks} tickFormatter={(m) => `${(m + 1) / 12}y`} stroke="var(--chart-axis)" tick={{ fill: 'var(--chart-tick)', fontSize: 13 }} />
+                {sharedAxisProps.yAxis}
+                {!fill && <Tooltip content={cashFlowTooltipContent} cursor={false} />}
+                {!fill && (
+                  <Legend
+                    content={() => (
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--chart-tick)' }}>
+                        {[
+                          { label: t.cashFlowLegendPositive, color: APT },
+                          { label: t.cashFlowLegendNegative, color: PAS },
+                        ].map(({ label, color }) => (
+                          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                            <svg width="20" height="10" style={{ display: 'block', flexShrink: 0 }}>
+                              <rect x="3" y="0" width="14" height="10" rx="1" fill={color} />
+                            </svg>
+                            <span>{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  />
+                )}
+                <ReferenceLine y={0} stroke="var(--chart-axis)" strokeDasharray="4 2" />
+                {visibleCashFlowCrossover !== null && (
+                  <ReferenceLine x={visibleCashFlowCrossover} stroke="var(--chart-crossover)" strokeDasharray="4 2" />
+                )}
                 <Bar dataKey="cashFlow" isAnimationActive={false} barSize={18}>
                   {yearlyPoints.map((pt) => (
                     <Cell key={pt.month} fill={pt.cashFlow >= 0 ? APT : PAS} />
                   ))}
                 </Bar>
-              )}
-              {cashFlowSubView === 'rentmort' && (
-                <Line dataKey="monthlyRent" dot={false} isAnimationActive={false}
+                {!fill && activeBarMonth !== null && (
+                  <ReferenceLine x={activeBarMonth} stroke="var(--chart-tick)" strokeWidth={1} strokeOpacity={0.4} />
+                )}
+              </BarChart>
+            ) : (
+              <LineChart data={yearlyPoints} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
+                {sharedAxisProps.grid}
+                <XAxis dataKey="month" ticks={cashFlowTicks} tickFormatter={(m) => `${(m + 1) / 12}y`} stroke="var(--chart-axis)" tick={{ fill: 'var(--chart-tick)', fontSize: 13 }} />
+                <YAxis domain={rentMortYDomain} tickFormatter={shortShekel} stroke="var(--chart-axis)" tick={{ fill: 'var(--chart-tick)', fontSize: 13 }} width={52} />
+                {!fill && <Tooltip content={cashFlowTooltipContent} cursor={false} />}
+                {!fill && (
+                  <Legend
+                    content={() => (
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--chart-tick)' }}>
+                        {[
+                          { label: t.cashFlowRentLegend, color: APT, dashed: false },
+                          { label: t.cashFlowMortgageLegend, color: PAS, dashed: true },
+                        ].map(({ label, color, dashed }) => (
+                          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                            <svg width="20" height="10" style={{ display: 'block', flexShrink: 0 }}>
+                              <line x1="0" y1="5" x2="20" y2="5" stroke={color} strokeWidth="2" strokeDasharray={dashed ? '6 3' : undefined} />
+                            </svg>
+                            <span>{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  />
+                )}
+                <Line type="stepAfter" dataKey="monthlyRent" dot={false} isAnimationActive={false}
                   stroke={APT} strokeWidth={2}
                   activeDot={{ r: 4, fill: APT, stroke: '#fff', strokeWidth: 2 }}
                 />
-              )}
-              {cashFlowSubView === 'rentmort' && (
-                <Line dataKey="monthlyMortgage" dot={false} isAnimationActive={false}
+                <Line type="stepAfter" dataKey="monthlyMortgage" dot={false} isAnimationActive={false}
                   stroke={PAS} strokeWidth={2} strokeDasharray="6 3"
                   activeDot={{ r: 4, fill: PAS, stroke: '#fff', strokeWidth: 2 }}
                 />
-              )}
-              {!fill && activeBarMonth !== null && (
-                <ReferenceLine x={activeBarMonth} stroke="var(--chart-tick)" strokeWidth={1} strokeOpacity={0.4} />
-              )}
-            </ComposedChart>
+              </LineChart>
+            )
           ) : (
             <LineChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
               {sharedAxisProps.grid}
@@ -899,18 +915,21 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                 direction: isRTL ? 'rtl' : 'ltr',
               }}
             >
-              {t.cashFlowAnnotation((visibleCashFlowCrossover / 12).toFixed(1))}
+              {t.cashFlowAnnotation(String(Math.round(visibleCashFlowCrossover / 12)))}
             </div>
           </div>
         )}
 
         {/* Mobile tap tooltip */}
         {fill && tapMonth !== null && (() => {
-          const pt = points.find(p => p.month === tapMonth)
+          const resolvedMonth = view === 'cashflow' && yearlyPoints.length > 0
+            ? yearlyPoints.reduce((best, p) => Math.abs(p.month - tapMonth) < Math.abs(best.month - tapMonth) ? p : best).month
+            : tapMonth
+          const pt = points.find(p => p.month === resolvedMonth)
           if (!pt) return null
           const [s, en] = domain
           const span = en - s
-          const lineX = 52 + ((tapMonth - s) / Math.max(1, span)) * (chartWidth - 68)
+          const lineX = 52 + ((resolvedMonth - s) / Math.max(1, span)) * (chartWidth - 68)
           const bubbleLeft = Math.min(Math.max(lineX, 80), chartWidth - 80)
           return (
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -948,8 +967,15 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
               >
                 <p style={{ color: 'var(--c-muted)', marginBottom: 2 }}>
                   {isRTL
-                    ? <span dir="ltr">{t.yearLabel2} {(tapMonth / 12).toFixed(1)} · {t.monthLabel} {tapMonth}</span>
-                    : `${t.monthLabel} ${tapMonth} · ${t.yearLabel2} ${(tapMonth / 12).toFixed(1)}`
+                    ? <span dir="ltr">
+                        {view === 'cashflow'
+                          ? `${t.yearLabel2} ${(resolvedMonth + 1) / 12}`
+                          : `${t.yearLabel2} ${(resolvedMonth / 12).toFixed(1)} · ${t.monthLabel} ${resolvedMonth}`
+                        }
+                      </span>
+                    : view === 'cashflow'
+                    ? `${t.yearLabel2} ${(resolvedMonth + 1) / 12}`
+                    : `${t.monthLabel} ${resolvedMonth} · ${t.yearLabel2} ${(resolvedMonth / 12).toFixed(1)}`
                   }
                 </p>
                 {view === 'cashflow' ? (
@@ -975,13 +1001,15 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         })()}
       </div>
 
-      {fill && <CompactLegend view={view} APT={APT} PAS={PAS} DIFF={DIFF} isRTL={isRTL} t={t} />}
+      {fill && <CompactLegend view={view} cashFlowSubView={cashFlowSubView} APT={APT} PAS={PAS} DIFF={DIFF} isRTL={isRTL} t={t} />}
 
       {/* Summary sentence */}
       {view === 'cashflow' ? (
         cashFlowCrossover !== null
-          ? <p className="mt-2 lg:mt-0 text-sm font-semibold lg:text-base lg:font-bold text-center select-none leading-snug" style={{ color: APT }}>{t.cashFlowPositiveFrom((cashFlowCrossover / 12).toFixed(1))}</p>
-          : null
+          ? <p className="mt-2 lg:mt-0 text-sm font-semibold lg:text-base lg:font-bold text-center select-none leading-snug" style={{ color: APT }}>{t.cashFlowPositiveFrom(String(Math.round(cashFlowCrossover / 12)))}</p>
+          : cashFlowAlwaysPositive
+          ? <p className="mt-2 lg:mt-0 text-sm font-semibold lg:text-base lg:font-bold text-center select-none leading-snug" style={{ color: APT }}>{t.cashFlowAlwaysPositive}</p>
+          : <p className="mt-2 lg:mt-0 text-sm font-semibold lg:text-base lg:font-bold text-center select-none leading-snug" style={{ color: PAS }}>{t.cashFlowNeverPositive}</p>
       ) : (() => {
         let summaryText: string | null = null
         if (crossovers.length === 0)

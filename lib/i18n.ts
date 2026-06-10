@@ -82,6 +82,8 @@ export type Translation = {
   cashFlowSummaryPositive: (year: string) => string
   cashFlowSummaryNegative: string
   cashFlowSummaryAlways: string
+  cashFlowAlwaysPositive: string
+  cashFlowNeverPositive: string
   perYear: string
   scrollHint: string
   resetZoom: string
@@ -205,6 +207,8 @@ export const LANG: Record<Lang, Translation> = {
     cashFlowSummaryPositive: (year) => `Monthly cash flow turns positive at year ${year} — until then, the shortfall is invested in the passive scenario`,
     cashFlowSummaryNegative: 'Monthly cash flow remains negative throughout the mortgage period',
     cashFlowSummaryAlways: 'Monthly cash flow is positive from day one',
+    cashFlowAlwaysPositive: 'Positive flow throughout the entire period',
+    cashFlowNeverPositive: 'Cash flow does not turn positive within 30 years',
     perYear: '/ yr',
     scrollHint: 'Scroll to zoom · drag to pan',
     resetZoom: 'Reset zoom',
@@ -324,6 +328,8 @@ export const LANG: Record<Lang, Translation> = {
     cashFlowSummaryPositive: (year) => `התזרים החודשי הופך לחיובי בשנה ${year} — עד אז, ההפרש מושקע בתרחיש הפסיבי`,
     cashFlowSummaryNegative: 'התזרים החודשי שלילי לאורך כל תקופת המשכנתה',
     cashFlowSummaryAlways: 'התזרים החודשי חיובי מהיום הראשון',
+    cashFlowAlwaysPositive: 'תזרים חיובי לאורך כל התקופה',
+    cashFlowNeverPositive: 'התזרים אינו הופך לחיובי בטווח של 30 שנה',
     perYear: 'שנה /',
     scrollHint: 'גלגלו לזום · גררו להזזה',
     resetZoom: 'איפוס זום',
