@@ -255,7 +255,7 @@ export default function Calculator() {
       {/* Mobile split layout — only visible below 1024px */}
       <div className="lg:hidden flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Top: chart fixed at ~48dvh */}
-        <div className="shrink-0 h-[54dvh] overflow-hidden pt-0 px-3 pb-1.5">
+        <div className="shrink-0 h-[56dvh] overflow-hidden pt-0 px-3 pb-1.5">
           <div className="border border-[var(--c-border)] rounded-lg p-3 h-full" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
             <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} />
           </div>
