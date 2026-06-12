@@ -3,7 +3,7 @@
 A free, interactive tool for comparing a residential real estate 
 investment against passive stock market investment in the Israeli market.
 
-**Live app:** https://apartment-calculator-mey.web.app
+**Live app:** https://apartment-calc.com
 
 ## What it does
 

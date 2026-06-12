@@ -576,18 +576,18 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
             zIndex: 10,
             width: 'max-content',
             maxWidth: 'min(500px, 100%)',
-            background: 'var(--bg-control)',
-            border: '1px solid var(--c-border)',
+            background: isDark ? 'rgba(15,20,30,0.92)' : 'rgba(30,40,55,0.88)',
+            border: '1px solid rgba(150,170,200,0.4)',
             borderRadius: 8,
             padding: '6px 12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.14)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
             opacity: hintVisible ? 1 : 0,
             transition: hintVisible ? 'opacity 300ms' : 'opacity 500ms',
             pointerEvents: 'none',
           }}
           dir={isRTL ? 'rtl' : 'ltr'}
         >
-          <span className="text-sm text-slate-400 italic">{t.diffHint}</span>
+          <span className="text-sm italic" style={{ color: 'rgba(210,220,235,0.9)' }}>{t.diffHint}</span>
         </div>
       )}
 
@@ -601,18 +601,18 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
             zIndex: 10,
             width: 'max-content',
             maxWidth: 'min(500px, 100%)',
-            background: 'var(--bg-control)',
-            border: '1px solid var(--c-border)',
+            background: isDark ? 'rgba(15,20,30,0.92)' : 'rgba(30,40,55,0.88)',
+            border: '1px solid rgba(150,170,200,0.4)',
             borderRadius: 8,
             padding: '6px 12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.14)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
             opacity: cashFlowHintVisible ? 1 : 0,
             transition: cashFlowHintVisible ? 'opacity 300ms' : 'opacity 500ms',
             pointerEvents: 'none',
           }}
           dir={isRTL ? 'rtl' : 'ltr'}
         >
-          <span className="text-sm text-slate-400 italic">{t.cashFlowHint}</span>
+          <span className="text-sm italic" style={{ color: 'rgba(210,220,235,0.9)' }}>{t.cashFlowHint}</span>
         </div>
       )}
 
@@ -707,7 +707,10 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                 )}
               </BarChart>
             ) : (
-              <LineChart data={yearlyPoints} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
+              <LineChart data={yearlyPoints} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}
+                onMouseMove={(state) => { if (state.activeLabel !== undefined) setActiveBarMonth(Number(state.activeLabel)) }}
+                onMouseLeave={() => setActiveBarMonth(null)}
+              >
                 {sharedAxisProps.grid}
                 <XAxis dataKey="month" ticks={cashFlowTicks} tickFormatter={(m) => `${(m + 1) / 12}y`} stroke="var(--chart-axis)" tick={{ fill: 'var(--chart-tick)', fontSize: 13 }} />
                 <YAxis domain={rentMortYDomain} tickFormatter={shortShekel} stroke="var(--chart-axis)" tick={{ fill: 'var(--chart-tick)', fontSize: 13 }} width={52} />
@@ -739,6 +742,9 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                   stroke={PAS} strokeWidth={2} strokeDasharray="6 3"
                   activeDot={{ r: 4, fill: PAS, stroke: '#fff', strokeWidth: 2 }}
                 />
+                {!fill && activeBarMonth !== null && (
+                  <ReferenceLine x={activeBarMonth} stroke="var(--chart-tick)" strokeWidth={1} strokeOpacity={0.4} />
+                )}
               </LineChart>
             )
           ) : (

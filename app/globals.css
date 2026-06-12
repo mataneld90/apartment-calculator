@@ -120,8 +120,15 @@ input[type='range']::-webkit-slider-thumb {
 
 @keyframes subtlePulse {
   0%   { box-shadow: 0 0 0 0 var(--hint-glow-start); }
-  50%  { box-shadow: 0 0 0 6px var(--hint-glow-mid); }
+  50%  { box-shadow: 0 0 0 3px var(--hint-glow-mid); }
   100% { box-shadow: 0 0 0 0 var(--hint-glow-end); }
+}
+@media (min-width: 1024px) {
+  @keyframes subtlePulse {
+    0%   { box-shadow: 0 0 0 0 var(--hint-glow-start); }
+    50%  { box-shadow: 0 0 0 7px var(--hint-glow-mid); }
+    100% { box-shadow: 0 0 0 0 var(--hint-glow-end); }
+  }
 }
 .hint-pulse {
   animation: subtlePulse 1s ease-out 3;

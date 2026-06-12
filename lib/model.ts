@@ -127,11 +127,11 @@ export function compute(params: Params): Results {
 export const DEFAULT_PARAMS: Params = {
   Av0: 2_500_000,
   p: 0.50,
-  R0: 6_500,
+  R0: 6_000,
   Y: 30,
   Ip: 0.09,
   V: 0.07,
-  mortgageRate: 0.0435,
+  mortgageRate: 0.046,
   Ri: 0.02,
   maintenanceRate: 0.02,
   buyerType: 'investor',

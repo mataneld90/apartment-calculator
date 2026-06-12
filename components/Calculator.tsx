@@ -223,8 +223,8 @@ export default function Calculator() {
               onClick={() => setMethodologyOpen(true)}
               className={`px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors${showHowItWorksHint ? ' hint-pulse' : ''}`}
               style={showHowItWorksHint ? {
-                '--hint-glow-start': hexToRgba(palette.pas, 0.4),
-                '--hint-glow-mid':   hexToRgba(palette.pas, 0.15),
+                '--hint-glow-start': hexToRgba(palette.pas, 0.7),
+                '--hint-glow-mid':   hexToRgba(palette.pas, 0.45),
                 '--hint-glow-end':   hexToRgba(palette.pas, 0),
               } as React.CSSProperties : undefined}
             >
