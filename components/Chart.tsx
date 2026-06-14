@@ -24,9 +24,6 @@ import { shortShekel, shekel } from '@/lib/formatters'
 const fmtIRR = (v: number | null | undefined): string =>
   v == null ? '—' : (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '%'
 
-const IRR_Y_MIN = -0.20
-const IRR_Y_MAX = 0.30
-const IRR_Y_TICKS = [-0.20, -0.15, -0.10, -0.05, 0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30]
 
 interface Props {
   points: ChartPoint[]
@@ -401,12 +398,19 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     ? cashFlowCrossover : null
   const visibleIrrCrossovers = irrCrossovers.filter(c => c.month >= start && c.month <= end)
   const irrViewPoints = (irrApartment && irrPassive)
-    ? visible.filter(p => p.month >= 12).map(p => ({
+    ? visible.filter(p => p.month >= 24).map(p => ({
         month: p.month,
-        irrApt: irrApartment[p.month] != null ? Math.max(IRR_Y_MIN, Math.min(IRR_Y_MAX, irrApartment[p.month]!)) : null,
-        irrPas: irrPassive[p.month]   != null ? Math.max(IRR_Y_MIN, Math.min(IRR_Y_MAX, irrPassive[p.month]!))   : null,
+        irrApt: irrApartment[p.month] ?? null,
+        irrPas: irrPassive[p.month]   ?? null,
       }))
     : []
+  const irrVals = irrViewPoints.flatMap(p => [p.irrApt, p.irrPas]).filter((v): v is number => v != null)
+  const irrYMin = irrVals.length ? Math.min(...irrVals) - 0.02 : -0.05
+  const irrYMax = irrVals.length ? Math.max(...irrVals) + 0.02 : 0.15
+  const irrYStep = (irrYMax - irrYMin) <= 0.15 ? 0.02 : 0.05
+  const irrTicks: number[] = []
+  for (let v = Math.ceil(irrYMin / irrYStep) * irrYStep; v <= irrYMax + 0.001; v += irrYStep)
+    irrTicks.push(Math.round(v * 1000) / 1000)
 
   const PLOT_LEFT_PX = 52
   const PLOT_RIGHT_PX = 16
@@ -803,8 +807,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
               {sharedAxisProps.grid}
               {sharedAxisProps.xAxis}
               <YAxis
-                domain={[IRR_Y_MIN, IRR_Y_MAX]}
-                ticks={IRR_Y_TICKS}
+                domain={[irrYMin, irrYMax]}
+                ticks={irrTicks}
                 tickFormatter={(v: number) => `${(v * 100).toFixed(0)}%`}
                 stroke="var(--chart-axis)"
                 tick={{ fill: 'var(--chart-tick)', fontSize: 13 }}
@@ -1142,14 +1146,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           </p>
         ) : null
       })()}
-      {!fill && view !== 'cashflow' && irrApartment && irrPassive && (
-        <p className="text-xs text-center text-[var(--c-muted)] mt-0.5 select-none" dir={isRTL ? 'rtl' : 'ltr'}>
-          {isRTL ? 'תשואה שנתית (IRR) ל-30 שנה' : '30y IRR'}{': '}
-          <span style={{ color: APT }}>{t.apartmentShort} <b>{fmtIRR(irrApartment[360])}</b></span>
-          {' · '}
-          <span style={{ color: PAS }}>{t.passiveShort} <b>{fmtIRR(irrPassive[360])}</b></span>
-        </p>
-      )}
       {!fill && <p className="text-xs text-[var(--c-dim)] text-center select-none">{t.scrollHint}</p>}
     </div>
   )
