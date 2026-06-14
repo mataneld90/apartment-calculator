@@ -257,7 +257,7 @@ export default function Calculator() {
         {/* Top: chart fixed at ~48dvh */}
         <div className="shrink-0 h-[56dvh] overflow-hidden pt-0 px-3 pb-1.5">
           <div className="border border-[var(--c-border)] rounded-lg p-3 h-full" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} />
           </div>
         </div>
         {/* Summary bar */}
@@ -348,7 +348,7 @@ export default function Calculator() {
 
           {/* Chart — fills remaining height */}
           <div className="flex-1 min-h-0 border border-[var(--c-border)] rounded-lg p-4 flex flex-col" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} />
           </div>
 
         </section>
@@ -432,8 +432,8 @@ function MethodologyPageEN({ page }: { page: number }) {
       <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
         <li>Spitzer (שפיצר) amortization — fixed monthly payment, standard in Israel</li>
         <li>Purchase tax: 8% flat for an additional apartment (10% above ₪5,872,725); graduated rates for a first apartment</li>
-        <li>Real estate capital gains tax (מס שבח): 25% at sale, or exempt depending on your situation</li>
-        <li>Capital gains tax on passive investment: 25% at realization only — not annual</li>
+        <li>Estimated מס שבח (betterment tax) on apartment sale: 25% of the nominal gain — a simplification; actual מס שבח is on the inflation-adjusted real gain after deductible costs. When set to exempt, the single-apartment exemption applies fully up to a sale-value ceiling of ₪5,008,000 (2024–2027, periodically indexed); value above the ceiling is taxed proportionally at 25%. Or fully taxed, depending on your situation.</li>
+        <li>Capital gains tax (מס רווח הון) on passive investment: 25% at realization only — not annual. Note: the apartment uses מס שבח, the passive investment uses מס רווח הון — same rate, different taxes.</li>
         <li>All figures are nominal ILS — no inflation adjustment. Both scenarios are affected by inflation similarly, so the comparison remains valid</li>
         <li>This models a rental investment scenario (purchase → rent → sell)</li>
       </ul>
@@ -492,8 +492,8 @@ function MethodologyPageHE({ page }: { page: number }) {
       <ul className="list-disc list-inside flex flex-col gap-1 mr-2">
         <li>שיטת שפיצר — תשלום משכנתה חודשי קבוע, סטנדרט בישראל</li>
         <li>מס רכישה: 8% גורף לדירה נוספת (10% מעל ₪5,872,725); מדרגות לדירה יחידה</li>
-        <li>מס שבח: 25% על רווח הנדל&quot;ן במימוש, או פטור בהתאם למצב</li>
-        <li>מס רווח הון על השקעה פסיבית: 25% במימוש בלבד — לא שנתי</li>
+        <li>מס שבח משוער על מכירת הדירה: 25% מהרווח הנומינלי — הפשטה; מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות. בבחירת פטור: הפטור לדירה יחידה חל עד תקרת שווי מכירה של ₪5,008,000 (2024–2027, מתעדכן מדי שנה); הרווח היחסי על החלק שמעל התקרה ממוסה ב-25%. בהתאם למצב.</li>
+        <li>מס רווח הון על השקעה פסיבית: 25% במימוש בלבד — לא שנתי. שימו לב: הדירה ממוסה במס שבח, ההשקעה הפסיבית במס רווח הון — אותו שיעור, מס שונה.</li>
         <li>כל הנתונים בשקלים נומינליים — ללא התאמה לאינפלציה. שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה ביניהם תקפה</li>
         <li>המחשבון מדמה תרחיש של רכישה, השכרה ומכירה</li>
       </ul>

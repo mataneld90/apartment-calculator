@@ -1,0 +1,179 @@
+[debug] [2026-06-14T11:40:42.691Z] ----------------------------------------------------------------------
+[debug] [2026-06-14T11:40:42.692Z] Command:       /usr/bin/node /home/matan_eldar/.npm-global/bin/firebase deploy --only hosting --project apartment-calculator-mey
+[debug] [2026-06-14T11:40:42.693Z] CLI Version:   15.18.0
+[debug] [2026-06-14T11:40:42.693Z] Platform:      linux
+[debug] [2026-06-14T11:40:42.693Z] Node Version:  v20.20.2
+[debug] [2026-06-14T11:40:42.693Z] Time:          Sun Jun 14 2026 14:40:42 GMT+0300 (Israel Daylight Time)
+[debug] [2026-06-14T11:40:42.693Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-06-14T11:40:43.777Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-06-14T11:40:43.777Z] > authorizing via signed-in user (matan.eldar89@gmail.com)
+[debug] [2026-06-14T11:40:43.777Z] [iam] checking project apartment-calculator-mey for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-06-14T11:40:43.778Z] Checked if tokens are valid: false, expires at: 1781434035025
+[debug] [2026-06-14T11:40:43.778Z] Checked if tokens are valid: false, expires at: 1781434035025
+[debug] [2026-06-14T11:40:43.778Z] > refreshing access token with scopes: []
+[debug] [2026-06-14T11:40:43.779Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-06-14T11:40:43.779Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-06-14T11:40:44.049Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-06-14T11:40:44.049Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-06-14T11:40:44.054Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/apartment-calculator-mey:testIamPermissions [none]
+[debug] [2026-06-14T11:40:44.054Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/apartment-calculator-mey:testIamPermissions  x-goog-user-project=apartment-calculator-mey
+[debug] [2026-06-14T11:40:44.054Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/apartment-calculator-mey:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-06-14T11:40:44.465Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/apartment-calculator-mey:testIamPermissions 200
+[debug] [2026-06-14T11:40:44.465Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/apartment-calculator-mey:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-06-14T11:40:44.465Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:44.465Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:44.465Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/apartment-calculator-mey [none]
+[debug] [2026-06-14T11:40:45.022Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/apartment-calculator-mey 200
+[debug] [2026-06-14T11:40:45.022Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/apartment-calculator-mey {"projectId":"apartment-calculator-mey","projectNumber":"1089689560856","displayName":"Apartment Calculator","name":"projects/apartment-calculator-mey","resources":{"hostingSite":"apartment-calculator-mey"},"state":"ACTIVE","etag":"1_c4725df4-5467-4e92-99e8-d2a7b03cdd50"}
+[info] 
+[info] === Deploying to 'apartment-calculator-mey'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-06-14T11:40:45.024Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:45.024Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:45.024Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/apartment-calculator-mey/sites/apartment-calculator-mey [none]
+[debug] [2026-06-14T11:40:46.472Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/apartment-calculator-mey/sites/apartment-calculator-mey 200
+[debug] [2026-06-14T11:40:46.472Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/apartment-calculator-mey/sites/apartment-calculator-mey {"name":"projects/apartment-calculator-mey/sites/apartment-calculator-mey","defaultUrl":"https://apartment-calculator-mey.web.app","type":"DEFAULT_SITE"}
+[debug] [2026-06-14T11:40:46.473Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:46.473Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:46.473Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/versions [none]
+[debug] [2026-06-14T11:40:46.473Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-06-14T11:40:48.278Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/versions 200
+[debug] [2026-06-14T11:40:48.278Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/versions {"name":"projects/1089689560856/sites/apartment-calculator-mey/versions/507272abba173d5e","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[apartment-calculator-mey]: beginning deploy... 
+[info] i  hosting[apartment-calculator-mey]: found 38 files in out 
+[debug] [2026-06-14T11:40:48.289Z] [hosting] uploading with 200 concurrency
+[debug] [2026-06-14T11:40:48.313Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:48.313Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:48.314Z] [hosting] hash cache [b3V0] stored for 38 files
+[debug] [2026-06-14T11:40:48.314Z] [hosting][hash queue][FINAL] {"max":21,"min":11,"avg":12.894736842105264,"active":0,"complete":38,"success":38,"errored":0,"retried":0,"total":38,"elapsed":25}
+[debug] [2026-06-14T11:40:48.314Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/1089689560856/sites/apartment-calculator-mey/versions/507272abba173d5e:populateFiles [none]
+[debug] [2026-06-14T11:40:48.314Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/1089689560856/sites/apartment-calculator-mey/versions/507272abba173d5e:populateFiles {"files":{"/window.svg":"ba7b3f63b42200bf802d94850c49bc8cef1d0bdb2b70353f4532822765703426","/vercel.svg":"4e5d8a3c607fab92ddd63ce0fe25c7bde485d5900e8dd240fd6ae7ba787108b7","/globe.svg":"66301814319b70818031fea043afbe8a63afcc52cf7c5887482ce54563d6c467","/next.svg":"181fa108bff84137e92c71370f54f0f918257d72471f3f4c396af9773af3da2b","/file.svg":"27901bd0b6a4d85ec10e16b6953df4f5dcbeb5a8fd7f68d0ff18b9b85f90b2bb","/__next._tree.txt":"41010ca79f107e4691630e15149c2dea38d4614bc32ee9412d7ff8499ffaa9fd","/index.txt":"1125c48a322344642b575184a74032b77062bbcecd284e19a158501f370f1939","/__next._index.txt":"b198c360c1f7ff878c81b6351c90d0dae3013fdce8d85b65acc889d9c078624e","/__next._full.txt":"1125c48a322344642b575184a74032b77062bbcecd284e19a158501f370f1939","/__next._head.txt":"e14862c0d4c8239ef11e76794c63b6a428d9c3aa4775ae56592840a46d348258","/__next.__PAGE__.txt":"9f9474a1943a6dc7a94f255b097b2549ea5dd2ab799cd3b94e7f7db2f455a7ed","/_not-found/index.txt":"9c0c477cb8244dd6ab968de5f0a846ba84ef19aedc5db398cd8fae029f35905d","/_not-found/__next._tree.txt":"22e5422a5afb9164a715a79ae10ce098bbe0d6b111f344b6fc192dbe5039aa97","/404.html":"709015b3b5243a028d43da74ec277b70c270b18182037491efdab742510b4c7c","/_not-found/__next._not-found.txt":"224ab043d3b407b4f3dbed5ccdeff3345fd47d8dd361acd749d7f6f6a2ad2937","/index.html":"547f2c73347823ffe34a390abdc72fb4e58c0180ccd5ee265195389f5c1895ef","/_not-found/index.html":"709015b3b5243a028d43da74ec277b70c270b18182037491efdab742510b4c7c","/_not-found/__next._index.txt":"b198c360c1f7ff878c81b6351c90d0dae3013fdce8d85b65acc889d9c078624e","/_not-found/__next._not-found.__PAGE__.txt":"f7a49d4a5a5c9cb8743f8a287e33934cdbc012082ce23884915e3ecab9be0178","/_not-found/__next._full.txt":"9c0c477cb8244dd6ab968de5f0a846ba84ef19aedc5db398cd8fae029f35905d","/_next/static/chunks/12816.spm_a3o.js":"4d215fa6d3d4616e2cd53ca7d5b3a2b291456551f33f875a63069b9664acb37e","/_not-found/__next._head.txt":"6f2c57ea6d3b4e0eb577a3ec7a6b410a3fa0cb012a96ffc8044d6c1770c29726","/favicon.ico":"95de7e616394c2ef46c6a2f6a61f2184ac35f10d2934234aa8cf7b597bb24cfb","/_next/static/chunks/0ljspdd3cv1ft.js":"b89484d634d4f334ee26c04acc3080dd8c0480cbf51f39bf210b13f4ec3be1c9","/_next/static/chunks/turbopack-0y~tdyf2t9g_x.js":"3b257343c8dd82e269a0e52aab2fc8f48f86a726071734949c00339c84f66282","/_next/static/media/favicon.0x3dzn~oxb6tn.ico":"95de7e616394c2ef46c6a2f6a61f2184ac35f10d2934234aa8cf7b597bb24cfb","/_next/static/chunks/0o~269zocnb95.js":"6dd461372c3bff7691d43c267063437b57ddbea1fe1ede04ce60b24a65d770b3","/_next/static/DKx3wH17ln7M2HoFU_07x/_ssgManifest.js":"d8d8790f4e673a23bec506f00699bed8a258ac0e4965bb1ca8598172cfc0ec97","/_next/static/DKx3wH17ln7M2HoFU_07x/_buildManifest.js":"eadf3650017b2094542d95eeda190a7ef5689624c557c1c1ae4d5a0d53057195","/_next/static/DKx3wH17ln7M2HoFU_07x/_clientMiddlewareManifest.js":"2631856c85d9b699e000e7d40645259aafc1454d09f58f6ff9f9b13bfce1d552","/404/index.html":"709015b3b5243a028d43da74ec277b70c270b18182037491efdab742510b4c7c","/_next/static/chunks/06mk2xtwqdktr.css":"60928a2f59b1a85e234f5b994f01a859be47b16cdbf86a322e61cf7d28986991","/_next/static/chunks/0q1_mpz~k0a3w.js":"e1b7408f1799779988f72f6ebdf4c868436d0ce37ccc43b20390f62aed59deeb","/og-image.png":"e72745777df0b0fe3290e43091a4981a3db87c97086a65c95b6c78656c31643d","/_next/static/chunks/03~yq9q893hmn.js":"45b36f93bb08c52e360d14b0e8449c88770aa8cf5d59bff1c76cbe6e198fe7c5","/_next/static/chunks/0lf19-3-ltg.e.js":"9c536bc3397cea9c842fc3107f24490e6eeb3de93974506ea01462923c03ee18","/_next/static/chunks/07lhk_q6pmm3r.js":"4b25ddefa6eb8cbf76bc862e0c80737434ca208e99b0c1d95883b86fc6a27042","/_next/static/chunks/0d_6.x2-a.kla.js":"13b4c032714e0c6af47df6db27b975d1bc10a4e0cc0339064a4525bfa0bcc33d"}}
+[debug] [2026-06-14T11:40:49.325Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/1089689560856/sites/apartment-calculator-mey/versions/507272abba173d5e:populateFiles 200
+[debug] [2026-06-14T11:40:49.325Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/1089689560856/sites/apartment-calculator-mey/versions/507272abba173d5e:populateFiles {"uploadRequiredHashes":["547f2c73347823ffe34a390abdc72fb4e58c0180ccd5ee265195389f5c1895ef","b198c360c1f7ff878c81b6351c90d0dae3013fdce8d85b65acc889d9c078624e","224ab043d3b407b4f3dbed5ccdeff3345fd47d8dd361acd749d7f6f6a2ad2937","9c0c477cb8244dd6ab968de5f0a846ba84ef19aedc5db398cd8fae029f35905d","6f2c57ea6d3b4e0eb577a3ec7a6b410a3fa0cb012a96ffc8044d6c1770c29726","9f9474a1943a6dc7a94f255b097b2549ea5dd2ab799cd3b94e7f7db2f455a7ed","f7a49d4a5a5c9cb8743f8a287e33934cdbc012082ce23884915e3ecab9be0178","709015b3b5243a028d43da74ec277b70c270b18182037491efdab742510b4c7c","1125c48a322344642b575184a74032b77062bbcecd284e19a158501f370f1939","41010ca79f107e4691630e15149c2dea38d4614bc32ee9412d7ff8499ffaa9fd","13b4c032714e0c6af47df6db27b975d1bc10a4e0cc0339064a4525bfa0bcc33d","22e5422a5afb9164a715a79ae10ce098bbe0d6b111f344b6fc192dbe5039aa97","e14862c0d4c8239ef11e76794c63b6a428d9c3aa4775ae56592840a46d348258","4d215fa6d3d4616e2cd53ca7d5b3a2b291456551f33f875a63069b9664acb37e"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files"}
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.326Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.327Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:49.328Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/547f2c73347823ffe34a390abdc72fb4e58c0180ccd5ee265195389f5c1895ef [none]
+[debug] [2026-06-14T11:40:49.328Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/547f2c73347823ffe34a390abdc72fb4e58c0180ccd5ee265195389f5c1895ef [stream]
+[debug] [2026-06-14T11:40:49.329Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/b198c360c1f7ff878c81b6351c90d0dae3013fdce8d85b65acc889d9c078624e [none]
+[debug] [2026-06-14T11:40:49.329Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/b198c360c1f7ff878c81b6351c90d0dae3013fdce8d85b65acc889d9c078624e [stream]
+[debug] [2026-06-14T11:40:49.330Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/224ab043d3b407b4f3dbed5ccdeff3345fd47d8dd361acd749d7f6f6a2ad2937 [none]
+[debug] [2026-06-14T11:40:49.330Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/224ab043d3b407b4f3dbed5ccdeff3345fd47d8dd361acd749d7f6f6a2ad2937 [stream]
+[debug] [2026-06-14T11:40:49.331Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/9c0c477cb8244dd6ab968de5f0a846ba84ef19aedc5db398cd8fae029f35905d [none]
+[debug] [2026-06-14T11:40:49.331Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/9c0c477cb8244dd6ab968de5f0a846ba84ef19aedc5db398cd8fae029f35905d [stream]
+[debug] [2026-06-14T11:40:49.332Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/6f2c57ea6d3b4e0eb577a3ec7a6b410a3fa0cb012a96ffc8044d6c1770c29726 [none]
+[debug] [2026-06-14T11:40:49.332Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/6f2c57ea6d3b4e0eb577a3ec7a6b410a3fa0cb012a96ffc8044d6c1770c29726 [stream]
+[debug] [2026-06-14T11:40:49.333Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/9f9474a1943a6dc7a94f255b097b2549ea5dd2ab799cd3b94e7f7db2f455a7ed [none]
+[debug] [2026-06-14T11:40:49.333Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/9f9474a1943a6dc7a94f255b097b2549ea5dd2ab799cd3b94e7f7db2f455a7ed [stream]
+[debug] [2026-06-14T11:40:49.334Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/f7a49d4a5a5c9cb8743f8a287e33934cdbc012082ce23884915e3ecab9be0178 [none]
+[debug] [2026-06-14T11:40:49.334Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/f7a49d4a5a5c9cb8743f8a287e33934cdbc012082ce23884915e3ecab9be0178 [stream]
+[debug] [2026-06-14T11:40:49.335Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/709015b3b5243a028d43da74ec277b70c270b18182037491efdab742510b4c7c [none]
+[debug] [2026-06-14T11:40:49.335Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/709015b3b5243a028d43da74ec277b70c270b18182037491efdab742510b4c7c [stream]
+[debug] [2026-06-14T11:40:49.336Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/1125c48a322344642b575184a74032b77062bbcecd284e19a158501f370f1939 [none]
+[debug] [2026-06-14T11:40:49.336Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/1125c48a322344642b575184a74032b77062bbcecd284e19a158501f370f1939 [stream]
+[debug] [2026-06-14T11:40:49.337Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/41010ca79f107e4691630e15149c2dea38d4614bc32ee9412d7ff8499ffaa9fd [none]
+[debug] [2026-06-14T11:40:49.337Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/41010ca79f107e4691630e15149c2dea38d4614bc32ee9412d7ff8499ffaa9fd [stream]
+[debug] [2026-06-14T11:40:49.338Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/13b4c032714e0c6af47df6db27b975d1bc10a4e0cc0339064a4525bfa0bcc33d [none]
+[debug] [2026-06-14T11:40:49.338Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/13b4c032714e0c6af47df6db27b975d1bc10a4e0cc0339064a4525bfa0bcc33d [stream]
+[debug] [2026-06-14T11:40:49.338Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/22e5422a5afb9164a715a79ae10ce098bbe0d6b111f344b6fc192dbe5039aa97 [none]
+[debug] [2026-06-14T11:40:49.338Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/22e5422a5afb9164a715a79ae10ce098bbe0d6b111f344b6fc192dbe5039aa97 [stream]
+[debug] [2026-06-14T11:40:49.339Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/e14862c0d4c8239ef11e76794c63b6a428d9c3aa4775ae56592840a46d348258 [none]
+[debug] [2026-06-14T11:40:49.339Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/e14862c0d4c8239ef11e76794c63b6a428d9c3aa4775ae56592840a46d348258 [stream]
+[debug] [2026-06-14T11:40:49.340Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/4d215fa6d3d4616e2cd53ca7d5b3a2b291456551f33f875a63069b9664acb37e [none]
+[debug] [2026-06-14T11:40:49.340Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/4d215fa6d3d4616e2cd53ca7d5b3a2b291456551f33f875a63069b9664acb37e [stream]
+[debug] [2026-06-14T11:40:49.341Z] [hosting][populate queue][FINAL] {"max":1015,"min":1015,"avg":1015,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":1028}
+[debug] [2026-06-14T11:40:49.341Z] [hosting] uploads queued: 14
+[info] i  hosting: uploading new files [0/14] (0%) 
+[debug] [2026-06-14T11:40:50.333Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/f7a49d4a5a5c9cb8743f8a287e33934cdbc012082ce23884915e3ecab9be0178 200
+[debug] [2026-06-14T11:40:50.333Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/f7a49d4a5a5c9cb8743f8a287e33934cdbc012082ce23884915e3ecab9be0178 [stream]
+[debug] [2026-06-14T11:40:50.343Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/6f2c57ea6d3b4e0eb577a3ec7a6b410a3fa0cb012a96ffc8044d6c1770c29726 200
+[debug] [2026-06-14T11:40:50.344Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/6f2c57ea6d3b4e0eb577a3ec7a6b410a3fa0cb012a96ffc8044d6c1770c29726 [stream]
+[debug] [2026-06-14T11:40:50.352Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/1125c48a322344642b575184a74032b77062bbcecd284e19a158501f370f1939 200
+[debug] [2026-06-14T11:40:50.352Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/1125c48a322344642b575184a74032b77062bbcecd284e19a158501f370f1939 [stream]
+[debug] [2026-06-14T11:40:50.368Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/9c0c477cb8244dd6ab968de5f0a846ba84ef19aedc5db398cd8fae029f35905d 200
+[debug] [2026-06-14T11:40:50.368Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/9c0c477cb8244dd6ab968de5f0a846ba84ef19aedc5db398cd8fae029f35905d [stream]
+[debug] [2026-06-14T11:40:50.414Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/709015b3b5243a028d43da74ec277b70c270b18182037491efdab742510b4c7c 200
+[debug] [2026-06-14T11:40:50.415Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/709015b3b5243a028d43da74ec277b70c270b18182037491efdab742510b4c7c [stream]
+[debug] [2026-06-14T11:40:50.429Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/e14862c0d4c8239ef11e76794c63b6a428d9c3aa4775ae56592840a46d348258 200
+[debug] [2026-06-14T11:40:50.429Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/e14862c0d4c8239ef11e76794c63b6a428d9c3aa4775ae56592840a46d348258 [stream]
+[debug] [2026-06-14T11:40:50.444Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/4d215fa6d3d4616e2cd53ca7d5b3a2b291456551f33f875a63069b9664acb37e 200
+[debug] [2026-06-14T11:40:50.445Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/4d215fa6d3d4616e2cd53ca7d5b3a2b291456551f33f875a63069b9664acb37e [stream]
+[debug] [2026-06-14T11:40:50.453Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/41010ca79f107e4691630e15149c2dea38d4614bc32ee9412d7ff8499ffaa9fd 200
+[debug] [2026-06-14T11:40:50.453Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/41010ca79f107e4691630e15149c2dea38d4614bc32ee9412d7ff8499ffaa9fd [stream]
+[debug] [2026-06-14T11:40:50.454Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/b198c360c1f7ff878c81b6351c90d0dae3013fdce8d85b65acc889d9c078624e 200
+[debug] [2026-06-14T11:40:50.454Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/b198c360c1f7ff878c81b6351c90d0dae3013fdce8d85b65acc889d9c078624e [stream]
+[debug] [2026-06-14T11:40:50.484Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/547f2c73347823ffe34a390abdc72fb4e58c0180ccd5ee265195389f5c1895ef 200
+[debug] [2026-06-14T11:40:50.484Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/547f2c73347823ffe34a390abdc72fb4e58c0180ccd5ee265195389f5c1895ef [stream]
+[debug] [2026-06-14T11:40:50.576Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/9f9474a1943a6dc7a94f255b097b2549ea5dd2ab799cd3b94e7f7db2f455a7ed 200
+[debug] [2026-06-14T11:40:50.576Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/9f9474a1943a6dc7a94f255b097b2549ea5dd2ab799cd3b94e7f7db2f455a7ed [stream]
+[debug] [2026-06-14T11:40:50.585Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/13b4c032714e0c6af47df6db27b975d1bc10a4e0cc0339064a4525bfa0bcc33d 200
+[debug] [2026-06-14T11:40:50.585Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/13b4c032714e0c6af47df6db27b975d1bc10a4e0cc0339064a4525bfa0bcc33d [stream]
+[debug] [2026-06-14T11:40:50.586Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/224ab043d3b407b4f3dbed5ccdeff3345fd47d8dd361acd749d7f6f6a2ad2937 200
+[debug] [2026-06-14T11:40:50.586Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/224ab043d3b407b4f3dbed5ccdeff3345fd47d8dd361acd749d7f6f6a2ad2937 [stream]
+[debug] [2026-06-14T11:40:50.592Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/22e5422a5afb9164a715a79ae10ce098bbe0d6b111f344b6fc192dbe5039aa97 200
+[debug] [2026-06-14T11:40:50.592Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/apartment-calculator-mey/versions/507272abba173d5e/files/22e5422a5afb9164a715a79ae10ce098bbe0d6b111f344b6fc192dbe5039aa97 [stream]
+[debug] [2026-06-14T11:40:50.592Z] [hosting][upload queue][FINAL] {"max":1264,"min":1006,"avg":1131.6428571428573,"active":0,"complete":14,"success":14,"errored":0,"retried":0,"total":14,"elapsed":1266}
+[info] i  hosting: upload complete 
+[info] ✔  hosting[apartment-calculator-mey]: file upload complete 
+[debug] [2026-06-14T11:40:50.593Z] [hosting] deploy completed after 2313ms
+[debug] [2026-06-14T11:40:50.593Z] [
+  {
+    "config": {
+      "public": "out",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "site": "apartment-calculator-mey"
+    },
+    "version": "projects/1089689560856/sites/apartment-calculator-mey/versions/507272abba173d5e"
+  }
+]
+[info] i  hosting[apartment-calculator-mey]: finalizing version... 
+[debug] [2026-06-14T11:40:50.594Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:50.594Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:50.594Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/versions/507272abba173d5e updateMask=status%2Cconfig
+[debug] [2026-06-14T11:40:50.594Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/versions/507272abba173d5e {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]}}
+[debug] [2026-06-14T11:40:52.188Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/versions/507272abba173d5e 200
+[debug] [2026-06-14T11:40:52.189Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/versions/507272abba173d5e {"name":"projects/1089689560856/sites/apartment-calculator-mey/versions/507272abba173d5e","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-06-14T11:40:48.791356Z","createUser":{"email":"matan.eldar89@gmail.com"},"finalizeTime":"2026-06-14T11:40:53.752678Z","finalizeUser":{"email":"matan.eldar89@gmail.com"}}
+[debug] [2026-06-14T11:40:52.189Z] [hosting] finalized version for apartment-calculator-mey:[object Object]
+[info] ✔  hosting[apartment-calculator-mey]: version finalized 
+[info] i  hosting[apartment-calculator-mey]: releasing new version... 
+[debug] [2026-06-14T11:40:52.189Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:52.189Z] Checked if tokens are valid: true, expires at: 1781440843049
+[debug] [2026-06-14T11:40:52.189Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/channels/live/releases versionName=projects%2F1089689560856%2Fsites%2Fapartment-calculator-mey%2Fversions%2F507272abba173d5e
+[debug] [2026-06-14T11:40:52.189Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/apartment-calculator-mey/channels/live/releases {}

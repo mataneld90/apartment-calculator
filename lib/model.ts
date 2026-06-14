@@ -1,6 +1,34 @@
 import type { Params, ChartPoint, Results } from './types'
 
+// ─── IRR solver ───────────────────────────────────────────────────────────────
+function npvCalc(cfs: number[], n: number, r: number): number {
+  let sum = 0, factor = 1;
+  for (let t = 0; t <= n; t++) {
+    sum += cfs[t] * factor;
+    factor /= (1 + r);
+  }
+  return sum;
+}
+
+function solveIRR(cfs: number[], n: number): number | null {
+  const LO = -0.5, HI = 0.5;
+  const nLo = npvCalc(cfs, n, LO);
+  const nHi = npvCalc(cfs, n, HI);
+  if (!isFinite(nLo) || !isFinite(nHi) || nLo * nHi > 0) return null;
+  let lo = LO, hi = HI;
+  for (let i = 0; i < 64; i++) {
+    const mid = (lo + hi) / 2;
+    const nm = npvCalc(cfs, n, mid);
+    if (!isFinite(nm)) return null;
+    if (nLo * nm <= 0) hi = mid;
+    else lo = mid;
+  }
+  return Math.pow(1 + (lo + hi) / 2, 12) - 1;
+}
+
 const CGT = 0.25
+// 2024–2027 single-apartment מס שבח exemption ceiling — periodically indexed by the tax authority
+const MAS_SHVACH_EXEMPT_CEILING = 5_008_000
 
 export function purchaseTaxInvestor(A: number): number {
   const b1 = 5_872_725
@@ -63,6 +91,12 @@ export function compute(params: Params): Results {
   let intComp = 0  // Σmax(0,-f(t))·ip^(x-t) — compounded injections (mort>rent months only)
   let intFlat = 0  // Σmax(0,-f(t)) — flat sum (cost basis of injections)
 
+  // IRR cash-flow accumulators (index = month, 0 = initial outlay)
+  const aptCFs: number[] = [-Ep]
+  const pasCFs: number[] = [-Ep]
+  const aptExits: number[] = [0]  // exit value at each month (apt)
+  const pasExits: number[] = [0]  // exit value at each month (pas)
+
   let prevN = N0
   let prevP = 0
   const crossovers: Results['crossovers'] = []
@@ -90,7 +124,16 @@ export function compute(params: Params): Results {
 
     const netProceeds = Av_x * (1 - Es)
     const gain = netProceeds - taxBasis
-    const masShvachTax = (masShvach === '25%' && gain > 0) ? gain * 0.25 : 0
+    let masShvachTax = 0
+    if (gain > 0) {
+      if (masShvach === '25%') {
+        masShvachTax = gain * 0.25
+      } else if (masShvach === 'exempt') {
+        // Ceiling-aware: gain proportional to value above the ceiling is taxed at 25%
+        const taxablePortion = Math.max(0, Av_x - MAS_SHVACH_EXEMPT_CEILING) / Av_x
+        masShvachTax = gain * taxablePortion * 0.25
+      }
+    }
     const N_x = netProceeds + F - Ep - rem - masShvachTax
 
     // passive gain formula; at month 0 passiveGain is hardcoded to 0, not computed here
@@ -119,9 +162,26 @@ export function compute(params: Params): Results {
       monthlyRent: Math.round(rent),
       monthlyMortgage: Math.round(mort),
     })
+
+    aptCFs.push(flow)
+    pasCFs.push(-Math.max(0, -flow))
+    aptExits.push(netProceeds - rem - masShvachTax)
+    pasExits.push(P_x + Ep + intFlat)
   }
 
-  return { points, crossovers, Tp, M0, Ep, S0, lockedRate, prepayFee: Math.round(fee0) }
+  // Precompute IRR for all exit months 1..360 (O(1) lookup on hover)
+  const irrApartment: (number | null)[] = [null]
+  const irrPassive:   (number | null)[] = [null]
+  for (let x = 1; x <= 360; x++) {
+    aptCFs[x] += aptExits[x]
+    pasCFs[x] += pasExits[x]
+    irrApartment.push(solveIRR(aptCFs, x))
+    irrPassive.push(solveIRR(pasCFs, x))
+    aptCFs[x] -= aptExits[x]
+    pasCFs[x] -= pasExits[x]
+  }
+
+  return { points, crossovers, Tp, M0, Ep, S0, lockedRate, prepayFee: Math.round(fee0), irrApartment, irrPassive }
 }
 
 export const DEFAULT_PARAMS: Params = {
@@ -133,7 +193,7 @@ export const DEFAULT_PARAMS: Params = {
   V: 0.07,
   mortgageRate: 0.046,
   Ri: 0.02,
-  maintenanceRate: 0.02,
+  maintenanceRate: 0.07,
   buyerType: 'investor',
   purchaseCostsRate: 0.05,
   Es: 0.03,

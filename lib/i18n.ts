@@ -121,6 +121,9 @@ export type Translation = {
   compactLegendDiff: string
   compactLegendRentPos: string
   compactLegendRentNeg: string
+  irrLabel: string
+  irrApt: string
+  irrPas: string
 }
 
 export const LANG: Record<Lang, Translation> = {
@@ -246,6 +249,9 @@ export const LANG: Record<Lang, Translation> = {
     compactLegendDiff: 'Apt. vs. passive advantage',
     compactLegendRentPos: 'Rent > mortgage',
     compactLegendRentNeg: 'Mortgage > rent',
+    irrLabel: 'IRR',
+    irrApt: 'Apartment',
+    irrPas: 'Passive',
   },
   he: {
     title: 'דירה מול השקעה פסיבית',
@@ -367,5 +373,8 @@ export const LANG: Record<Lang, Translation> = {
     compactLegendDiff: 'יתרון דירה על פסיבי',
     compactLegendRentPos: 'שכירות > משכנתה',
     compactLegendRentNeg: 'משכנתה > שכירות',
+    irrLabel: 'תשואה שנתית (IRR)',
+    irrApt: 'דירה',
+    irrPas: 'פסיבי',
   },
 }

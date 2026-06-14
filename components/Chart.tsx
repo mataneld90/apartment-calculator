@@ -21,6 +21,13 @@ import type { Translation } from '@/lib/i18n'
 import { getChartPalette } from '@/lib/colorPalette'
 import { shortShekel, shekel } from '@/lib/formatters'
 
+const fmtIRR = (v: number | null | undefined): string =>
+  v == null ? '—' : (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '%'
+
+const IRR_Y_MIN = -0.20
+const IRR_Y_MAX = 0.30
+const IRR_Y_TICKS = [-0.20, -0.15, -0.10, -0.05, 0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30]
+
 interface Props {
   points: ChartPoint[]
   crossovers: { month: number; value: number }[]
@@ -30,9 +37,11 @@ interface Props {
   stretch?: boolean
   isDark: boolean
   diffHintReady?: boolean
+  irrApartment?: (number | null)[]
+  irrPassive?:   (number | null)[]
 }
 
-type View = 'gains' | 'diff' | 'cashflow'
+type View = 'gains' | 'diff' | 'cashflow' | 'irr'
 
 const TOTAL = 360
 
@@ -108,7 +117,7 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t }: {
   )
 }
 
-export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady }: Props) {
+export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive }: Props) {
   const palette = getChartPalette(false, isDark)
   const APT  = palette.apt
   const PAS  = palette.pas
@@ -154,6 +163,18 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     const rest = points.filter(p => p.month > 0)
     return rest.length > 0 && rest[0].cashFlow >= 0
   }, [points])
+
+  const irrCrossovers = useMemo(() => {
+    if (!irrApartment || !irrPassive) return []
+    const result: { month: number }[] = []
+    for (let m = 13; m <= 360; m++) {
+      const a0 = irrApartment[m - 1], a1 = irrApartment[m]
+      const p0 = irrPassive[m - 1],   p1 = irrPassive[m]
+      if (a0 != null && a1 != null && p0 != null && p1 != null && (a0 - p0) * (a1 - p1) < 0)
+        result.push({ month: m })
+    }
+    return result
+  }, [irrApartment, irrPassive])
 
   const setCursor = (c: string) => {
     if (divRef.current) divRef.current.style.cursor = c
@@ -378,6 +399,14 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const peakVisible = showPeak && peakMonth >= start && peakMonth <= end
   const visibleCashFlowCrossover = cashFlowCrossover !== null && cashFlowCrossover >= start && cashFlowCrossover <= end
     ? cashFlowCrossover : null
+  const visibleIrrCrossovers = irrCrossovers.filter(c => c.month >= start && c.month <= end)
+  const irrViewPoints = (irrApartment && irrPassive)
+    ? visible.filter(p => p.month >= 12).map(p => ({
+        month: p.month,
+        irrApt: irrApartment[p.month] != null ? Math.max(IRR_Y_MIN, Math.min(IRR_Y_MAX, irrApartment[p.month]!)) : null,
+        irrPas: irrPassive[p.month]   != null ? Math.max(IRR_Y_MIN, Math.min(IRR_Y_MAX, irrPassive[p.month]!))   : null,
+      }))
+    : []
 
   const PLOT_LEFT_PX = 52
   const PLOT_RIGHT_PX = 16
@@ -519,6 +548,28 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     )
   }
 
+  const irrTooltipContent = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length || label === undefined) return null
+    const aptI = payload.find((e: any) => e.dataKey === 'irrApt')?.value
+    const pasI = payload.find((e: any) => e.dataKey === 'irrPas')?.value
+    if (aptI == null && pasI == null) return null
+    return (
+      <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
+        <p className="text-[var(--c-muted)] mb-1">
+          {isRTL
+            ? <span dir="ltr">{t.yearLabel2} {(Number(label) / 12).toFixed(1)} · {t.monthLabel} {label}</span>
+            : `${t.monthLabel} ${label} · ${t.yearLabel2} ${(Number(label) / 12).toFixed(1)}`
+          }
+        </p>
+        <p style={{ color: 'var(--c-muted)', fontSize: 10, marginBottom: 2 }}>
+          {isRTL ? 'תשואה שנתית אם תמכור בנקודה זו' : 'Annualized return if you exit at this point'}
+        </p>
+        {aptI != null && <p style={{ color: APT }}>{t.apartmentShort}{': '}<span dir="ltr">{fmtIRR(aptI)}</span></p>}
+        {pasI != null && <p style={{ color: PAS }}>{t.passiveShort}{': '}<span dir="ltr">{fmtIRR(pasI)}</span></p>}
+      </div>
+    )
+  }
+
   return (
     <div dir="ltr" className={`relative w-full flex flex-col gap-0 lg:gap-1${fill || stretch ? ' h-full' : ''}`}>
       {/* Header row */}
@@ -526,11 +577,11 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         <div className={`flex items-center gap-2${isRTL ? ' flex-row-reverse' : ''}`}>
           <span className="text-sm text-slate-400 font-normal whitespace-nowrap" dir={isRTL ? 'rtl' : 'ltr'}>{t.chartViewLabel}</span>
           <div className={`flex gap-1${isRTL ? ' flex-row-reverse' : ''}`}>
-            {(['gains', 'diff', 'cashflow'] as View[]).map((v) => {
+            {(['gains', 'diff', 'cashflow', 'irr'] as View[]).map((v) => {
               const isActive = view === v
               const isDiff = v === 'diff'
               const isCashFlow = v === 'cashflow'
-              const label = v === 'gains' ? t.viewGains : v === 'diff' ? t.viewDiff : t.viewCashFlow
+              const label = v === 'gains' ? t.viewGains : v === 'diff' ? t.viewDiff : v === 'cashflow' ? t.viewCashFlow : (isRTL ? 'תשואה שנתית' : 'IRR')
               const hinting = (isDiff && showHint && !isActive) || (isCashFlow && showCashFlowHint && !isActive)
               const hintBright = (isDiff && hintVisible) || (isCashFlow && cashFlowHintVisible)
               const hintColor = palette.pas
@@ -644,7 +695,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         onMouseLeave={onMouseUp}
       >
         {/* Background color bands — only for gains/diff views */}
-        {view !== 'cashflow' && (
+        {(view === 'gains' || view === 'diff') && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {visibleBands.map(({ x1, x2, apt }) => (
               <div
@@ -747,6 +798,57 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                 )}
               </LineChart>
             )
+          ) : view === 'irr' ? (
+            <LineChart data={irrViewPoints} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
+              {sharedAxisProps.grid}
+              {sharedAxisProps.xAxis}
+              <YAxis
+                domain={[IRR_Y_MIN, IRR_Y_MAX]}
+                ticks={IRR_Y_TICKS}
+                tickFormatter={(v: number) => `${(v * 100).toFixed(0)}%`}
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-tick)', fontSize: 13 }}
+                width={52}
+              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <ReferenceLine y={0} stroke="var(--chart-axis)" strokeDasharray="4 2" />
+              {visibleIrrCrossovers.map((c, i) => (
+                <ReferenceLine
+                  key={c.month}
+                  x={c.month}
+                  stroke="var(--chart-crossover)"
+                  strokeDasharray="4 2"
+                  label={(props: any) => {
+                    if (!props?.viewBox) return null
+                    const { x, y } = props.viewBox
+                    const nearRight = x + 56 > chartWidth - 16
+                    const tooClose = i > 0 && Math.abs((c.month - visibleIrrCrossovers[i - 1].month) / Math.max(1, end - start) * chartWidth) < 80
+                    return (
+                      <text x={nearRight ? x - 4 : x + 4} y={y + 14 + (tooClose ? 24 : 0)} fill="var(--chart-tick)" fontSize={13} textAnchor={nearRight ? 'end' : 'start'}>
+                        {`${t.yearLabel2} ${(c.month / 12).toFixed(1)}`}
+                      </text>
+                    )
+                  }}
+                />
+              ))}
+              {!fill && <Tooltip content={irrTooltipContent} />}
+              {!fill && (
+                <Legend
+                  content={({ payload }) => (
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--chart-tick)' }}>
+                      {payload?.map((entry) => (
+                        <div key={entry.value} style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
+                          <svg width="20" height="3" style={{ display: 'block', flexShrink: 0 }}><line x1="0" y1="1.5" x2="20" y2="1.5" stroke={entry.color} strokeWidth="2.5" /></svg>
+                          <span>{entry.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                />
+              )}
+              <Line type="monotone" dataKey="irrApt" name={fill ? t.apartmentShort : t.apartmentLine} stroke={APT} dot={false} activeDot={fill ? false : { r: 5, fill: APT, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
+              <Line type="monotone" dataKey="irrPas" name={fill ? t.passiveShort : t.passiveLine}     stroke={PAS} dot={false} activeDot={fill ? false : { r: 5, fill: PAS, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
+            </LineChart>
           ) : (
             <LineChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
               {sharedAxisProps.grid}
@@ -946,7 +1048,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                 const dot = (color: string, val: number) => (
                   <div key={color} style={{ position: 'absolute', left: lineX - r, top: yFor(val) - r, width: r * 2, height: r * 2, borderRadius: '50%', background: color, border: '1.5px solid white', boxSizing: 'border-box' }} />
                 )
-                if (view === 'cashflow') return null
+                if (view === 'cashflow' || view === 'irr') return null
                 return view === 'diff'
                   ? dot(DIFF, pt.gainDiff)
                   : <>{dot(APT, pt.apartmentGain)}{dot(PAS, pt.passiveGain)}</>
@@ -995,7 +1097,12 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                   const color = aptLeads ? APT : passiveLeads ? PAS : 'var(--c-text)'
                   const lbl = aptLeads ? t.tooltipAptLeads : passiveLeads ? t.tooltipPassiveLeads : t.tooltipBreakEven
                   return <p style={{ color }}>{lbl} <span dir="ltr">{shekel(Math.abs(val))}</span></p>
-                })() : (
+                })() : view === 'irr' ? (
+                  <>
+                    {irrApartment?.[resolvedMonth] != null && <p style={{ color: APT }}>{t.apartmentShort}{': '}<span dir="ltr">{fmtIRR(irrApartment[resolvedMonth])}</span></p>}
+                    {irrPassive?.[resolvedMonth]   != null && <p style={{ color: PAS }}>{t.passiveShort}{': '}<span dir="ltr">{fmtIRR(irrPassive[resolvedMonth])}</span></p>}
+                  </>
+                ) : (
                   <>
                     <p style={{ color: APT }}>{t.apartmentShort}{': '}<span dir="ltr">{shekel(pt.apartmentGain)}</span></p>
                     <p style={{ color: PAS }}>{t.passiveShort}{': '}<span dir="ltr">{shekel(pt.passiveGain)}</span></p>
@@ -1016,7 +1123,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           : cashFlowAlwaysPositive
           ? <p className="mt-2 lg:mt-0 text-sm font-semibold lg:text-base lg:font-bold text-center select-none leading-snug" style={{ color: APT }}>{t.cashFlowAlwaysPositive}</p>
           : <p className="mt-2 lg:mt-0 text-sm font-semibold lg:text-base lg:font-bold text-center select-none leading-snug" style={{ color: PAS }}>{t.cashFlowNeverPositive}</p>
-      ) : (() => {
+      ) : view === 'irr' ? null : (() => {
         let summaryText: string | null = null
         if (crossovers.length === 0)
           summaryText = initialApt ? t.summaryAptLeadsAll : t.summaryPassiveLeads
@@ -1035,6 +1142,14 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           </p>
         ) : null
       })()}
+      {!fill && view !== 'cashflow' && irrApartment && irrPassive && (
+        <p className="text-xs text-center text-[var(--c-muted)] mt-0.5 select-none" dir={isRTL ? 'rtl' : 'ltr'}>
+          {isRTL ? 'תשואה שנתית (IRR) ל-30 שנה' : '30y IRR'}{': '}
+          <span style={{ color: APT }}>{t.apartmentShort} <b>{fmtIRR(irrApartment[360])}</b></span>
+          {' · '}
+          <span style={{ color: PAS }}>{t.passiveShort} <b>{fmtIRR(irrPassive[360])}</b></span>
+        </p>
+      )}
       {!fill && <p className="text-xs text-[var(--c-dim)] text-center select-none">{t.scrollHint}</p>}
     </div>
   )

@@ -38,4 +38,6 @@ export interface Results {
   S0: number
   lockedRate: number  // = mortgageRate; used for prepayment fee threshold
   prepayFee: number   // early repayment fee at time of purchase (full principal)
+  irrApartment: (number | null)[]  // annualized IRR for apt scenario, index = exit month (1..360)
+  irrPassive:   (number | null)[]  // annualized IRR for passive scenario, index = exit month (1..360)
 }

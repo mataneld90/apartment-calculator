@@ -433,7 +433,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                   const newType = v as Params['buyerType']
                   update('buyerType', newType)
                   if (newType === 'investor' && params.p > 0.50) update('p', 0.50)
-                  update('masShvach', '25%')
+                  update('masShvach', newType === 'single' ? 'exempt' : '25%')
                 }}
               />
             </div>
