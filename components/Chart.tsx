@@ -97,11 +97,16 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t }: {
     )
   }
   const isCashFlow = view === 'cashflow'
-  const items = isCashFlow
-    ? cashFlowSubView === 'bars'
-      ? [{ color: APT, label: t.cashFlowLegendPositive, square: true }, { color: PAS, label: t.cashFlowLegendNegative, square: true }]
-      : [{ color: APT, label: t.cashFlowRentLegend, square: false }, { color: PAS, label: t.cashFlowMortgageLegend, square: false }]
-    : [{ color: APT, label: t.apartmentLine, square: false }, { color: PAS, label: t.passiveLine, square: false }]
+  const items = view === 'irr'
+    ? [
+        { color: APT, label: isRTL ? 'דירה — תשואה שנתית' : 'Apartment — annualized return', square: false },
+        { color: PAS, label: isRTL ? 'פסיבי — תשואה שנתית' : 'Passive — annualized return', square: false },
+      ]
+    : isCashFlow
+      ? cashFlowSubView === 'bars'
+        ? [{ color: APT, label: t.cashFlowLegendPositive, square: true }, { color: PAS, label: t.cashFlowLegendNegative, square: true }]
+        : [{ color: APT, label: t.cashFlowRentLegend, square: false }, { color: PAS, label: t.cashFlowMortgageLegend, square: false }]
+      : [{ color: APT, label: t.apartmentLine, square: false }, { color: PAS, label: t.passiveLine, square: false }]
   return (
     <div className="flex justify-center items-center gap-4 text-xs text-slate-400 select-none" style={{ height: 20 }} dir={dir}>
       {items.map(({ color, label, square }) => (
@@ -131,8 +136,13 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const [cashFlowHintVisible, setCashFlowHintVisible] = useState(false)
   const divRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ startX: number; origS: number; span: number } | null>(null)
+  const [irrDomain, setIrrDomain] = useState<[number, number]>([24, TOTAL])
   const domainRef = useRef<[number, number]>(domain)
   domainRef.current = domain
+  const irrDomainRef = useRef<[number, number]>(irrDomain)
+  irrDomainRef.current = irrDomain
+  const viewRef = useRef<View>(view)
+  viewRef.current = view
   const touchState = useRef<
     | { type: 'drag'; startX: number; startY: number; startTime: number; origS: number; span: number; panning: boolean }
     | { type: 'pinch'; startDist: number; origSpan: number; origCenter: number }
@@ -142,7 +152,9 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const [activeBarMonth, setActiveBarMonth] = useState<number | null>(null)
   const [cashFlowSubView, setCashFlowSubView] = useState<'rentmort' | 'bars'>('rentmort')
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isZoomed = domain[0] !== 0 || domain[1] !== defaultEnd
+  const isZoomed = view === 'irr'
+    ? (irrDomain[0] !== 24 || irrDomain[1] !== TOTAL)
+    : (domain[0] !== 0 || domain[1] !== defaultEnd)
   const initialApt = (points[0]?.gainDiff ?? -1) >= 0
   const bands = useMemo(() => colorBands(crossovers, initialApt), [crossovers, initialApt])
 
@@ -190,7 +202,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
       cursorTimer.current = setTimeout(() => {
         setCursor(drag.current ? 'grabbing' : 'grab')
       }, 350)
-      setDomain(prev => {
+      const zoomSetter = viewRef.current === 'irr' ? setIrrDomain : setDomain
+      zoomSetter(prev => {
         const [s, en] = prev
         const center = (s + en) / 2
         const span = en - s
@@ -203,7 +216,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     }
 
     const touchStartHandler = (e: TouchEvent) => {
-      const [s, en] = domainRef.current
+      const [s, en] = (viewRef.current === 'irr' ? irrDomainRef : domainRef).current
       if (e.touches.length === 1) {
         touchState.current = {
           type: 'drag',
@@ -238,13 +251,15 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           }
         }
         if (ts.panning) {
-          const [curS, curE] = domainRef.current
-          if (curS === 0 && curE === defaultEnd) return
+          const activeDRef = viewRef.current === 'irr' ? irrDomainRef : domainRef
+          const [curS, curE] = activeDRef.current
+          if (viewRef.current !== 'irr' && curS === 0 && curE === defaultEnd) return
           const w = el.getBoundingClientRect().width
           const pxPerMonth = Math.max(1, (w - 68) / ts.span)
           const delta = Math.round((ts.startX - e.touches[0].clientX) / pxPerMonth)
           const newS = Math.max(0, ts.origS + delta)
-          setDomain([newS, Math.min(TOTAL, newS + ts.span)])
+          const touchSetter = viewRef.current === 'irr' ? setIrrDomain : setDomain
+          touchSetter([newS, Math.min(TOTAL, newS + ts.span)])
         }
       } else if (ts.type === 'pinch' && e.touches.length >= 2) {
         const dist = Math.hypot(
@@ -254,7 +269,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         const scale = ts.startDist / Math.max(1, dist)
         const newSpan = Math.max(24, Math.min(TOTAL, ts.origSpan * scale))
         const newS = Math.max(0, Math.round(ts.origCenter - newSpan / 2))
-        setDomain([newS, Math.min(TOTAL, Math.round(newS + newSpan))])
+        const pinchSetter = viewRef.current === 'irr' ? setIrrDomain : setDomain
+        pinchSetter([newS, Math.min(TOTAL, Math.round(newS + newSpan))])
       }
     }
 
@@ -263,7 +279,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
       touchState.current = null
       if (ts?.type === 'drag' && !ts.panning && Date.now() - ts.startTime < 200) {
         const rect = el.getBoundingClientRect()
-        const [s, en] = domainRef.current
+        const [s, en] = (viewRef.current === 'irr' ? irrDomainRef : domainRef).current
         const span = en - s
         const localX = ts.startX - rect.left - 52
         const month = Math.round(s + (localX / Math.max(1, rect.width - 68)) * span)
@@ -351,21 +367,26 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   }, [diffHintReady])
 
   const onMouseDown = (e: React.MouseEvent) => {
-    if (domain[0] === 0 && domain[1] === defaultEnd) return
+    const isIrr = view === 'irr'
+    const curDomain = isIrr ? irrDomain : domain
+    if (!isIrr && curDomain[0] === 0 && curDomain[1] === defaultEnd) return
     setCursor('grabbing')
-    const [s, en] = domain
+    const [s, en] = curDomain
     drag.current = { startX: e.clientX, origS: s, span: en - s }
   }
 
   const onMouseMove = (e: React.MouseEvent) => {
     if (!drag.current) return
-    if (domain[0] === 0 && domain[1] === defaultEnd) { drag.current = null; return }
+    const isIrr = view === 'irr'
+    const curDomain = isIrr ? irrDomain : domain
+    if (!isIrr && curDomain[0] === 0 && curDomain[1] === defaultEnd) { drag.current = null; return }
     const { startX, origS, span } = drag.current
     const pxPerMonth = 480 / span
     const delta = Math.round((startX - e.clientX) / pxPerMonth)
     const newS = Math.max(0, origS + delta)
     const newE = Math.min(TOTAL, newS + span)
-    setDomain([newS, newE])
+    if (isIrr) setIrrDomain([newS, newE])
+    else setDomain([newS, newE])
   }
 
   const onMouseUp = () => {
@@ -396,18 +417,21 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const peakVisible = showPeak && peakMonth >= start && peakMonth <= end
   const visibleCashFlowCrossover = cashFlowCrossover !== null && cashFlowCrossover >= start && cashFlowCrossover <= end
     ? cashFlowCrossover : null
-  const visibleIrrCrossovers = irrCrossovers.filter(c => c.month >= start && c.month <= end)
+  const visibleIrrCrossovers = irrCrossovers.filter(c => c.month >= irrDomain[0] && c.month <= irrDomain[1])
   const irrViewPoints = (irrApartment && irrPassive)
-    ? visible.filter(p => p.month >= 24).map(p => ({
+    ? points.filter(p => p.month >= 1).map(p => ({
         month: p.month,
         irrApt: irrApartment[p.month] ?? null,
         irrPas: irrPassive[p.month]   ?? null,
       }))
     : []
-  const irrVals = irrViewPoints.flatMap(p => [p.irrApt, p.irrPas]).filter((v): v is number => v != null)
-  const irrYMin = irrVals.length ? Math.min(...irrVals) - 0.02 : -0.05
-  const irrYMax = irrVals.length ? Math.max(...irrVals) + 0.02 : 0.15
-  const irrYStep = (irrYMax - irrYMin) <= 0.15 ? 0.02 : 0.05
+  const irrWindowVals = irrViewPoints
+    .filter(p => p.month >= irrDomain[0] && p.month <= irrDomain[1])
+    .flatMap(p => [p.irrApt, p.irrPas]).filter((v): v is number => v != null)
+  const irrYMin = irrWindowVals.length ? Math.min(...irrWindowVals) - 0.02 : -0.05
+  const irrYMax = irrWindowVals.length ? Math.max(...irrWindowVals) + 0.02 : 0.15
+  const irrYStep = (irrYMax - irrYMin) <= 0.40 ? 0.02 : 0.05
+  const irrXAxisTicks = makeTicks(irrDomain[0], irrDomain[1])
   const irrTicks: number[] = []
   for (let v = Math.ceil(irrYMin / irrYStep) * irrYStep; v <= irrYMax + 0.001; v += irrYStep)
     irrTicks.push(Math.round(v * 1000) / 1000)
@@ -566,7 +590,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           }
         </p>
         <p style={{ color: 'var(--c-muted)', fontSize: 10, marginBottom: 2 }}>
-          {isRTL ? 'תשואה שנתית אם תמכור בנקודה זו' : 'Annualized return if you exit at this point'}
+          {isRTL ? 'תשואה שנתית אם תמכרו בנקודה זו' : 'Annualized return if you exit at this point'}
         </p>
         {aptI != null && <p style={{ color: APT }}>{t.apartmentShort}{': '}<span dir="ltr">{fmtIRR(aptI)}</span></p>}
         {pasI != null && <p style={{ color: PAS }}>{t.passiveShort}{': '}<span dir="ltr">{fmtIRR(pasI)}</span></p>}
@@ -613,7 +637,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         </div>
         {isZoomed && (
           <button
-            onClick={() => setDomain([0, defaultEnd])}
+            onClick={() => view === 'irr' ? setIrrDomain([24, TOTAL]) : setDomain([0, defaultEnd])}
             className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
           >
             {t.resetZoom}
@@ -805,7 +829,15 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           ) : view === 'irr' ? (
             <LineChart data={irrViewPoints} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
               {sharedAxisProps.grid}
-              {sharedAxisProps.xAxis}
+              <XAxis
+                dataKey="month"
+                type="number"
+                domain={[irrDomain[0], irrDomain[1]]}
+                ticks={irrXAxisTicks}
+                tickFormatter={(m) => `${(m / 12).toFixed(0)}y`}
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-tick)', fontSize: 13 }}
+              />
               <YAxis
                 domain={[irrYMin, irrYMax]}
                 ticks={irrTicks}
@@ -824,11 +856,13 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                   strokeDasharray="4 2"
                   label={(props: any) => {
                     if (!props?.viewBox) return null
-                    const { x, y } = props.viewBox
+                    const { x, y, height } = props.viewBox
                     const nearRight = x + 56 > chartWidth - 16
-                    const tooClose = i > 0 && Math.abs((c.month - visibleIrrCrossovers[i - 1].month) / Math.max(1, end - start) * chartWidth) < 80
+                    const irrSpan = Math.max(1, irrDomain[1] - irrDomain[0])
+                    const tooClose = i > 0 && Math.abs((c.month - visibleIrrCrossovers[i - 1].month) / irrSpan * chartWidth) < 80
+                    const chartH = height ?? 200
                     return (
-                      <text x={nearRight ? x - 4 : x + 4} y={y + 14 + (tooClose ? 24 : 0)} fill="var(--chart-tick)" fontSize={13} textAnchor={nearRight ? 'end' : 'start'}>
+                      <text x={nearRight ? x - 4 : x + 4} y={y + chartH - 6 - (tooClose ? 20 : 0)} fill="var(--chart-tick)" fontSize={13} textAnchor={nearRight ? 'end' : 'start'}>
                         {`${t.yearLabel2} ${(c.month / 12).toFixed(1)}`}
                       </text>
                     )
@@ -850,8 +884,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                   )}
                 />
               )}
-              <Line type="monotone" dataKey="irrApt" name={fill ? t.apartmentShort : t.apartmentLine} stroke={APT} dot={false} activeDot={fill ? false : { r: 5, fill: APT, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
-              <Line type="monotone" dataKey="irrPas" name={fill ? t.passiveShort : t.passiveLine}     stroke={PAS} dot={false} activeDot={fill ? false : { r: 5, fill: PAS, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
+              <Line type="monotone" dataKey="irrApt" name={isRTL ? 'דירה — תשואה שנתית' : 'Apartment — annualized return'} stroke={APT} dot={false} activeDot={fill ? false : { r: 5, fill: APT, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
+              <Line type="monotone" dataKey="irrPas" name={isRTL ? 'פסיבי — תשואה שנתית' : 'Passive — annualized return'} stroke={PAS} dot={false} activeDot={fill ? false : { r: 5, fill: PAS, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} connectNulls={false} />
             </LineChart>
           ) : (
             <LineChart data={visible} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
