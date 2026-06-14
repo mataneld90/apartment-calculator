@@ -48,6 +48,7 @@ export default function Calculator() {
   const [boiRate, setBoiRate] = useState<number | null>(null)
   const [lang, setLang] = useState<Lang>('he')
   const [methodologyOpen, setMethodologyOpen] = useState(false)
+  const [underTheHoodOpen, setUnderTheHoodOpen] = useState(false)
   const [methodologyPage, setMethodologyPage] = useState(1)
   const [methodologyPageVisible, setMethodologyPageVisible] = useState(true)
   const [isFirstVisitPanel, setIsFirstVisitPanel] = useState(false)
@@ -211,6 +212,11 @@ export default function Calculator() {
         </div>
       )}
 
+      {/* Under the hood modal */}
+      {underTheHoodOpen && (
+        <UnderTheHoodModalCalc isRTL={isRTL} onClose={() => setUnderTheHoodOpen(false)} />
+      )}
+
       {/* Header */}
       <header className="shrink-0 border-b border-[var(--c-border)] px-4 py-1.5 sm:py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between sm:gap-3">
@@ -219,6 +225,12 @@ export default function Calculator() {
             <p className="hidden sm:block text-sm text-[var(--c-muted)] mt-1 max-w-2xl">{t.subtitle}</p>
           </div>
           <div className="flex items-center gap-1 sm:gap-2 sm:shrink-0 sm:flex-wrap sm:justify-end mt-1 sm:mt-0">
+            <button
+              onClick={() => setUnderTheHoodOpen(true)}
+              className="px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors"
+            >
+              {isRTL ? 'מאחורי הקלעים' : 'Under the hood'}
+            </button>
             <button
               onClick={() => setMethodologyOpen(true)}
               className={`px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors${showHowItWorksHint ? ' hint-pulse' : ''}`}
@@ -373,6 +385,24 @@ export default function Calculator() {
   )
 }
 
+function CollapsibleSection({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1.5 font-medium text-[var(--c-text-3)] cursor-pointer select-none"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>
+          <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {label}
+      </button>
+      {open && <div className="mt-2">{children}</div>}
+    </div>
+  )
+}
+
 function MethodologyPageEN({ page }: { page: number }) {
   if (page === 1) return (
     <div className="flex flex-col gap-3">
@@ -428,15 +458,16 @@ function MethodologyPageEN({ page }: { page: number }) {
         <li><strong className="text-[var(--c-text-3)]">Difference</strong> — shows the gap between the two scenarios (apartment minus passive). When the curve is above zero, the apartment is ahead. When below zero, passive investment is ahead. The height of the curve at any point shows the size of the advantage.</li>
         <li><strong className="text-[var(--c-text-3)]">Cash flow</strong> — shows monthly rent income and mortgage payment as lines, and the net monthly cash flow as bars. Negative bars (months where mortgage exceeds rent) represent money invested in the passive scenario.</li>
       </ul>
-      <p className="font-medium text-[var(--c-text-3)]">Key assumptions:</p>
-      <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
-        <li>Spitzer (שפיצר) amortization — fixed monthly payment, standard in Israel</li>
-        <li>Purchase tax: 8% flat for an additional apartment (10% above ₪5,872,725); graduated rates for a first apartment</li>
-        <li>Estimated מס שבח (betterment tax) on apartment sale: 25% of the nominal gain — a simplification; actual מס שבח is on the inflation-adjusted real gain after deductible costs. When set to exempt, the single-apartment exemption applies fully up to a sale-value ceiling of ₪5,008,000 (2024–2027, periodically indexed); value above the ceiling is taxed proportionally at 25%. Or fully taxed, depending on your situation.</li>
-        <li>Capital gains tax (מס רווח הון) on passive investment: 25% at realization only — not annual. Note: the apartment uses מס שבח, the passive investment uses מס רווח הון — same rate, different taxes.</li>
-        <li>All figures are nominal ILS — no inflation adjustment. Both scenarios are affected by inflation similarly, so the comparison remains valid</li>
-        <li>This models a rental investment scenario (purchase → rent → sell)</li>
-      </ul>
+      <CollapsibleSection label="Key assumptions:">
+        <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
+          <li>Spitzer (שפיצר) amortization — fixed monthly payment, standard in Israel</li>
+          <li>Purchase tax: 8% flat for an additional apartment (10% above ₪5,872,725); graduated rates for a first apartment</li>
+          <li>Estimated מס שבח (betterment tax) on apartment sale: 25% of the nominal gain — a simplification; actual מס שבח is on the inflation-adjusted real gain after deductible costs. When set to exempt, the single-apartment exemption applies fully up to a sale-value ceiling of ₪5,008,000 (2024–2027, periodically indexed); value above the ceiling is taxed proportionally at 25%. Or fully taxed, depending on your situation.</li>
+          <li>Capital gains tax (מס רווח הון) on passive investment: 25% at realization only — not annual. Note: the apartment uses מס שבח, the passive investment uses מס רווח הון — same rate, different taxes.</li>
+          <li>All figures are nominal ILS — no inflation adjustment. Both scenarios are affected by inflation similarly, so the comparison remains valid</li>
+          <li>This models a rental investment scenario (purchase → rent → sell)</li>
+        </ul>
+      </CollapsibleSection>
       <div className="border-t border-slate-700 pt-3">
         <p className="text-xs text-slate-400">For informational purposes only. Not financial, tax, or legal advice. Consult professionals before making decisions.</p>
       </div>
@@ -488,18 +519,140 @@ function MethodologyPageHE({ page }: { page: number }) {
         <li><strong className="text-[var(--c-text-3)]">הפרש</strong> — מציג את ההפרש בין שני התרחישים (דירה פחות פסיבי). כשהעקומה מעל האפס — הדירה עדיפה. כשהיא מתחת לאפס — ההשקעה הפסיבית עדיפה. גובה העקומה בכל נקודה מראה את גודל היתרון.</li>
         <li><strong className="text-[var(--c-text-3)]">תזרים</strong> — מציג את הכנסת השכירות ותשלום המשכנתה כקווים, ואת התזרים החודשי הנקי כעמודות. עמודות שליליות (חודשים שבהם המשכנתה עולה על השכירות) מייצגות כסף המושקע בתרחיש הפסיבי.</li>
       </ul>
-      <p className="font-medium text-[var(--c-text-3)]">הנחות מרכזיות:</p>
-      <ul className="list-disc list-inside flex flex-col gap-1 mr-2">
-        <li>שיטת שפיצר — תשלום משכנתה חודשי קבוע, סטנדרט בישראל</li>
-        <li>מס רכישה: 8% גורף לדירה נוספת (10% מעל ₪5,872,725); מדרגות לדירה יחידה</li>
-        <li>מס שבח משוער על מכירת הדירה: 25% מהרווח הנומינלי — הפשטה; מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות. בבחירת פטור: הפטור לדירה יחידה חל עד תקרת שווי מכירה של ₪5,008,000 (2024–2027, מתעדכן מדי שנה); הרווח היחסי על החלק שמעל התקרה ממוסה ב-25%. בהתאם למצב.</li>
-        <li>מס רווח הון על השקעה פסיבית: 25% במימוש בלבד — לא שנתי. שימו לב: הדירה ממוסה במס שבח, ההשקעה הפסיבית במס רווח הון — אותו שיעור, מס שונה.</li>
-        <li>כל הנתונים בשקלים נומינליים — ללא התאמה לאינפלציה. שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה ביניהם תקפה</li>
-        <li>המחשבון מדמה תרחיש של רכישה, השכרה ומכירה</li>
-      </ul>
+      <CollapsibleSection label="הנחות מרכזיות:">
+        <ul className="list-disc list-inside flex flex-col gap-1 mr-2">
+          <li>שיטת שפיצר — תשלום משכנתה חודשי קבוע, סטנדרט בישראל</li>
+          <li>מס רכישה: 8% גורף לדירה נוספת (10% מעל ₪5,872,725); מדרגות לדירה יחידה</li>
+          <li>מס שבח משוער על מכירת הדירה: 25% מהרווח הנומינלי — הפשטה; מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות. בבחירת פטור: הפטור לדירה יחידה חל עד תקרת שווי מכירה של ₪5,008,000 (2024–2027, מתעדכן מדי שנה); הרווח היחסי על החלק שמעל התקרה ממוסה ב-25%. בהתאם למצב.</li>
+          <li>מס רווח הון על השקעה פסיבית: 25% במימוש בלבד — לא שנתי. שימו לב: הדירה ממוסה במס שבח, ההשקעה הפסיבית במס רווח הון — אותו שיעור, מס שונה.</li>
+          <li>כל הנתונים בשקלים נומינליים — ללא התאמה לאינפלציה. שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה ביניהם תקפה</li>
+          <li>המחשבון מדמה תרחיש של רכישה, השכרה ומכירה</li>
+        </ul>
+      </CollapsibleSection>
       <div className="border-t border-slate-700 pt-3">
         <p className="text-xs text-slate-400">למטרות מידע בלבד. אינו מהווה ייעוץ פיננסי, מיסויי או משפטי. יש להתייעץ עם אנשי מקצוע לפני קבלת החלטות.</p>
       </div>
     </div>
+  )
+}
+
+function UnderTheHoodModalCalc({ isRTL, onClose }: { isRTL: boolean; onClose: () => void }) {
+  const isHe = isRTL
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      <div
+        className="bg-[var(--bg-page)] border border-[var(--c-border)] rounded-lg max-w-2xl w-full max-h-[85vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+        dir={isHe ? 'rtl' : 'ltr'}
+      >
+        <div className="flex justify-between items-center px-6 py-4 border-b border-[var(--c-border)]">
+          <span className="font-semibold text-sm text-[var(--c-text)]">{isHe ? 'מאחורי הקלעים' : 'Under the hood'}</span>
+          <button onClick={onClose} className="text-[var(--c-text-3)] hover:text-[var(--c-text)] text-xl leading-none px-1">×</button>
+        </div>
+        <div className="px-6 py-5 text-sm text-[var(--c-muted)] leading-relaxed flex flex-col gap-4">
+          {isHe ? <UnderTheHoodContentHE tracker={false} /> : <UnderTheHoodContentEN tracker={false} />}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UnderTheHoodContentEN({ tracker }: { tracker: boolean }) {
+  return (
+    <>
+      <p>This section is for those who want the exact calculations. The two curves on the chart are:</p>
+      <ul className="flex flex-col gap-1 ml-2">
+        <li><strong className="text-[var(--c-text-3)]">A(t)</strong> — the apartment&apos;s net gain if sold at month t</li>
+        <li><strong className="text-[var(--c-text-3)]">P(t)</strong> — the passive investment&apos;s net gain if sold at month t</li>
+      </ul>
+      <p>Both start from the same upfront capital, <strong className="text-[var(--c-text-3)]">E</strong> (down payment + purchase tax + transaction costs).</p>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">Apartment, A(t):</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`A(t) = SaleValue(t) − SellingCosts(t) − RemainingMortgage(t)
+       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t)`}</pre>
+        <ul className="flex flex-col gap-1 ml-2 mt-2 text-xs">
+          <li><strong className="text-[var(--c-text-3)]">SaleValue(t)</strong> = purchase price grown at the appreciation rate, compounded monthly</li>
+          <li><strong className="text-[var(--c-text-3)]">SellingCosts(t)</strong> = SaleValue(t) × selling-costs %</li>
+          <li><strong className="text-[var(--c-text-3)]">RemainingMortgage(t)</strong> = {tracker ? 'balance from the actual bank amortization schedule' : 'balance from the amortization schedule'}</li>
+          <li><strong className="text-[var(--c-text-3)]">CumulativeCashFlow(t)</strong> = running sum of (rent − mortgage − maintenance) each month; normally negative, since mortgage usually exceeds rent</li>
+          <li><strong className="text-[var(--c-text-3)]">BettermentTax(t)</strong> = מס שבח, see below</li>
+          {tracker && <li><strong className="text-[var(--c-text-3)]">ApartmentValue</strong> is anchored to the most recent recorded valuation, then grown at the appreciation rate</li>}
+          {tracker && <li>Past months use actual logged cash flows; future months use the projected rent schedule and amortization table.</li>}
+        </ul>
+      </div>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">Passive, P(t):</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`P(t) = (Portfolio(t) − CostBasis(t)) × (1 − 25%)`}</pre>
+        <ul className="flex flex-col gap-1 ml-2 mt-2 text-xs">
+          <li><strong className="text-[var(--c-text-3)]">Portfolio(t)</strong> = E invested on day one, compounded monthly at the passive return, plus each month&apos;s shortfall (mortgage − rent − maintenance, when positive) added and compounded</li>
+          <li><strong className="text-[var(--c-text-3)]">CostBasis(t)</strong> = E + cumulative shortfalls invested</li>
+          <li>25% is capital gains tax (מס רווח הון), applied to the gain at sale only</li>
+        </ul>
+      </div>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">Betterment tax — מס שבח:</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
+BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
+        <p className="text-xs mt-2">When not exempt, the full gain is taxed at 25%. This is a simplification — real מס שבח is computed on the inflation-adjusted gain after deductible costs.</p>
+      </div>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">Annualized return (IRR):</p>
+        <p className="text-xs">For each possible exit month, the monthly cash-flow stream (−E at month 0, monthly net flows, proceeds at exit) is solved for the rate that sets its net present value to zero, then annualized. Plotted across all exit months, this produces the IRR curves.</p>
+      </div>
+    </>
+  )
+}
+
+function UnderTheHoodContentHE({ tracker }: { tracker: boolean }) {
+  return (
+    <>
+      <p>החלק הזה מיועד למי שרוצה לראות את החישוב המדויק. שתי העקומות בגרף הן:</p>
+      <ul className="flex flex-col gap-1 mr-2">
+        <li><strong className="text-[var(--c-text-3)]">A(t)</strong> — הרווח הנקי מהדירה אם תימכר בחודש t</li>
+        <li><strong className="text-[var(--c-text-3)]">P(t)</strong> — הרווח הנקי מההשקעה הפסיבית אם תמומש בחודש t</li>
+      </ul>
+      <p>שתיהן מתחילות מאותו הון התחלתי, <strong className="text-[var(--c-text-3)]">E</strong> (הון עצמי + מס רכישה + עלויות עסקה).</p>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">דירה, A(t):</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`A(t) = SaleValue(t) − SellingCosts(t) − RemainingMortgage(t)
+       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t)`}</pre>
+        <ul className="flex flex-col gap-1 mr-2 mt-2 text-xs">
+          <li><strong className="text-[var(--c-text-3)]">SaleValue(t)</strong> = מחיר הרכישה שגדל בקצב עליית הערך, בריבית-דריבית חודשית</li>
+          <li><strong className="text-[var(--c-text-3)]">SellingCosts(t)</strong> = SaleValue(t) × אחוז עלויות המכירה</li>
+          <li><strong className="text-[var(--c-text-3)]">RemainingMortgage(t)</strong> = {tracker ? 'היתרה מלוח הסילוקין בפועל של הבנק' : 'היתרה מלוח הסילוקין'}</li>
+          <li><strong className="text-[var(--c-text-3)]">CumulativeCashFlow(t)</strong> = סכום מצטבר של (שכירות − משכנתה − תחזוקה) בכל חודש; בדרך כלל שלילי, מכיוון שהמשכנתה גבוהה מהשכירות</li>
+          <li><strong className="text-[var(--c-text-3)]">BettermentTax(t)</strong> = ראו בהמשך</li>
+          {tracker && <li><strong className="text-[var(--c-text-3)]">SaleValue</strong> מעוגן להערכת השווי המוקלטת האחרונה, ואז גדל בקצב ההתייקרות</li>}
+          {tracker && <li>חודשים שעברו משתמשים בתזרים בפועל שנרשם; חודשים עתידיים — בלוח השכירות ולוח הסילוקין המחושב.</li>}
+        </ul>
+      </div>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">פסיבי, P(t):</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`P(t) = (Portfolio(t) − CostBasis(t)) × (1 − 25%)`}</pre>
+        <ul className="flex flex-col gap-1 mr-2 mt-2 text-xs">
+          <li><strong className="text-[var(--c-text-3)]">Portfolio(t)</strong> = E שמושקע ביום הראשון, בריבית-דריבית חודשית לפי התשואה הפסיבית, בתוספת הגירעון של כל חודש (משכנתה − שכירות − תחזוקה, כשהוא חיובי) שנוסף ומצטבר</li>
+          <li><strong className="text-[var(--c-text-3)]">CostBasis(t)</strong> = E + סך הגירעונות שהושקעו</li>
+          <li>ה-25% הוא מס רווח הון, מוחל על הרווח במימוש בלבד</li>
+        </ul>
+      </div>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">מס שבח:</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
+BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
+        <p className="text-xs mt-2">ללא פטור, מלוא הרווח ממוסה ב-25%. זוהי הפשטה — מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות מוכרות.</p>
+      </div>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">תשואה שנתית (IRR):</p>
+        <p className="text-xs">עבור כל חודש יציאה אפשרי, פותרים את סדרת התזרימים החודשית (−E בחודש 0, תזרימים חודשיים, התמורה ביציאה) עבור הריבית שמאפסת את הערך הנוכחי הנקי, וממירים לתשואה שנתית. בפריסה על פני כל חודשי היציאה מתקבלות עקומות ה-IRR.</p>
+      </div>
+    </>
   )
 }
