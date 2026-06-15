@@ -418,6 +418,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const visibleCashFlowCrossover = cashFlowCrossover !== null && cashFlowCrossover >= start && cashFlowCrossover <= end
     ? cashFlowCrossover : null
   const visibleIrrCrossovers = irrCrossovers.filter(c => c.month >= irrDomain[0] && c.month <= irrDomain[1])
+  // Full months-1–360 dataset — used for crossover detection and y-range computation
   const irrViewPoints = (irrApartment && irrPassive)
     ? points.filter(p => p.month >= 1).map(p => ({
         month: p.month,
@@ -425,6 +426,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         irrPas: irrPassive[p.month]   ?? null,
       }))
     : []
+  // Windowed slice passed to LineChart — prevents Recharts from expanding x-domain to fit off-screen months
+  const irrChartData = irrViewPoints.filter(p => p.month >= irrDomain[0] && p.month <= irrDomain[1])
   const irrWindowVals = irrViewPoints
     .filter(p => p.month >= irrDomain[0] && p.month <= irrDomain[1])
     .flatMap(p => [p.irrApt, p.irrPas]).filter((v): v is number => v != null)
@@ -827,7 +830,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
               </LineChart>
             )
           ) : view === 'irr' ? (
-            <LineChart data={irrViewPoints} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
+            <LineChart data={irrChartData} margin={{ top: MARGIN_TOP, right: 16, left: 0, bottom: 0 }}>
               {sharedAxisProps.grid}
               <XAxis
                 dataKey="month"
