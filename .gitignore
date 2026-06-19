@@ -4,6 +4,7 @@
 /node_modules
 node_modules/
 firebase-debug.log
+.firebase/
 /.pnp
 .pnp.*
 .yarn/*
