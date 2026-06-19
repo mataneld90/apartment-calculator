@@ -641,7 +641,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         {isZoomed && (
           <button
             onClick={() => view === 'irr' ? setIrrDomain([24, TOTAL]) : setDomain([0, defaultEnd])}
-            className="text-xs text-slate-400 hover:text-slate-300 transition-colors"
+            className="hidden lg:block text-xs text-slate-400 hover:text-slate-300 transition-colors"
           >
             {t.resetZoom}
           </button>
