@@ -30,7 +30,6 @@ export type Translation = {
   mortgageRateTooltip: string
   primeHelperLine: (boiRate: string) => string
   esLabel: string
-  imLabel: string
   ipLabel: string
   cgtNote: string
 
@@ -48,7 +47,6 @@ export type Translation = {
     buyerTypeInvestor: string
     buyerTypeSingle: string
     masShvach: string
-    Im: string
     R0: string
     purchaseCostsRate: string
   }
@@ -87,11 +85,15 @@ export type Translation = {
   perYear: string
   scrollHint: string
   resetZoom: string
-  prepaymentFeeLabel: string
-  prepaymentFeeZero: string
-  prepaymentFeeHint: (pct: string) => string
-  prepaymentFeeZeroHint: (pct: string) => string
-  prepaymentFeeThresholdNote: (pct: string) => string
+  prepaymentScenarioNoChange: string
+  prepaymentScenarioSmallDrop: string
+  prepaymentScenarioLargeDrop: string
+  prepaymentScenarioTooltip: string
+  prepaymentScenarioNoChangeTooltip: string
+  prepaymentScenarioSmallDropTooltip: (pct: string) => string
+  prepaymentScenarioLargeDropTooltip: (pct: string) => string
+  prepaymentFeeTooltipLabel: string
+  prepaymentFeeTooltipLabelShort: string
   tooltipAptLeads: string
   tooltipPassiveLeads: string
   tooltipBreakEven: string
@@ -155,7 +157,6 @@ export const LANG: Record<Lang, Translation> = {
     mortgageRateTooltip: 'The blended effective rate across all your mortgage tracks. You can get this figure from your mortgage advisor or bank pre-approval. Typical range in Israel today: 4%–5.5%.',
     primeHelperLine: (boi) => `Default based on current Bank of Israel rate (${boi})`,
     esLabel: 'Selling costs',
-    imLabel: 'Market rate at sale',
     ipLabel: 'Passive return (net)',
     cgtNote: 'Passive gain is calculated net of 25% capital gains tax at realization',
 
@@ -176,7 +177,6 @@ export const LANG: Record<Lang, Translation> = {
         'Applies to buyers who own no other apartment, or who sell their current one within 18 months of purchase. Tax rates are graduated and significantly lower than the investor track.',
       masShvach:
         'Tax on real estate sale profit: 25% of net gain (sale proceeds minus purchase cost and recognized expenses). For an investment apartment — usually applies. For a primary residence — usually exempt. Co-ownership structures may qualify for exemption — consult a lawyer.',
-      Im: 'Used to calculate the early repayment fee (עמלת פירעון מוקדם). The bank charges a fee when the current market rate is below your locked rate — the larger the gap, the higher the fee. If the market rate is above your locked rate, the fee is ₪0. Note: the calculation uses the full remaining principal — in practice the prime track carries no prepayment fee, so the actual fee may be slightly lower.',
       R0: 'Monthly rent at the time of purchase, before annual increases. The calculator applies the rent increase once per year.',
       purchaseCostsRate: 'Transaction costs as a percentage of apartment value, excluding purchase tax. Typical breakdown: agent ~2% + VAT, lawyer ~0.5% + VAT, appraiser ~₪3,500–₪5,000, mortgage advisor by agreement. The default 5% suits most buyers.',
     },
@@ -215,11 +215,15 @@ export const LANG: Record<Lang, Translation> = {
     perYear: '/ yr',
     scrollHint: 'Scroll to zoom · drag to pan',
     resetZoom: 'Reset zoom',
-    prepaymentFeeLabel: 'Early repayment fee',
-    prepaymentFeeZero: '(rate ≥ locked rate)',
-    prepaymentFeeHint: (pct) => `(₪0 if market rate ≥ ${pct})`,
-    prepaymentFeeZeroHint: (pct) => `(market rate ≥ your locked rate of ${pct})`,
-    prepaymentFeeThresholdNote: (pct) => `The early repayment fee reaches ₪0 when the current market rate equals your mortgage rate (${pct})`,
+    prepaymentScenarioNoChange: 'Rate stable or up',
+    prepaymentScenarioSmallDrop: 'Rates fell slightly',
+    prepaymentScenarioLargeDrop: 'Rates fell significantly',
+    prepaymentScenarioTooltip: 'The buttons pick a market-rate scenario — whether rates have fallen since your mortgage was locked in; a bigger drop means a bigger fee. The estimate is conservative: it uses the full remaining balance because the prime track carries no prepayment fee by law, so the actual fee may be slightly lower.',
+    prepaymentScenarioNoChangeTooltip: 'No fee — market rate at or above mortgage rate',
+    prepaymentScenarioSmallDropTooltip: (p) => `Market rate ${p} below mortgage rate`,
+    prepaymentScenarioLargeDropTooltip: (p) => `Market rate ${p} below mortgage rate`,
+    prepaymentFeeTooltipLabel: 'Prepayment fee',
+    prepaymentFeeTooltipLabelShort: 'Fee',
     tooltipAptLeads: 'Apartment leads:',
     tooltipPassiveLeads: 'Passive leads:',
     tooltipBreakEven: 'Break even:',
@@ -281,7 +285,6 @@ export const LANG: Record<Lang, Translation> = {
     mortgageRateTooltip: 'הריבית האפקטיבית הממוצעת על המשכנתה שלכם, לאחר שקלול כל המסלולים. ניתן לקבל נתון זה מיועץ המשכנתאות או מהאישור העקרוני של הבנק. טווח אופייני בישראל כיום: 4%–5.5%.',
     primeHelperLine: (boi) => `ברירת מחדל מבוססת על ריבית בנק ישראל עדכנית (${boi})`,
     esLabel: 'עלויות מכירה',
-    imLabel: 'ריבית שוק במכירה',
     ipLabel: 'תשואה פסיבית (נטו) / שנה',
     cgtNote: 'הרווח הפסיבי מחושב נטו לאחר מס רווח הון 25% במימוש',
 
@@ -300,7 +303,6 @@ export const LANG: Record<Lang, Translation> = {
       buyerTypeSingle: 'חל על מי שאין בבעלותם דירה נוספת, או שמוכרים את דירתם הקיימת תוך 18 חודשים מהרכישה. שיעורי המס מדורגים ונמוכים משמעותית מהמסלול החלופי.',
       masShvach:
         'מס על רווח המכירה בנדל"ן: 25% מהרווח הנקי (תמורת המכירה פחות הוצאות הרכישה והוצאות מוכרות). לדירת השקעה — לרוב חל. לדירה עיקרית — לרוב פטור. במבנה שותפות ייתכנו פטורים — התייעצו עם עורך דין.',
-      Im: 'משמשת לחישוב עמלת פירעון מוקדם. הבנק גובה עמלה כשריבית השוק הנוכחית נמוכה מריבית המשכנתה האפקטיבית שלכם — ככל שהפער גדול יותר, כך העמלה גבוהה יותר. אם ריבית השוק גבוהה מריבית המשכנתה האפקטיבית שלכם, העמלה היא ₪0. שימו לב: החישוב מבוצע על יתרת המשכנתה המלאה — בפועל, מסלול הפריים אינו חייב בעמלה, כך שהעמלה האמיתית עשויה להיות נמוכה במקצת.',
       R0: 'שכירות חודשית בעת הרכישה, לפני עדכוני שכירות שנתיים. המחשבון מעדכן את השכירות אחת לשנה.',
       purchaseCostsRate: 'עלויות הרכישה כאחוז משווי הדירה, ללא מס רכישה. פירוט אופייני: מתווך ~2% + מע"מ, עו"ד ~0.5% + מע"מ, שמאי ~₪3,500–₪5,000, יועץ משכנתאות לפי הסכמה. ברירת המחדל 5% מתאימה לרוב הרוכשים.',
     },
@@ -339,11 +341,15 @@ export const LANG: Record<Lang, Translation> = {
     perYear: 'שנה /',
     scrollHint: 'גלגלו לזום · גררו להזזה',
     resetZoom: 'איפוס זום',
-    prepaymentFeeLabel: 'עמלת פירעון מוקדם',
-    prepaymentFeeZero: '(ריבית ≥ ריבית נעולה)',
-    prepaymentFeeHint: (pct) => `(₪0 אם ריבית שוק ≥ ${pct})`,
-    prepaymentFeeZeroHint: (pct) => `(ריבית שוק ≥ הריבית הנעולה שלכם ${pct})`,
-    prepaymentFeeThresholdNote: (pct) => `עמלת הפירעון תתאפס כשריבית השוק הנוכחית מגיעה לרמת ריבית המשכנתה האפקטיבית שלכם (${pct})`,
+    prepaymentScenarioNoChange: 'ריבית עלתה / ללא שינוי',
+    prepaymentScenarioSmallDrop: 'ריבית ירדה מעט',
+    prepaymentScenarioLargeDrop: 'ריבית ירדה משמעותית',
+    prepaymentScenarioTooltip: 'הכפתורים מדמים תרחיש ריבית שוק — האם הריבית ירדה מאז שנעלתם את המשכנתה; ירידה גדולה יותר מביאה לקנס גבוה יותר. ההערכה שמרנית: מחושבת על יתרת המשכנתה המלאה, שכן מסלול הפריים פטור מקנס פירעון מוקדם כחוק — הקנס בפועל עשוי להיות נמוך במקצת.',
+    prepaymentScenarioNoChangeTooltip: 'ריבית שוק גבוהה מהריבית הנעולה — אין קנס',
+    prepaymentScenarioSmallDropTooltip: (p) => `ירידה של ${p} בריבית השוק`,
+    prepaymentScenarioLargeDropTooltip: (p) => `ירידה של ${p} בריבית השוק`,
+    prepaymentFeeTooltipLabel: 'קנס פירעון מוקדם',
+    prepaymentFeeTooltipLabelShort: 'קנס',
     tooltipAptLeads: 'יתרון דירה:',
     tooltipPassiveLeads: 'יתרון פסיבי:',
     tooltipBreakEven: 'שוויון:',

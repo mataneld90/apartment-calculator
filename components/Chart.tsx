@@ -897,6 +897,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
               {sharedAxisProps.yAxis}
               {!fill && <Tooltip content={({ active, payload, label }) => {
                 if (!active || !payload?.length || label === undefined) return null
+                const pt = points.find(p => p.month === Number(label))
                 return (
                   <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
                     <p className="text-[var(--c-muted)] mb-1">
@@ -925,6 +926,12 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                         </p>
                       )
                     })}
+                    {pt && pt.prepaymentFee > 0 && (
+                      <p style={{ color: 'var(--c-muted)' }}>
+                        {t.prepaymentFeeTooltipLabel}{': '}
+                        <span dir="ltr">{shekel(pt.prepaymentFee)}</span>
+                      </p>
+                    )}
                   </div>
                 )
               }} />}
@@ -1148,6 +1155,12 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                     <p style={{ color: APT }}>{t.apartmentShort}{': '}<span dir="ltr">{shekel(pt.apartmentGain)}</span></p>
                     <p style={{ color: PAS }}>{t.passiveShort}{': '}<span dir="ltr">{shekel(pt.passiveGain)}</span></p>
                   </>
+                )}
+                {(view === 'gains' || view === 'diff') && pt.prepaymentFee > 0 && (
+                  <p style={{ color: 'var(--c-muted)' }}>
+                    {chartWidth < 640 ? t.prepaymentFeeTooltipLabelShort : t.prepaymentFeeTooltipLabel}{': '}
+                    <span dir="ltr">{chartWidth < 640 ? shortShekel(pt.prepaymentFee) : shekel(pt.prepaymentFee)}</span>
+                  </p>
                 )}
               </div>
             </div>

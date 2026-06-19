@@ -16,7 +16,7 @@ export interface Params {
   Es: number
   masShvach: MasShvach
 
-  Im: number
+  scenarioDelta: number  // pp drop below mortgageRate → Im = mortgageRate - scenarioDelta
 }
 
 export interface ChartPoint {
@@ -27,6 +27,7 @@ export interface ChartPoint {
   cashFlow: number
   monthlyRent: number
   monthlyMortgage: number
+  prepaymentFee: number
 }
 
 export interface Results {

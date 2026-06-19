@@ -54,7 +54,7 @@ export function compute(params: Params): Results {
   const {
     Av0, p, R0, Y, Ip, V, mortgageRate, Ri, maintenanceRate,
     buyerType, purchaseCostsRate,
-    Es, masShvach, Im,
+    Es, masShvach, scenarioDelta,
   } = params
 
   const S0 = (1 - p) * Av0
@@ -72,6 +72,7 @@ export function compute(params: Params): Results {
   const Ep = S0 + addedCosts
   const taxBasis = Av0 + addedCosts
   const lockedRate = I
+  const Im = I - scenarioDelta
 
   const T = Y * 12
   const monthlyPayment = i > 0
@@ -83,7 +84,7 @@ export function compute(params: Params): Results {
   const fee0 = M0 * Math.max(0, I - Im) * Y
   const N0adj = N0 - fee0
   const points: ChartPoint[] = [
-    { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), cashFlow: 0, monthlyRent: Math.round(R0), monthlyMortgage: Math.round(M0 > 0 ? monthlyPayment : 0) },
+    { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), cashFlow: 0, monthlyRent: Math.round(R0), monthlyMortgage: Math.round(M0 > 0 ? monthlyPayment : 0), prepaymentFee: Math.round(fee0) },
   ]
 
   let F = 0
@@ -161,6 +162,7 @@ export function compute(params: Params): Results {
       cashFlow: Math.round(flow),
       monthlyRent: Math.round(rent),
       monthlyMortgage: Math.round(mort),
+      prepaymentFee: Math.round(prepaymentFee),
     })
 
     aptCFs.push(flow)
@@ -198,5 +200,5 @@ export const DEFAULT_PARAMS: Params = {
   purchaseCostsRate: 0.05,
   Es: 0.03,
   masShvach: '25%',
-  Im: 0.0435,
+  scenarioDelta: 0.01,
 }

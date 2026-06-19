@@ -78,7 +78,7 @@ export default function Calculator() {
     function applyRate(rate: number) {
       setBoiRate(rate)
       const derived = Math.round((rate + 0.015 - 0.009) * 10000) / 10000
-      setParams(p => ({ ...p, mortgageRate: derived, Im: derived }))
+      setParams(p => ({ ...p, mortgageRate: derived }))
     }
     const cached = readBoiCache()
     if (cached !== null) { applyRate(cached); return }

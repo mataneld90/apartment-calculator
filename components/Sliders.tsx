@@ -83,6 +83,9 @@ import { shekel, pct } from '@/lib/formatters'
 import TaxToggle from './TaxToggle'
 import InfoTooltip from './InfoTooltip'
 
+const SMALL_DELTA = 0.01
+const LARGE_DELTA = 0.03
+
 type NumericParamKey = keyof Omit<Params, 'buyerType' | 'masShvach'>
 
 type SliderDef = {
@@ -198,14 +201,6 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getLabel: (t) => t.esLabel,
         getTooltip: (t) => t.tooltips.Es,
         min: 0, max: 0.1, step: 0.005,
-        display: (v) => pct(v),
-        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
-      },
-      {
-        key: 'Im',
-        getLabel: (t) => t.imLabel,
-        getTooltip: (t) => t.tooltips.Im,
-        min: 0, max: 0.10, step: 0.001,
         display: (v) => pct(v),
         editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
       },
@@ -377,7 +372,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
     update('p', 1 - effDP / params.Av0)
   }, [params.Av0, params.buyerType])
 
-  const thresholdPct = pct(results.lockedRate, 2)
+
   return (
     <div className={continuous ? 'flex flex-col gap-2' : 'flex flex-col gap-3'}>
       {visibleGroups.map((group) => (
@@ -563,14 +558,26 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                     {t.primeHelperLine(pct(boiRate, 2))}
                   </p>
                 )}
-                {def.key === 'Im' && (
-                  <p className="text-xs text-[var(--c-muted)] mt-0.5 pb-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
-                    {t.prepaymentFeeThresholdNote(thresholdPct)}
-                  </p>
-                )}
               </div>
             ))}
           </div>
+
+          {group.id === 'selling' && (
+            <div className="mt-2 pt-2 border-t border-[var(--c-border)]">
+              <TaxToggle
+                label={t.prepaymentFeeTooltipLabel}
+                tooltip={t.prepaymentScenarioTooltip}
+                value={String(params.scenarioDelta)}
+                isRTL={isRTL}
+                options={[
+                  { value: String(LARGE_DELTA), label: t.prepaymentScenarioLargeDrop, tooltip: t.prepaymentScenarioLargeDropTooltip(pct(LARGE_DELTA)) },
+                  { value: String(SMALL_DELTA), label: t.prepaymentScenarioSmallDrop, tooltip: t.prepaymentScenarioSmallDropTooltip(pct(SMALL_DELTA)) },
+                  { value: '0',                 label: t.prepaymentScenarioNoChange,  tooltip: t.prepaymentScenarioNoChangeTooltip },
+                ]}
+                onChange={(v) => update('scenarioDelta', Number(v))}
+              />
+            </div>
+          )}
 
           {/* Cost breakdown — inside At Purchase (mobile only; desktop shows it in the summary bar) */}
           {group.id === 'passive' && (
