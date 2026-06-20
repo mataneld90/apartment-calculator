@@ -511,6 +511,24 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     return acc
   }, [])
 
+  // IRR chart labels sit at the bottom — same stacking algo, separate toX for IRR domain
+  const irrDiffSpan = Math.max(1, irrDomain[1] - irrDomain[0])
+  const irrToAbsX = (month: number) => PLOT_LEFT_PX + (month - irrDomain[0]) / irrDiffSpan * plotAreaWidth
+  const irrCrossoverOffsets = visibleIrrCrossovers.reduce<number[]>((acc, c, i) => {
+    const cLeft  = Math.min(irrToAbsX(c.month) + 4, chartWidth - XOVER_W)
+    const cRight = cLeft + XOVER_W
+    let off = 0
+    for (let j = 0; j < i; j++) {
+      const prevOff = acc[j]
+      const pLeft  = Math.min(irrToAbsX(visibleIrrCrossovers[j].month) + 4, chartWidth - XOVER_W)
+      const pRight = pLeft + XOVER_W
+      if (cRight + LABEL_GAP > pLeft && cLeft < pRight + LABEL_GAP)
+        off = Math.max(off, prevOff + LABEL_H + VERT_GAP)
+    }
+    acc.push(Math.min(off, 96))
+    return acc
+  }, [])
+
   const yTicks: number[] = []
   for (let v = yTickMin; v <= yTickMax; v += YTICK) yTicks.push(v)
 
@@ -861,11 +879,9 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                     if (!props?.viewBox) return null
                     const { x, y, height } = props.viewBox
                     const nearRight = x + 56 > chartWidth - 16
-                    const irrSpan = Math.max(1, irrDomain[1] - irrDomain[0])
-                    const tooClose = i > 0 && Math.abs((c.month - visibleIrrCrossovers[i - 1].month) / irrSpan * chartWidth) < 80
                     const chartH = height ?? 200
                     return (
-                      <text x={nearRight ? x - 4 : x + 4} y={y + chartH - 6 - (tooClose ? 20 : 0)} fill="var(--chart-tick)" fontSize={13} textAnchor={nearRight ? 'end' : 'start'}>
+                      <text x={nearRight ? x - 4 : x + 4} y={y + chartH - 6 - irrCrossoverOffsets[i]} fill="var(--chart-tick)" fontSize={13} textAnchor={nearRight ? 'end' : 'start'}>
                         {`${t.yearLabel2} ${(c.month / 12).toFixed(1)}`}
                       </text>
                     )
@@ -955,36 +971,30 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
               {view === 'gains' ? (
                 <>
                   <ReferenceLine y={0} stroke="var(--chart-crossover)" strokeDasharray="4 2" />
-                  {visibleCrossovers.map((c, i) => {
-                    const [s, e] = domain
-                    const span = e - s || 1
-                    const tooClose = i > 0 && Math.abs((c.month - visibleCrossovers[i - 1].month) / span * chartWidth) < 80
-                    const yOff = tooClose ? 24 : 0
-                    return (
-                      <ReferenceLine
-                        key={c.month}
-                        x={c.month}
-                        stroke="var(--chart-crossover)"
-                        strokeDasharray="4 2"
-                        label={(props: any) => {
-                          if (!props?.viewBox) return null
-                          const { x, y } = props.viewBox
-                          const nearRight = x + 56 > chartWidth - 16
-                          return (
-                            <text
-                              x={nearRight ? x - 4 : x + 4}
-                              y={y + 14 + yOff}
-                              fill="var(--chart-tick)"
-                              fontSize={13}
-                              textAnchor={nearRight ? 'end' : 'start'}
-                            >
-                              {`${t.yearLabel2} ${(c.month / 12).toFixed(1)}`}
-                            </text>
-                          )
-                        }}
-                      />
-                    )
-                  })}
+                  {visibleCrossovers.map((c, i) => (
+                    <ReferenceLine
+                      key={c.month}
+                      x={c.month}
+                      stroke="var(--chart-crossover)"
+                      strokeDasharray="4 2"
+                      label={(props: any) => {
+                        if (!props?.viewBox) return null
+                        const { x, y } = props.viewBox
+                        const nearRight = x + 56 > chartWidth - 16
+                        return (
+                          <text
+                            x={nearRight ? x - 4 : x + 4}
+                            y={y + 14 + diffCrossoverOffsets[i]}
+                            fill="var(--chart-tick)"
+                            fontSize={13}
+                            textAnchor={nearRight ? 'end' : 'start'}
+                          >
+                            {`${t.yearLabel2} ${(c.month / 12).toFixed(1)}`}
+                          </text>
+                        )
+                      }}
+                    />
+                  ))}
                   <Line type="monotone" dataKey="apartmentGain" name={fill ? t.apartmentShort : t.apartmentLine} stroke={APT} dot={false} activeDot={fill ? false : { r: 5, fill: APT, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} />
                   <Line type="monotone" dataKey="passiveGain" name={fill ? t.passiveShort : t.passiveLine} stroke={PAS} dot={false} activeDot={fill ? false : { r: 5, fill: PAS, stroke: '#ffffff', strokeWidth: 2 }} strokeWidth={2} isAnimationActive={false} />
                 </>

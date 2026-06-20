@@ -54,18 +54,4 @@ Never use literal directional characters (→, ←, ▶, ◀) as hardcoded stati
 - Before any reset or when stuck, commit completed work and update `## ACTIVE TASK` with what's done vs pending.
 
 ## ACTIVE TASK
-
-**Fix: crossover labels overlap when crossovers are too close together**
-
-File: `components/Chart.tsx`
-
-**Problem:** When two crossover events (apartment leads / passive leads) fall close together on the x-axis, their annotation labels overlap and become unreadable. This can happen when the chart zoom level is low or when the model params produce crossovers within a few months of each other.
-
-**Where crossover labels are rendered:** Search `Chart.tsx` for `crossovers` — they are drawn as `<ReferenceLine>` elements with a `<Label>` inside the Recharts `<ComposedChart>`. The overlap happens because each label is positioned at its x-coordinate with no collision detection.
-
-**Suggested fix approaches (pick the best after inspecting the code):**
-1. **Suppress close labels:** If two crossovers are within N months of each other (e.g. < 12), hide or merge the second label.
-2. **Alternate vertical offset:** Alternate `position="top"` / `position="insideTopLeft"` or add a `dy` offset to every other label.
-3. **Only show first crossover label if too close:** Keep the reference line but omit the label text when a previous crossover is within threshold.
-
-**After fixing:** commit, then ask user if they want to deploy.
+(none — update this when starting multi-step work)
