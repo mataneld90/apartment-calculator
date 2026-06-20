@@ -457,6 +457,7 @@ function MethodologyPageEN({ page }: { page: number }) {
         <li><strong className="text-[var(--c-text-3)]">Gains</strong> — shows both curves side by side: the apartment&apos;s net gain at realisation versus the passive investment&apos;s net gain at realisation. The points where the curves intersect are the moments when one scenario overtakes the other.</li>
         <li><strong className="text-[var(--c-text-3)]">Difference</strong> — shows the gap between the two scenarios (apartment minus passive). When the curve is above zero, the apartment is ahead. When below zero, passive investment is ahead. The height of the curve at any point shows the size of the advantage.</li>
         <li><strong className="text-[var(--c-text-3)]">Cash flow</strong> — shows monthly rent income and mortgage payment as lines, and the net monthly cash flow as bars. Negative bars (months where mortgage exceeds rent) represent money invested in the passive scenario.</li>
+        <li><strong className="text-[var(--c-text-3)]">Annualized return</strong> — shows each scenario&apos;s annualized return (IRR) for every possible exit month: the single yearly rate the capital effectively earned if sold then. This compares the two scenarios as rates of return rather than shekel amounts. The default view starts from year two, since the return in the first months is extreme or undefined.</li>
       </ul>
       <CollapsibleSection label="Key assumptions:">
         <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
@@ -464,6 +465,7 @@ function MethodologyPageEN({ page }: { page: number }) {
           <li>Purchase tax: 8% flat for an additional apartment (10% above ₪5,872,725); graduated rates for a first apartment</li>
           <li>מס שבח on apartment sale: estimated 25% of the gain. When set to exempt — single-apartment exemption applies up to a ceiling; see &ldquo;Under the hood&rdquo;</li>
           <li>Capital gains tax (מס רווח הון) on passive investment: 25% at realization only. The apartment is taxed via מס שבח, the portfolio via מס רווח הון — same rate, different taxes</li>
+          <li>A prepayment fee may apply when selling before the mortgage ends, if market rates have fallen below your rate — set via the scenario buttons; see &ldquo;Under the hood&rdquo;</li>
           <li>Maintenance: an estimated annual cost (default 7% of rent), deducted from rental income each month</li>
           <li>In any month where the mortgage exceeds rent, the difference is invested in the passive scenario; a positive-cash-flow month adds nothing to the portfolio</li>
           <li>All figures are nominal ILS — both scenarios are affected by inflation similarly, so the comparison remains valid</li>
@@ -520,6 +522,7 @@ function MethodologyPageHE({ page }: { page: number }) {
         <li><strong className="text-[var(--c-text-3)]">רווחים</strong> — מציג שתי עקומות במקביל: רווח נקי במימוש של הדירה מול רווח נקי במימוש של ההשקעה הפסיבית. נקודות החציה בין העקומות הן הרגעים שבהם אחד התרחישים עולה על השני.</li>
         <li><strong className="text-[var(--c-text-3)]">הפרש</strong> — מציג את ההפרש בין שני התרחישים (דירה פחות פסיבי). כשהעקומה מעל האפס — הדירה עדיפה. כשהיא מתחת לאפס — ההשקעה הפסיבית עדיפה. גובה העקומה בכל נקודה מראה את גודל היתרון.</li>
         <li><strong className="text-[var(--c-text-3)]">תזרים</strong> — מציג את הכנסת השכירות ותשלום המשכנתה כקווים, ואת התזרים החודשי הנקי כעמודות. עמודות שליליות (חודשים שבהם המשכנתה עולה על השכירות) מייצגות כסף המושקע בתרחיש הפסיבי.</li>
+        <li><strong className="text-[var(--c-text-3)]">תשואה שנתית</strong> — מציג את התשואה השנתית (<bdi>IRR</bdi>) של כל תרחיש עבור כל חודש יציאה אפשרי: שיעור התשואה השנתית שההון הניב בפועל אם נמכר באותו חודש. תצוגה זו משווה את שני התרחישים כשיעורי תשואה ולא בסכומי שקלים. תצוגת ברירת המחדל מתחילה משנה שנייה, שכן בחודשים הראשונים התשואה קיצונית או אינה מוגדרת.</li>
       </ul>
       <CollapsibleSection label="הנחות מרכזיות:" isRTL>
         <ul className="list-disc list-inside flex flex-col gap-1 mr-2" dir="rtl">
@@ -527,6 +530,7 @@ function MethodologyPageHE({ page }: { page: number }) {
           <li>מס רכישה: <bdi>8%</bdi> גורף לדירה נוספת (<bdi>10%</bdi> מעל <bdi>₪5,872,725</bdi>); מדרגות לדירה יחידה</li>
           <li>מס שבח על מכירת הדירה: <bdi>25%</bdi> מהרווח (משוער). בבחירת פטור — פטור לדירה יחידה עד תקרה; ראו &quot;מאחורי הקלעים&quot;</li>
           <li>מס רווח הון על השקעה פסיבית: <bdi>25%</bdi> במימוש בלבד. הדירה ממוסה במס שבח, התיק במס רווח הון — אותו שיעור, מס שונה</li>
+          <li>ייתכן קנס פירעון מוקדם במכירה לפני תום המשכנתה, אם ריבית השוק ירדה מתחת לריבית שלכם — נקבע באמצעות כפתורי התרחיש; ראו &quot;מאחורי הקלעים&quot;</li>
           <li>תחזוקה: עלות שנתית משוערת (ברירת מחדל <bdi>7%</bdi> מהשכירות), מנוכה מהשכירות מדי חודש</li>
           <li>בכל חודש שבו המשכנתה גדולה מהשכירות, ההפרש מושקע בתרחיש הפסיבי; חודש עם תזרים חיובי לא מוסיף לתיק</li>
           <li>כל הנתונים נומינליים — שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה תקפה</li>
@@ -574,13 +578,14 @@ function UnderTheHoodContentEN({ tracker }: { tracker: boolean }) {
       <div>
         <p className="font-medium text-[var(--c-text-3)] mb-1">Apartment, A(t):</p>
         <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`A(t) = SaleValue(t) − SellingCosts(t) − RemainingMortgage(t)
-       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t)`}</pre>
+       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t) − PrepaymentFee(t)`}</pre>
         <ul className="flex flex-col gap-1 ml-2 mt-2 text-xs">
           <li><strong className="text-[var(--c-text-3)]">SaleValue(t)</strong> = purchase price grown at the appreciation rate, compounded monthly</li>
           <li><strong className="text-[var(--c-text-3)]">SellingCosts(t)</strong> = SaleValue(t) × selling-costs %</li>
           <li><strong className="text-[var(--c-text-3)]">RemainingMortgage(t)</strong> = {tracker ? 'balance from the actual bank amortization schedule' : 'balance from the amortization schedule'}</li>
           <li><strong className="text-[var(--c-text-3)]">CumulativeCashFlow(t)</strong> = running sum of (rent − mortgage − maintenance) each month; normally negative, since mortgage usually exceeds rent</li>
           <li><strong className="text-[var(--c-text-3)]">BettermentTax(t)</strong> = מס שבח, see below</li>
+          <li><strong className="text-[var(--c-text-3)]">PrepaymentFee(t)</strong> = early-repayment penalty on the mortgage, see below</li>
           {tracker && <li><strong className="text-[var(--c-text-3)]">ApartmentValue</strong> is anchored to the most recent recorded valuation, then grown at the appreciation rate</li>}
           {tracker && <li>Past months use actual logged cash flows; future months use the projected rent schedule and amortization table.</li>}
         </ul>
@@ -604,6 +609,12 @@ BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
       </div>
 
       <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">Prepayment fee — קנס פירעון מוקדם:</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`PrepaymentFee(t) = max(0, (MortgageRate − MarketRate) × RemainingMortgage(t) × YearsRemaining(t))`}</pre>
+        <p className="text-xs mt-2">Selling before the mortgage ends means repaying the balance early. If market rates have fallen below your contractual rate, the bank charges a capitalization penalty for the interest it loses. The three scenario buttons set the market rate relative to your contractual rate — no change, a small drop, or a large drop — so a bigger gap means a bigger fee, and if rates rose or held the fee is zero. The estimate is conservative: it applies to the entire remaining balance even though the prime track is exempt by law, so the actual fee may be slightly lower.</p>
+      </div>
+
+      <div>
         <p className="font-medium text-[var(--c-text-3)] mb-1">Annualized return (IRR):</p>
         <p className="text-xs">For each possible exit month, the monthly cash-flow stream (−E at month 0, monthly net flows, proceeds at exit) is solved for the rate that sets its net present value to zero, then annualized. Plotted across all exit months, this produces the IRR curves.</p>
       </div>
@@ -624,13 +635,14 @@ function UnderTheHoodContentHE({ tracker }: { tracker: boolean }) {
       <div>
         <p className="font-medium text-[var(--c-text-3)] mb-1">דירה, <bdi>A(t)</bdi>:</p>
         <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`A(t) = SaleValue(t) − SellingCosts(t) − RemainingMortgage(t)
-       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t)`}</pre>
+       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t) − PrepaymentFee(t)`}</pre>
         <ul className="flex flex-col gap-1 mr-2 mt-2 text-xs">
           <li><strong className="text-[var(--c-text-3)]">SaleValue(t)</strong> = מחיר הרכישה שגדל בקצב עליית הערך, בריבית-דריבית חודשית</li>
           <li><strong className="text-[var(--c-text-3)]">SellingCosts(t)</strong> = <bdi>SaleValue(t)</bdi> × אחוז עלויות המכירה</li>
           <li><strong className="text-[var(--c-text-3)]">RemainingMortgage(t)</strong> = {tracker ? 'היתרה מלוח הסילוקין בפועל של הבנק' : 'היתרה מלוח הסילוקין'}</li>
           <li><strong className="text-[var(--c-text-3)]">CumulativeCashFlow(t)</strong> = סכום מצטבר של (שכירות − משכנתה − תחזוקה) בכל חודש; בדרך כלל שלילי, מכיוון שהמשכנתה גבוהה מהשכירות</li>
           <li><strong className="text-[var(--c-text-3)]">BettermentTax(t)</strong> = ראו בהמשך</li>
+          <li><strong className="text-[var(--c-text-3)]">PrepaymentFee(t)</strong> = קנס פירעון מוקדם על המשכנתה, ראו בהמשך</li>
           {tracker && <li><strong className="text-[var(--c-text-3)]">SaleValue</strong> מעוגן להערכת השווי המוקלטת האחרונה, ואז גדל בקצב ההתייקרות</li>}
           {tracker && <li>חודשים שעברו משתמשים בתזרים בפועל שנרשם; חודשים עתידיים — בלוח השכירות ולוח הסילוקין המחושב.</li>}
         </ul>
@@ -651,6 +663,12 @@ function UnderTheHoodContentHE({ tracker }: { tracker: boolean }) {
         <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
 BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
         <p className="text-xs mt-2">ללא פטור, מלוא הרווח ממוסה ב-<bdi>25%</bdi>. זוהי הפשטה — מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות מוכרות.</p>
+      </div>
+
+      <div>
+        <p className="font-medium text-[var(--c-text-3)] mb-1">קנס פירעון מוקדם:</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`PrepaymentFee(t) = max(0, (MortgageRate − MarketRate) × RemainingMortgage(t) × YearsRemaining(t))`}</pre>
+        <p className="text-xs mt-2">מכירה לפני תום תקופת המשכנתה משמעה פירעון היתרה מוקדם. אם ריבית השוק ירדה מתחת לריבית החוזית שלכם, הבנק גובה עמלת היוון על הריבית שהוא מפסיד. שלושת כפתורי התרחיש קובעים את ריבית השוק ביחס לריבית החוזית — ללא שינוי, ירידה קלה, או ירידה משמעותית — כך שפער גדול יותר משמעו קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. ההערכה שמרנית: היא מחושבת על מלוא יתרת המשכנתה אף שמסלול הפריים פטור על־פי חוק, ולכן הקנס בפועל עשוי להיות נמוך מעט יותר.</p>
       </div>
 
       <div>
