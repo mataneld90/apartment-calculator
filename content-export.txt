@@ -1,0 +1,235 @@
+================================================================================
+HOW THIS WORKS — ENGLISH
+================================================================================
+
+--- Page 1 ---
+
+The calculator compares two scenarios for the same capital:
+
+Apartment scenario: You buy an apartment with a mortgage and rent it out. The gain at each
+month is what you would walk away with if you sold then — sale price minus remaining
+mortgage, total purchase costs, cumulative cash flow over the period (total mortgage
+payments minus total rent received), selling costs, and מס שבח if applicable.
+
+Passive scenario: You invest the same capital (down payment + all purchase costs) in the
+stock market. In months where the mortgage payment exceeds rent, the negative cash flow is
+also invested in securities. In months where rent exceeds the mortgage, no additional
+investment is made to the passive portfolio. The passive gain is the net return after
+capital gains tax at realization (25%).
+
+--- Page 2 ---
+
+Numerical example:
+
+Assume an apartment priced at ₪2,000,000 with a ₪1,000,000 down payment and ₪1,000,000
+mortgage.
+
+In the passive scenario, the full purchase outlay — down payment + purchase tax +
+transaction costs — is invested in the stock market on day of purchase. In this example
+that totals ₪1,200,000 invested on day 1.
+
+Mortgage payment: ₪6,000, rental income: ₪5,500 — a negative cash flow of ₪500. In the
+passive scenario, that ₪500 is also invested in the market — money that would have come out
+of pocket in the apartment scenario.
+
+A few years later: mortgage payment still ₪6,000, rental income ₪6,200 (rent has increased
+over time) — a positive cash flow of ₪200. In the passive scenario, nothing is added to the
+portfolio that month.
+
+--- Page 3 ---
+
+Chart views:
+
+• Gains — shows both curves side by side: the apartment's net gain at realisation versus
+  the passive investment's net gain at realisation. The points where the curves intersect
+  are the moments when one scenario overtakes the other.
+
+• Difference — shows the gap between the two scenarios (apartment minus passive). When the
+  curve is above zero, the apartment is ahead. When below zero, passive investment is ahead.
+  The height of the curve at any point shows the size of the advantage.
+
+• Cash flow — shows monthly rent income and mortgage payment as lines, and the net monthly
+  cash flow as bars. Negative bars (months where mortgage exceeds rent) represent money
+  invested in the passive scenario.
+
+Key assumptions:
+
+• Spitzer (שפיצר) amortization — fixed monthly mortgage payment, standard in Israel
+• Purchase tax: 8% flat for an additional apartment (10% above ₪5,872,725); graduated
+  rates for a first apartment
+• מס שבח on apartment sale: estimated 25% of the gain. When set to exempt —
+  single-apartment exemption applies up to a ceiling; see "Under the hood"
+• Capital gains tax (מס רווח הון) on passive investment: 25% at realization only. The
+  apartment is taxed via מס שבח, the portfolio via מס רווח הון — same rate, different taxes
+• Maintenance: an estimated annual cost (default 7% of rent), deducted from rental income
+  each month
+• In any month where the mortgage exceeds rent, the difference is invested in the passive
+  scenario; a positive-cash-flow month adds nothing to the portfolio
+• All figures are nominal ILS — both scenarios are affected by inflation similarly, so the
+  comparison remains valid
+• This models a purchase → rent → sell scenario
+
+For informational purposes only. Not financial, tax, or legal advice. Consult professionals
+before making decisions.
+
+
+================================================================================
+UNDER THE HOOD — ENGLISH
+================================================================================
+
+This section is for those who want the exact calculations. The two curves on the chart are:
+
+  A(t) — the apartment's net gain if sold at month t
+  P(t) — the passive investment's net gain if sold at month t
+
+Both start from the same upfront capital, E (down payment + purchase tax + transaction
+costs).
+
+--- Apartment, A(t): ---
+
+A(t) = SaleValue(t) − SellingCosts(t) − RemainingMortgage(t)
+       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t)
+
+• SaleValue(t)         = purchase price grown at the appreciation rate, compounded monthly
+• SellingCosts(t)      = SaleValue(t) × selling-costs %
+• RemainingMortgage(t) = balance from the amortization schedule
+• CumulativeCashFlow(t)= running sum of (rent − mortgage − maintenance) each month;
+                         normally negative, since mortgage usually exceeds rent
+• BettermentTax(t)     = מס שבח, see below
+
+--- Passive, P(t): ---
+
+P(t) = (Portfolio(t) − CostBasis(t)) × (1 − 25%)
+
+• Portfolio(t)  = E invested on day one, compounded monthly at the passive return, plus
+                  each month's shortfall (mortgage − rent − maintenance, when positive)
+                  added and compounded
+• CostBasis(t)  = E + cumulative shortfalls invested
+• 25% is capital gains tax (מס רווח הון), applied to the gain at sale only
+
+--- Betterment tax — מס שבח: ---
+
+Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
+BettermentTax   = RealGain × Taxable portion × 25%
+
+When not exempt, the full gain is taxed at 25%. This is a simplification — real מס שבח is
+computed on the inflation-adjusted gain after deductible costs.
+
+--- Annualized return (IRR): ---
+
+For each possible exit month, the monthly cash-flow stream (−E at month 0, monthly net
+flows, proceeds at exit) is solved for the rate that sets its net present value to zero,
+then annualized. Plotted across all exit months, this produces the IRR curves.
+
+
+================================================================================
+כיצד זה עובד — עברית
+================================================================================
+
+--- עמוד 1 ---
+
+המחשבון משווה שני תרחישים עבור אותו הון:
+
+תרחיש דירה: קונים דירה עם משכנתה ומשכירים אותה. הרווח בכל חודש הוא הרווח הנקי אם תמכרו
+אז — מחיר המכירה בניכוי יתרת המשכנתה, כל הוצאות הרכישה, התזרים המצטבר לאורך התקופה (סך
+תשלומי המשכנתה פחות סך הכנסות השכירות), עלויות המכירה, ומס שבח (אם רלוונטי).
+
+תרחיש פסיבי: משקיעים את אותו ההון (הון עצמי + כל עלויות הרכישה) בשוק ההון. בכל חודש
+שבו תשלום המשכנתה עולה על שכר הדירה, התזרים השלילי מושקע אף הוא בניירות ערך. בחודשים
+שבהם השכירות עולה על המשכנתה, אין השקעה נוספת בתיק הפסיבי. הרווח הפסיבי הוא הרווח הנקי
+לאחר מס רווח הון במימוש (25%).
+
+--- עמוד 2 ---
+
+דוגמה מספרית:
+
+נניח דירה במחיר ₪2,000,000 עם הון עצמי של ₪1,000,000 ומשכנתה של ₪1,000,000.
+
+בתרחיש הפסיבי, כל ההון שהוצא ביום הרכישה — הון עצמי + מס רכישה + עלויות עסקה — מושקע
+בשוק ההון ביום הרכישה. בדוגמה זו הסכום הכולל הוא ₪1,200,000 המושקעים ביום הראשון.
+
+תשלום משכנתה: ₪6,000, הכנסה משכירות: ₪5,500 — תזרים שלילי של ₪500. בתרחיש הפסיבי,
+₪500 אלו מושקעים אף הם בשוק ההון — כסף שהיה יוצא מכיסכם בתרחיש הדירה.
+
+כעבור כמה שנים: תשלום המשכנתה עדיין ₪6,000, הכנסה משכירות ₪6,200 (השכירות עלתה עם
+הזמן) — תזרים חיובי של ₪200. בתרחיש הפסיבי, חודש זה לא מוסיף דבר לתיק.
+
+--- עמוד 3 ---
+
+תצוגות הגרף:
+
+• רווחים — מציג שתי עקומות במקביל: רווח נקי במימוש של הדירה מול רווח נקי במימוש של
+  ההשקעה הפסיבית. נקודות החציה בין העקומות הן הרגעים שבהם אחד התרחישים עולה על השני.
+
+• הפרש — מציג את ההפרש בין שני התרחישים (דירה פחות פסיבי). כשהעקומה מעל האפס — הדירה
+  עדיפה. כשהיא מתחת לאפס — ההשקעה הפסיבית עדיפה. גובה העקומה בכל נקודה מראה את גודל
+  היתרון.
+
+• תזרים — מציג את הכנסת השכירות ותשלום המשכנתה כקווים, ואת התזרים החודשי הנקי כעמודות.
+  עמודות שליליות (חודשים שבהם המשכנתה עולה על השכירות) מייצגות כסף המושקע בתרחיש
+  הפסיבי.
+
+הנחות מרכזיות:
+
+• שיטת שפיצר — תשלום משכנתה חודשי קבוע, סטנדרט בישראל
+• מס רכישה: 8% גורף לדירה נוספת (10% מעל ₪5,872,725); מדרגות לדירה יחידה
+• מס שבח על מכירת הדירה: 25% מהרווח (משוער). בבחירת פטור — פטור לדירה יחידה עד תקרה;
+  ראו "מאחורי הקלעים"
+• מס רווח הון על השקעה פסיבית: 25% במימוש בלבד. הדירה ממוסה במס שבח, התיק במס רווח הון —
+  אותו שיעור, מס שונה
+• תחזוקה: עלות שנתית משוערת (ברירת מחדל 7% מהשכירות), מנוכה מהשכירות מדי חודש
+• בכל חודש שבו המשכנתה גדולה מהשכירות, ההפרש מושקע בתרחיש הפסיבי; חודש עם תזרים חיובי
+  לא מוסיף לתיק
+• כל הנתונים נומינליים — שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה תקפה
+• המחשבון מדמה רכישה ← השכרה ← מכירה
+
+למטרות מידע בלבד. אינו מהווה ייעוץ פיננסי, מיסויי או משפטי. יש להתייעץ עם אנשי מקצוע
+לפני קבלת החלטות.
+
+
+================================================================================
+מאחורי הקלעים — עברית
+================================================================================
+
+החלק הזה מיועד למי שרוצה לראות את החישוב המדויק. שתי העקומות בגרף הן:
+
+  A(t) — הרווח הנקי מהדירה אם תימכר בחודש t
+  P(t) — הרווח הנקי מההשקעה הפסיבית אם תמומש בחודש t
+
+שתיהן מתחילות מאותו הון התחלתי, E (הון עצמי + מס רכישה + עלויות עסקה).
+
+--- דירה, A(t): ---
+
+A(t) = SaleValue(t) − SellingCosts(t) − RemainingMortgage(t)
+       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t)
+
+• SaleValue(t)          = מחיר הרכישה שגדל בקצב עליית הערך, בריבית-דריבית חודשית
+• SellingCosts(t)       = SaleValue(t) × אחוז עלויות המכירה
+• RemainingMortgage(t)  = היתרה מלוח הסילוקין
+• CumulativeCashFlow(t) = סכום מצטבר של (שכירות − משכנתה − תחזוקה) בכל חודש;
+                          בדרך כלל שלילי, מכיוון שהמשכנתה גבוהה מהשכירות
+• BettermentTax(t)      = ראו בהמשך
+
+--- פסיבי, P(t): ---
+
+P(t) = (Portfolio(t) − CostBasis(t)) × (1 − 25%)
+
+• Portfolio(t) = E שמושקע ביום הראשון, בריבית-דריבית חודשית לפי התשואה הפסיבית,
+                 בתוספת הגירעון של כל חודש (משכנתה − שכירות − תחזוקה, כשהוא חיובי)
+                 שנוסף ומצטבר
+• CostBasis(t) = E + סך הגירעונות שהושקעו
+• 25% הוא מס רווח הון, מוחל על הרווח במימוש בלבד
+
+--- מס שבח: ---
+
+Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
+BettermentTax   = RealGain × Taxable portion × 25%
+
+ללא פטור, מלוא הרווח ממוסה ב-25%. זוהי הפשטה — מס שבח בפועל מחושב על הרווח הריאלי
+הצמוד למדד לאחר ניכוי הוצאות מוכרות.
+
+--- תשואה שנתית (IRR): ---
+
+עבור כל חודש יציאה אפשרי, פותרים את סדרת התזרימים החודשית (−E בחודש 0, תזרימים
+חודשיים, התמורה ביציאה) עבור הריבית שמאפסת את הערך הנוכחי הנקי, וממירים לתשואה שנתית.
+בפריסה על פני כל חודשי היציאה מתקבלות עקומות ה-IRR.
