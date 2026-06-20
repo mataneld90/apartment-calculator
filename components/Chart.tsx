@@ -743,24 +743,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         </div>
       )}
 
-      {view === 'cashflow' && (
-        <div dir="ltr" className={`flex gap-1 h-6 mt-1${isRTL ? ' justify-end' : ' justify-start'}`}>
-          {(isRTL ? (['bars', 'rentmort'] as const) : (['rentmort', 'bars'] as const)).map((sv) => (
-            <button
-              key={sv}
-              onClick={() => setCashFlowSubView(sv)}
-              className={`text-xs px-2 py-0.5 rounded border transition-colors ${
-                cashFlowSubView === sv
-                  ? 'bg-slate-600 text-white border-slate-600'
-                  : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
-              }`}
-            >
-              {sv === 'rentmort' ? t.cashFlowSubViewRent : t.cashFlowSubViewBars}
-            </button>
-          ))}
-        </div>
-      )}
-
       <div
         ref={divRef}
         style={{ width: '100%', touchAction: 'none', background: 'var(--chart-bg, transparent)', ...(fill || stretch ? {} : { height: 360 }) }}
@@ -770,6 +752,39 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
       >
+        {/* Cash-flow sub-toggle — absolute corner control inside canvas */}
+        {view === 'cashflow' && (
+          <div
+            onMouseDown={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute',
+              top: 34,
+              right: chartWidth < 640 ? 36 : 20,
+              zIndex: 9,
+              display: 'flex',
+              background: 'var(--tooltip-bg)',
+              border: '1px solid var(--tooltip-border)',
+              borderRadius: 6,
+              padding: 2,
+            }}
+          >
+            {(isRTL ? (['bars', 'rentmort'] as const) : (['rentmort', 'bars'] as const)).map((sv) => (
+              <button
+                key={sv}
+                onClick={(e) => { e.stopPropagation(); setCashFlowSubView(sv) }}
+                style={cashFlowSubView === sv ? { background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.09)' } : undefined}
+                className={`text-xs px-2 py-0.5 rounded transition-colors ${
+                  cashFlowSubView === sv
+                    ? 'text-[var(--c-text)] font-medium'
+                    : 'text-[var(--c-muted)] hover:text-[var(--c-text)]'
+                }`}
+              >
+                {sv === 'rentmort' ? t.cashFlowSubViewRent : t.cashFlowSubViewBars}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Background color bands — only for gains/diff views */}
         {(view === 'gains' || view === 'diff') && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -1098,25 +1113,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                 </div>
               )
             })}
-          </div>
-        )}
-
-        {/* HTML overlay: cashflow annotation */}
-        {view === 'cashflow' && visibleCashFlowCrossover !== null && (
-          <div className="absolute inset-0 pointer-events-none">
-            <div
-              style={{
-                position: 'absolute',
-                left: Math.min(toAbsX(visibleCashFlowCrossover) + 4, chartWidth - 150),
-                top: LABEL_TOP,
-                color: 'var(--chart-tick)',
-                fontSize: 13,
-                whiteSpace: 'nowrap',
-                direction: isRTL ? 'rtl' : 'ltr',
-              }}
-            >
-              {t.cashFlowAnnotation(String(Math.round(visibleCashFlowCrossover / 12)))}
-            </div>
           </div>
         )}
 
