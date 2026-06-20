@@ -529,6 +529,33 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     return acc
   }, [])
 
+  // Adaptive label placement: put each label on whichever half the crossing curve is NOT in
+  const yRange = Math.max(1, yDomainMax - yTickMin)
+  // gains view: each crossover has a known value; fraction > 0.5 means curve is in upper half → label goes bottom
+  const gainsCrossoverSides = visibleCrossovers.map(c =>
+    (c.value - yTickMin) / yRange > 0.5 ? 'bottom' as const : 'top' as const
+  )
+  // gains view: per-side stacking (labels on different sides never conflict)
+  const gainsOffsets = visibleCrossovers.reduce<number[]>((acc, c, i) => {
+    const side = gainsCrossoverSides[i]
+    const cLeft = Math.min(toAbsX(c.month) + 4, chartWidth - XOVER_W)
+    const cRight = cLeft + XOVER_W
+    let off = 0
+    for (let j = 0; j < i; j++) {
+      if (gainsCrossoverSides[j] !== side) continue
+      const prevOff = acc[j]
+      const pLeft = Math.min(toAbsX(visibleCrossovers[j].month) + 4, chartWidth - XOVER_W)
+      const pRight = pLeft + XOVER_W
+      if (cRight + LABEL_GAP > pLeft && cLeft < pRight + LABEL_GAP)
+        off = Math.max(off, prevOff + LABEL_H + VERT_GAP)
+    }
+    acc.push(Math.min(off, 96))
+    return acc
+  }, [])
+  // diff view: all crossovers are at gainDiff=0; decide side based on where the zero line sits
+  const diffZeroSide = (0 - yTickMin) / yRange > 0.5 ? 'bottom' as const : 'top' as const
+  const BOTTOM_LABEL_TOP = MARGIN_TOP + plotHeightPx - LABEL_H - 6
+
   const yTicks: number[] = []
   for (let v = yTickMin; v <= yTickMax; v += YTICK) yTicks.push(v)
 
@@ -979,12 +1006,16 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                       strokeDasharray="4 2"
                       label={(props: any) => {
                         if (!props?.viewBox) return null
-                        const { x, y } = props.viewBox
+                        const { x, y, height } = props.viewBox
                         const nearRight = x + 56 > chartWidth - 16
+                        const side = gainsCrossoverSides[i]
+                        const off = gainsOffsets[i]
+                        const chartH = height ?? plotHeightPx
+                        const labelY = side === 'top' ? y + 14 + off : y + chartH - 6 - off
                         return (
                           <text
                             x={nearRight ? x - 4 : x + 4}
-                            y={y + 14 + diffCrossoverOffsets[i]}
+                            y={labelY}
                             fill="var(--chart-tick)"
                             fontSize={13}
                             textAnchor={nearRight ? 'end' : 'start'}
@@ -1048,13 +1079,16 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
             {visibleCrossovers.map((c, i) => {
               const rawX = toAbsX(c.month) + 4
               const clampedX = Math.min(rawX, chartWidth - 70)
+              const topVal = diffZeroSide === 'top'
+                ? LABEL_TOP + diffCrossoverOffsets[i]
+                : BOTTOM_LABEL_TOP - diffCrossoverOffsets[i]
               return (
                 <div
                   key={c.month}
                   style={{
                     position: 'absolute',
                     left: clampedX,
-                    top: LABEL_TOP + diffCrossoverOffsets[i],
+                    top: topVal,
                     color: 'var(--chart-tick)',
                     fontSize: 13,
                     whiteSpace: 'nowrap',
