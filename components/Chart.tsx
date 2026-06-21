@@ -555,9 +555,10 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     acc.push(Math.min(off, 96))
     return acc
   }, [])
-  // diff view: all crossovers are at gainDiff=0; decide side based on where the zero line sits
-  const diffZeroSide = (0 - yTickMin) / yRange > 0.5 ? 'bottom' as const : 'top' as const
-  const BOTTOM_LABEL_TOP = MARGIN_TOP + plotHeightPx - LABEL_H - 6
+  // diff view: all crossovers are at gainDiff=0 (the apt-lead window boundaries). Directly above
+  // each crossing x the plot is empty — the curve only climbs to the peak at interior x — so the
+  // top band is always clear. Place labels there: inside the plot, away from the x-axis tick row.
+  // (The old adaptive 'bottom' band overlapped the x-axis labels when the zero line sat high.)
 
   const yTicks: number[] = []
   for (let v = yTickMin; v <= yTickMax; v += YTICK) yTicks.push(v)
@@ -1098,9 +1099,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
             {visibleCrossovers.map((c, i) => {
               const rawX = toAbsX(c.month) + 4
               const clampedX = Math.min(rawX, chartWidth - 70)
-              const topVal = diffZeroSide === 'top'
-                ? LABEL_TOP + diffCrossoverOffsets[i]
-                : BOTTOM_LABEL_TOP - diffCrossoverOffsets[i]
+              const topVal = LABEL_TOP + diffCrossoverOffsets[i]
               return (
                 <div
                   key={c.month}
