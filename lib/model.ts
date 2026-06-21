@@ -207,5 +207,5 @@ export const DEFAULT_PARAMS: Params = {
   purchaseCostsRate: 0.05,
   Es: 0.03,
   masShvach: '25%',
-  scenarioDelta: 0.01,
+  scenarioDelta: 0.005,
 }
