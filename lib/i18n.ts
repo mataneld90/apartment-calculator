@@ -85,13 +85,8 @@ export type Translation = {
   perYear: string
   scrollHint: string
   resetZoom: string
-  prepaymentScenarioNoChange: string
-  prepaymentScenarioSmallDrop: string
-  prepaymentScenarioLargeDrop: string
   prepaymentScenarioTooltip: string
-  prepaymentScenarioNoChangeTooltip: string
-  prepaymentScenarioSmallDropTooltip: (pct: string) => string
-  prepaymentScenarioLargeDropTooltip: (pct: string) => string
+  prepaymentGapLabel: string
   prepaymentFeeTooltipLabel: string
   prepaymentFeeTooltipLabelShort: string
   tooltipAptLeads: string
@@ -215,13 +210,8 @@ export const LANG: Record<Lang, Translation> = {
     perYear: '/ yr',
     scrollHint: 'Scroll to zoom · drag to pan',
     resetZoom: 'Reset zoom',
-    prepaymentScenarioNoChange: 'Rate stable or up',
-    prepaymentScenarioSmallDrop: 'Rates fell slightly',
-    prepaymentScenarioLargeDrop: 'Rates fell significantly',
-    prepaymentScenarioTooltip: 'The buttons pick a market-rate scenario — whether rates have fallen since your mortgage was locked in; a bigger drop means a bigger fee. The estimate is conservative: it applies the fee to the entire remaining balance even though the prime track is exempt by law, so the actual fee may be slightly lower.',
-    prepaymentScenarioNoChangeTooltip: 'No fee — market rate at or above mortgage rate',
-    prepaymentScenarioSmallDropTooltip: (p) => `Market rate ${p} below mortgage rate`,
-    prepaymentScenarioLargeDropTooltip: (p) => `Market rate ${p} below mortgage rate`,
+    prepaymentScenarioTooltip: 'Set how far market rates have fallen below your mortgage rate; a bigger drop means a bigger fee, and if rates rose or held the fee is zero. One caveat keeps the estimate conservative: it applies the fee to the entire remaining balance even though the prime track is exempt by law, so the actual fee may be slightly lower.',
+    prepaymentGapLabel: 'How much market rates have fallen since you locked in',
     prepaymentFeeTooltipLabel: 'Prepayment fee',
     prepaymentFeeTooltipLabelShort: 'Fee',
     tooltipAptLeads: 'Apartment leads:',
@@ -341,13 +331,8 @@ export const LANG: Record<Lang, Translation> = {
     perYear: 'שנה /',
     scrollHint: 'גלגלו לזום · גררו להזזה',
     resetZoom: 'איפוס זום',
-    prepaymentScenarioNoChange: 'ריבית עלתה / ללא שינוי',
-    prepaymentScenarioSmallDrop: 'ריבית ירדה מעט',
-    prepaymentScenarioLargeDrop: 'ריבית ירדה משמעותית',
-    prepaymentScenarioTooltip: 'הכפתורים בוחרים תרחיש ריבית שוק — האם הריבית ירדה מאז שנטלתם את המשכנתה; ירידה גדולה יותר משמעה קנס גדול יותר. ההערכה שמרנית: הקנס מחושב על מלוא יתרת המשכנתה אף שמסלול הפריים פטור ממנו על־פי חוק, ולכן הקנס בפועל עשוי להיות נמוך מעט יותר.',
-    prepaymentScenarioNoChangeTooltip: 'ריבית שוק גבוהה מהריבית הנעולה — אין קנס',
-    prepaymentScenarioSmallDropTooltip: (p) => `ירידה של ${p} בריבית השוק`,
-    prepaymentScenarioLargeDropTooltip: (p) => `ירידה של ${p} בריבית השוק`,
+    prepaymentScenarioTooltip: 'כיוונו עד כמה ירדה ריבית השוק מתחת לריבית המשכנתה; ירידה גדולה יותר משמעה קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. הסתייגות אחת שומרת על הערכה שמרנית: הקנס מחושב על מלוא יתרת המשכנתה אף שמסלול הפריים פטור ממנו על־פי חוק, ולכן הקנס בפועל עשוי להיות נמוך מעט יותר.',
+    prepaymentGapLabel: 'כמה ירדה ריבית השוק מאז נטילת המשכנתה',
     prepaymentFeeTooltipLabel: 'קנס פירעון מוקדם',
     prepaymentFeeTooltipLabelShort: 'קנס',
     tooltipAptLeads: 'יתרון דירה:',

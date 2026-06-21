@@ -83,9 +83,6 @@ import { shekel, pct } from '@/lib/formatters'
 import TaxToggle from './TaxToggle'
 import InfoTooltip from './InfoTooltip'
 
-const SMALL_DELTA = 0.01
-const LARGE_DELTA = 0.03
-
 type NumericParamKey = keyof Omit<Params, 'buyerType' | 'masShvach'>
 
 type SliderDef = {
@@ -109,8 +106,8 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getLabel: (t) => t.vLabel,
         getTooltip: (t) => t.tooltips.V,
         min: 0, max: 0.15, step: 0.005,
-        display: (v) => pct(v),
-        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
+        display: (v) => pct(v, 2),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 },
       },
       {
         key: 'R0',
@@ -125,16 +122,16 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getLabel: (t) => t.riLabel,
         getTooltip: (t) => t.riTooltip,
         min: 0, max: 0.1, step: 0.005,
-        display: (v) => pct(v),
-        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
+        display: (v) => pct(v, 2),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 },
       },
       {
         key: 'maintenanceRate',
         getLabel: (t) => t.maintenanceRateLabel,
         getTooltip: (t) => t.maintenanceRateTooltip,
         min: 0, max: 0.15, step: 0.005,
-        display: (v) => pct(v),
-        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
+        display: (v) => pct(v, 2),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 },
       },
     ],
   },
@@ -187,8 +184,8 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getLabel: (t) => t.purchaseCostsRateLabel,
         getTooltip: (t) => t.tooltips.purchaseCostsRate,
         min: 0, max: 0.15, step: 0.005,
-        display: (v) => pct(v),
-        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
+        display: (v) => pct(v, 2),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 },
       },
     ],
   },
@@ -201,8 +198,8 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getLabel: (t) => t.esLabel,
         getTooltip: (t) => t.tooltips.Es,
         min: 0, max: 0.1, step: 0.005,
-        display: (v) => pct(v),
-        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
+        display: (v) => pct(v, 2),
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 },
       },
     ],
   },
@@ -215,8 +212,8 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         getLabel: (t) => t.ipLabel,
         getTooltip: (t) => t.tooltips.Ip(`${(DEFAULT_PARAMS.Ip * 100).toFixed(1)}%`),
         min: 0.02, max: 0.2, step: 0.005,
-        display: (v, t, rtl) => rtl ? pct(v) : pct(v) + ' ' + t.perYear,
-        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 1, suffix: '%', inputSize: 4 },
+        display: (v, t, rtl) => rtl ? pct(v, 2) : pct(v, 2) + ' ' + t.perYear,
+        editConfig: { fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 },
       },
 
     ],
@@ -564,18 +561,38 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
 
           {group.id === 'selling' && (
             <div className="mt-2 pt-2 border-t border-[var(--c-border)]">
-              <TaxToggle
-                label={t.prepaymentFeeTooltipLabel}
-                tooltip={t.prepaymentScenarioTooltip}
-                value={String(params.scenarioDelta)}
-                isRTL={isRTL}
-                options={[
-                  { value: String(LARGE_DELTA), label: t.prepaymentScenarioLargeDrop, tooltip: t.prepaymentScenarioLargeDropTooltip(pct(LARGE_DELTA)) },
-                  { value: String(SMALL_DELTA), label: t.prepaymentScenarioSmallDrop, tooltip: t.prepaymentScenarioSmallDropTooltip(pct(SMALL_DELTA)) },
-                  { value: '0',                 label: t.prepaymentScenarioNoChange,  tooltip: t.prepaymentScenarioNoChangeTooltip },
-                ]}
-                onChange={(v) => update('scenarioDelta', Number(v))}
-              />
+              <div className="flex items-center gap-1 mb-2">
+                <span className="text-sm text-[var(--c-text-3)]">{t.prepaymentFeeTooltipLabel}</span>
+                <InfoTooltip text={t.prepaymentScenarioTooltip} />
+              </div>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs text-[var(--c-text-3)] leading-tight flex-1 min-w-0" dir={isRTL ? 'rtl' : 'ltr'}>
+                  {t.prepaymentGapLabel}
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={0.03}
+                  step={0.0025}
+                  value={params.scenarioDelta}
+                  onChange={(e) => update('scenarioDelta', Number(e.target.value))}
+                  className="w-24 h-1 shrink-0"
+                  style={{
+                    ...(isRTL ? { transform: 'scaleX(-1)' } : {}),
+                    accentColor: palette.apt,
+                  }}
+                />
+                <span className="text-xs text-[var(--c-text)] w-12 text-right shrink-0 tabular-nums" dir="ltr">
+                  <EditableValue
+                    displayNode={<bdi>{pct(params.scenarioDelta, 2)}</bdi>}
+                    rawValue={params.scenarioDelta}
+                    min={0}
+                    max={0.03}
+                    config={{ fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 4 }}
+                    onCommit={(v) => update('scenarioDelta', v)}
+                  />
+                </span>
+              </div>
             </div>
           )}
 

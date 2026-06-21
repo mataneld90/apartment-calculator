@@ -216,6 +216,9 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     }
 
     const touchStartHandler = (e: TouchEvent) => {
+      // Ignore touches that start on an interactive overlay control (e.g. the
+      // cash-flow sub-toggle) — they must not pan the chart or pop the tooltip.
+      if ((e.target as HTMLElement)?.closest?.('[data-chart-control]')) return
       const [s, en] = (viewRef.current === 'irr' ? irrDomainRef : domainRef).current
       if (e.touches.length === 1) {
         touchState.current = {
@@ -755,6 +758,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         {/* Cash-flow sub-toggle — absolute corner control inside canvas */}
         {view === 'cashflow' && (
           <div
+            data-chart-control
             onMouseDown={(e) => e.stopPropagation()}
             style={{
               position: 'absolute',

@@ -465,7 +465,7 @@ function MethodologyPageEN({ page }: { page: number }) {
           <li>Purchase tax: 8% flat for an additional apartment (10% above ₪5,872,725); graduated rates for a first apartment</li>
           <li>מס שבח on apartment sale: estimated 25% of the gain. When set to exempt — single-apartment exemption applies up to a ceiling; see &ldquo;Under the hood&rdquo;</li>
           <li>Capital gains tax (מס רווח הון) on passive investment: 25% at realization only. The apartment is taxed via מס שבח, the portfolio via מס רווח הון — same rate, different taxes</li>
-          <li>A prepayment fee may apply when selling before the mortgage ends, if market rates have fallen below your rate — set via the scenario buttons; see &ldquo;Under the hood&rdquo;</li>
+          <li>A prepayment fee may apply when selling before the mortgage ends, if market rates have fallen below your rate — set via the rate-drop slider; see &ldquo;Under the hood&rdquo;</li>
           <li>Maintenance: an estimated annual cost (default 7% of rent), deducted from rental income each month</li>
           <li>In any month where the mortgage exceeds rent, the difference is invested in the passive scenario; a positive-cash-flow month adds nothing to the portfolio</li>
           <li>All figures are nominal ILS — both scenarios are affected by inflation similarly, so the comparison remains valid</li>
@@ -530,7 +530,7 @@ function MethodologyPageHE({ page }: { page: number }) {
           <li>מס רכישה: <bdi>8%</bdi> גורף לדירה נוספת (<bdi>10%</bdi> מעל <bdi>₪5,872,725</bdi>); מדרגות לדירה יחידה</li>
           <li>מס שבח על מכירת הדירה: <bdi>25%</bdi> מהרווח (משוער). בבחירת פטור — פטור לדירה יחידה עד תקרה; ראו &quot;מאחורי הקלעים&quot;</li>
           <li>מס רווח הון על השקעה פסיבית: <bdi>25%</bdi> במימוש בלבד. הדירה ממוסה במס שבח, התיק במס רווח הון — אותו שיעור, מס שונה</li>
-          <li>ייתכן קנס פירעון מוקדם במכירה לפני תום המשכנתה, אם ריבית השוק ירדה מתחת לריבית שלכם — נקבע באמצעות כפתורי התרחיש; ראו &quot;מאחורי הקלעים&quot;</li>
+          <li>ייתכן קנס פירעון מוקדם במכירה לפני תום המשכנתה, אם ריבית השוק ירדה מתחת לריבית שלכם — נקבע באמצעות מחוון ירידת הריבית; ראו &quot;מאחורי הקלעים&quot;</li>
           <li>תחזוקה: עלות שנתית משוערת (ברירת מחדל <bdi>7%</bdi> מהשכירות), מנוכה מהשכירות מדי חודש</li>
           <li>בכל חודש שבו המשכנתה גדולה מהשכירות, ההפרש מושקע בתרחיש הפסיבי; חודש עם תזרים חיובי לא מוסיף לתיק</li>
           <li>כל הנתונים נומינליים — שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה תקפה</li>
@@ -610,8 +610,10 @@ BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
 
       <div>
         <p className="font-medium text-[var(--c-text-3)] mb-1">Prepayment fee — קנס פירעון מוקדם:</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`PrepaymentFee(t) = max(0, (MortgageRate − MarketRate) × RemainingMortgage(t) × YearsRemaining(t))`}</pre>
-        <p className="text-xs mt-2">Selling before the mortgage ends means repaying the balance early. If market rates have fallen below your contractual rate, the bank charges a capitalization penalty for the interest it loses. The three scenario buttons set the market rate relative to your contractual rate — no change, a small drop, or a large drop — so a bigger gap means a bigger fee, and if rates rose or held the fee is zero. The estimate is conservative: it applies to the entire remaining balance even though the prime track is exempt by law, so the actual fee may be slightly lower.</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`rc = MortgageRate / 12     rm = MarketRate / 12     n = months remaining
+AF(r, n) = (1 − (1 + r)^(−n)) / r          (= n when r = 0)
+PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</pre>
+        <p className="text-xs mt-2">Selling before the mortgage ends means repaying the balance early. If market rates have fallen below your contractual rate, the bank charges a capitalization penalty for the interest it loses. The rate-drop slider sets how far the market rate sits below your contractual rate, so a bigger gap means a bigger fee, and if rates rose or held the fee is zero. The penalty is the present value of the lost interest: each remaining payment is discounted at the market rate versus your contractual rate, and the difference between those annuity values is the fee. One caveat keeps the estimate conservative: it applies to the entire remaining balance even though the prime track is exempt by law, so the actual fee may be slightly lower.</p>
       </div>
 
       <div>
@@ -667,8 +669,10 @@ BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
 
       <div>
         <p className="font-medium text-[var(--c-text-3)] mb-1">קנס פירעון מוקדם:</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`PrepaymentFee(t) = max(0, (MortgageRate − MarketRate) × RemainingMortgage(t) × YearsRemaining(t))`}</pre>
-        <p className="text-xs mt-2">מכירה לפני תום תקופת המשכנתה משמעה פירעון היתרה מוקדם. אם ריבית השוק ירדה מתחת לריבית החוזית שלכם, הבנק גובה עמלת היוון על הריבית שהוא מפסיד. שלושת כפתורי התרחיש קובעים את ריבית השוק ביחס לריבית החוזית — ללא שינוי, ירידה קלה, או ירידה משמעותית — כך שפער גדול יותר משמעו קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. ההערכה שמרנית: היא מחושבת על מלוא יתרת המשכנתה אף שמסלול הפריים פטור על־פי חוק, ולכן הקנס בפועל עשוי להיות נמוך מעט יותר.</p>
+        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`rc = MortgageRate / 12     rm = MarketRate / 12     n = months remaining
+AF(r, n) = (1 − (1 + r)^(−n)) / r          (= n when r = 0)
+PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</pre>
+        <p className="text-xs mt-2">מכירה לפני תום תקופת המשכנתה משמעה פירעון היתרה מוקדם. אם ריבית השוק ירדה מתחת לריבית החוזית שלכם, הבנק גובה עמלת היוון על הריבית שהוא מפסיד. מחוון ירידת הריבית קובע עד כמה ריבית השוק נמוכה מהריבית החוזית, כך שפער גדול יותר משמעו קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. הקנס הוא הערך הנוכחי של הריבית האבודה: כל תשלום עתידי שנותר מהוון בריבית השוק לעומת הריבית החוזית, וההפרש בין ערכי האנונה הוא הקנס. הסתייגות אחת שומרת על הערכה שמרנית: הקנס מחושב על מלוא יתרת המשכנתה אף שמסלול הפריים פטור על־פי חוק, ולכן הקנס בפועל עשוי להיות נמוך מעט יותר.</p>
       </div>
 
       <div>

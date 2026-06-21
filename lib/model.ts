@@ -26,6 +26,11 @@ function solveIRR(cfs: number[], n: number): number | null {
   return Math.pow(1 + (lo + hi) / 2, 12) - 1;
 }
 
+// Annuity factor: present value of 1 per period for n periods at per-period rate r
+function annuityFactor(r: number, n: number): number {
+  return r === 0 ? n : (1 - Math.pow(1 + r, -n)) / r
+}
+
 const CGT = 0.25
 // 2024–2027 single-apartment מס שבח exemption ceiling — periodically indexed by the tax authority
 const MAS_SHVACH_EXEMPT_CEILING = 5_008_000
@@ -73,6 +78,8 @@ export function compute(params: Params): Results {
   const taxBasis = Av0 + addedCosts
   const lockedRate = I
   const Im = I - scenarioDelta
+  const rc = I / 12   // monthly contractual rate
+  const rm = Im / 12  // monthly market rate
 
   const T = Y * 12
   const monthlyPayment = i > 0
@@ -81,7 +88,7 @@ export function compute(params: Params): Results {
 
   // Month 0: rem=M0, F=0, gain<0 so masShvachTax=0
   const N0 = Av0 * (1 - Es) - Ep - M0
-  const fee0 = M0 * Math.max(0, I - Im) * Y
+  const fee0 = Math.max(0, monthlyPayment * (annuityFactor(rm, T) - annuityFactor(rc, T)))
   const N0adj = N0 - fee0
   const points: ChartPoint[] = [
     { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), cashFlow: 0, monthlyRent: Math.round(R0), monthlyMortgage: Math.round(M0 > 0 ? monthlyPayment : 0), prepaymentFee: Math.round(fee0) },
@@ -143,8 +150,8 @@ export function compute(params: Params): Results {
       (intComp - intFlat)
     )
 
-    const yearsLeft = Math.max(0, (T - x) / 12)
-    const prepaymentFee = Math.max(0, (I - Im) * rem * yearsLeft)
+    const n = Math.max(0, T - x)  // remaining months at exit
+    const prepaymentFee = Math.max(0, monthlyPayment * (annuityFactor(rm, n) - annuityFactor(rc, n)))
     const N_x_adj = N_x - prepaymentFee
 
     // Detect every sign change in (N - P)
