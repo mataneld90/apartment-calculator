@@ -77,8 +77,17 @@ export default function Calculator() {
   useEffect(() => {
     function applyRate(rate: number) {
       setBoiRate(rate)
+      // Prime = Bank of Israel rate + 1.5% (standard Israeli definition). The single-rate default
+      // marks that down 0.9pp to approximate a blended effective rate across all tracks.
+      const prime = Math.round((rate + 0.015) * 10000) / 10000
       const derived = Math.round((rate + 0.015 - 0.009) * 10000) / 10000
-      setParams(p => ({ ...p, mortgageRate: derived }))
+      setParams(p => ({
+        ...p,
+        mortgageRate: derived,
+        trackPrimeRate: prime,          // by-track prime = live prime rate
+        trackFixedRate: derived,        // fixed/variable seeded to the blended rate as neutral starts
+        trackVarRate: derived,
+      }))
     }
     const cached = readBoiCache()
     if (cached !== null) { applyRate(cached); return }
@@ -613,7 +622,7 @@ BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
         <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`rc = MortgageRate / 12     rm = MarketRate / 12     n = months remaining
 AF(r, n) = (1 − (1 + r)^(−n)) / r          (= n when r = 0)
 PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</pre>
-        <p className="text-xs mt-2">Selling before the mortgage ends means repaying the balance early. If market rates have fallen below your contractual rate, the bank charges a capitalization penalty for the interest it loses. The rate-drop slider sets how far the market rate sits below your contractual rate, so a bigger gap means a bigger fee, and if rates rose or held the fee is zero. The penalty is the present value of the lost interest: each remaining payment is discounted at the market rate versus your contractual rate, and the difference between those annuity values is the fee. One caveat keeps the estimate conservative: it applies to the entire remaining balance even though the prime track is exempt by law, so the actual fee may be slightly lower.</p>
+        <p className="text-xs mt-2">Selling before the mortgage ends means repaying the balance early. If market rates have fallen below your contractual rate, the bank charges a capitalization penalty for the interest it loses. The rate-drop slider sets how far the market rate sits below your contractual rate, so a bigger gap means a bigger fee, and if rates rose or held the fee is zero. The penalty is the present value of the lost interest: each remaining payment is discounted at the market rate versus your contractual rate, and the difference between those annuity values is the fee. In single-rate mode the fee is applied to the whole balance — a slightly conservative estimate, since the prime track is exempt by law. Switch the mortgage input to by-track mode to exclude the prime track and charge only the fixed and variable tracks.</p>
       </div>
 
       <div>
@@ -672,7 +681,7 @@ BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
         <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`rc = MortgageRate / 12     rm = MarketRate / 12     n = months remaining
 AF(r, n) = (1 − (1 + r)^(−n)) / r          (= n when r = 0)
 PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</pre>
-        <p className="text-xs mt-2">מכירה לפני תום תקופת המשכנתה משמעה פירעון היתרה מוקדם. אם ריבית השוק ירדה מתחת לריבית החוזית שלכם, הבנק גובה עמלת היוון על הריבית שהוא מפסיד. מחוון ירידת הריבית קובע עד כמה ריבית השוק נמוכה מהריבית החוזית, כך שפער גדול יותר משמעו קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. הקנס הוא הערך הנוכחי של הריבית האבודה: כל תשלום עתידי שנותר מהוון בריבית השוק לעומת הריבית החוזית, וההפרש בין ערכי האנונה הוא הקנס. הסתייגות אחת שומרת על הערכה שמרנית: הקנס מחושב על מלוא יתרת המשכנתה אף שמסלול הפריים פטור על־פי חוק, ולכן הקנס בפועל עשוי להיות נמוך מעט יותר.</p>
+        <p className="text-xs mt-2">מכירה לפני תום תקופת המשכנתה משמעה פירעון היתרה מוקדם. אם ריבית השוק ירדה מתחת לריבית החוזית שלכם, הבנק גובה עמלת היוון על הריבית שהוא מפסיד. מחוון ירידת הריבית קובע עד כמה ריבית השוק נמוכה מהריבית החוזית, כך שפער גדול יותר משמעו קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. הקנס הוא הערך הנוכחי של הריבית האבודה: כל תשלום עתידי שנותר מהוון בריבית השוק לעומת הריבית החוזית, וההפרש בין ערכי האנונה הוא הקנס. במצב ריבית אחת הקנס מחושב על מלוא היתרה — הערכה מעט שמרנית, שכן מסלול הפריים פטור על־פי חוק. מעבר להזנה לפי מסלול מחריג את מסלול הפריים ומחייב רק את המסלול הקבוע והמשתנה.</p>
       </div>
 
       <div>

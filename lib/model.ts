@@ -60,13 +60,13 @@ export function compute(params: Params): Results {
     Av0, p, R0, Y, Ip, V, mortgageRate, Ri, maintenanceRate,
     buyerType, purchaseCostsRate,
     Es, masShvach, scenarioDelta,
+    mortgageMode, trackPrimeShare, trackPrimeRate,
+    trackFixedShare, trackFixedRate, trackVarShare, trackVarRate,
   } = params
 
   const S0 = (1 - p) * Av0
   const M0 = p * Av0
-  const I = mortgageRate
   const v = Math.pow(1 + V, 1 / 12) - 1
-  const i = Math.pow(1 + I, 1 / 12) - 1
   const ip = Math.pow(1 + Ip, 1 / 12)  // factor, not rate
 
   const Tp = buyerType === 'investor'
@@ -76,26 +76,61 @@ export function compute(params: Params): Results {
   const addedCosts = Tp + Av0 * purchaseCostsRate
   const Ep = S0 + addedCosts
   const taxBasis = Av0 + addedCosts
-  const lockedRate = I
-  const Im = I - scenarioDelta
-  const rc = I / 12   // monthly contractual rate
-  const rm = Im / 12  // monthly market rate
 
   const T = Y * 12
-  const monthlyPayment = i > 0
-    ? M0 * i / (1 - Math.pow(1 + i, -T))
-    : M0 / T
+
+  // Mortgage tracks. Simple mode = one non-exempt track at the effective rate (numerically
+  // identical to the legacy single-rate model). Advanced mode splits the loan into prime
+  // (early-repayment-exempt by law), fixed-unlinked (קל"צ) and variable/linked tracks, each
+  // amortized as its own Spitzer loan over the shared term T.
+  type Track = { principal: number; rate: number; exempt: boolean }
+  let tracks: Track[]
+  if (mortgageMode === 'advanced') {
+    const shareSum = (trackPrimeShare + trackFixedShare + trackVarShare) || 1
+    tracks = [
+      { principal: M0 * trackPrimeShare / shareSum, rate: trackPrimeRate, exempt: true },
+      { principal: M0 * trackFixedShare / shareSum, rate: trackFixedRate, exempt: false },
+      { principal: M0 * trackVarShare   / shareSum, rate: trackVarRate,   exempt: false },
+    ].filter(tk => tk.principal > 0)
+  } else {
+    tracks = [{ principal: M0, rate: mortgageRate, exempt: false }]
+  }
+
+  // Per-track monthly (compounded) rate + Spitzer payment; total payment is their sum.
+  const trackCalc = tracks.map(tk => {
+    const im = Math.pow(1 + tk.rate, 1 / 12) - 1
+    const payment = im > 0 ? tk.principal * im / (1 - Math.pow(1 + im, -T)) : tk.principal / T
+    return { ...tk, im, payment }
+  })
+  const monthlyPayment = trackCalc.reduce((s, tk) => s + tk.payment, 0)
+
+  // Blended effective rate — for display and the locked-rate threshold.
+  const lockedRate = M0 > 0 ? tracks.reduce((s, tk) => s + tk.rate * tk.principal, 0) / M0 : mortgageRate
+
+  // Early-repayment (היוון) fee over the remaining n months: present value of the rate gap on each
+  // non-exempt track (prime is exempt by law). Keeps the legacy mixed convention exactly — payment
+  // from the compounded monthly rate, discounting at the nominal rate/12 — so simple mode is unchanged.
+  const feeForRemaining = (n: number): number => {
+    let fee = 0
+    for (const tk of trackCalc) {
+      if (tk.exempt) continue
+      const rc = tk.rate / 12
+      const rm = (tk.rate - scenarioDelta) / 12
+      fee += Math.max(0, tk.payment * (annuityFactor(rm, n) - annuityFactor(rc, n)))
+    }
+    return fee
+  }
 
   // Month 0: rem=M0, F=0, gain<0 so masShvachTax=0
   const N0 = Av0 * (1 - Es) - Ep - M0
-  const fee0 = Math.max(0, monthlyPayment * (annuityFactor(rm, T) - annuityFactor(rc, T)))
+  const fee0 = feeForRemaining(T)
   const N0adj = N0 - fee0
   const points: ChartPoint[] = [
     { month: 0, apartmentGain: Math.round(N0adj), passiveGain: 0, gainDiff: Math.round(N0adj), cashFlow: 0, monthlyRent: Math.round(R0), monthlyMortgage: Math.round(M0 > 0 ? monthlyPayment : 0), prepaymentFee: Math.round(fee0) },
   ]
 
   let F = 0
-  let rem = M0
+  const rems = trackCalc.map(tk => tk.principal)  // outstanding balance per track
   let intComp = 0  // Σmax(0,-f(t))·ip^(x-t) — compounded injections (mort>rent months only)
   let intFlat = 0  // Σmax(0,-f(t)) — flat sum (cost basis of injections)
 
@@ -114,12 +149,15 @@ export function compute(params: Params): Results {
     const effectiveRent = rent * (1 - maintenanceRate / 12)
 
     let mort = 0
-    if (x <= T && rem > 0) {
-      const interestPmt = rem * i
-      const principalPmt = monthlyPayment - interestPmt
-      rem = Math.max(0, rem - principalPmt)
-      mort = monthlyPayment
+    if (x <= T) {
+      for (let k = 0; k < trackCalc.length; k++) {
+        if (rems[k] <= 0) continue
+        const interestPmt = rems[k] * trackCalc[k].im
+        rems[k] = Math.max(0, rems[k] - (trackCalc[k].payment - interestPmt))
+        mort += trackCalc[k].payment
+      }
     }
+    const rem = rems.reduce((a, b) => a + b, 0)  // total outstanding across tracks
 
     const flow = effectiveRent - mort
     F += flow
@@ -151,7 +189,7 @@ export function compute(params: Params): Results {
     )
 
     const n = Math.max(0, T - x)  // remaining months at exit
-    const prepaymentFee = Math.max(0, monthlyPayment * (annuityFactor(rm, n) - annuityFactor(rc, n)))
+    const prepaymentFee = feeForRemaining(n)
     const N_x_adj = N_x - prepaymentFee
 
     // Detect every sign change in (N - P)
@@ -200,7 +238,7 @@ export const DEFAULT_PARAMS: Params = {
   Y: 30,
   Ip: 0.09,
   V: 0.07,
-  mortgageRate: 0.046,
+  mortgageRate: 0.0435,  // fallback ≈ BOI 3.75% + 1.5% prime − 0.9% blend; overwritten by the live BOI fetch
   Ri: 0.02,
   maintenanceRate: 0.07,
   buyerType: 'investor',
@@ -208,4 +246,15 @@ export const DEFAULT_PARAMS: Params = {
   Es: 0.03,
   masShvach: '25%',
   scenarioDelta: 0.005,
+
+  mortgageMode: 'simple',
+  // Advanced defaults: an even 3-way split at the same rate, so toggling to Advanced reproduces
+  // the simple-mode payment (annuity is linear in principal at a fixed rate) — only the fee drops,
+  // since the prime third becomes exempt. Users then set their real per-track shares and rates.
+  trackPrimeShare: 1 / 3,
+  trackPrimeRate: 0.0525,  // fallback prime = BOI 3.75% + 1.5%; overwritten by the live BOI fetch
+  trackFixedShare: 1 / 3,
+  trackFixedRate: 0.0435,
+  trackVarShare: 1 / 3,
+  trackVarRate: 0.0435,
 }

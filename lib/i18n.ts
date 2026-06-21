@@ -29,6 +29,19 @@ export type Translation = {
   mortgageRateLabel: string
   mortgageRateTooltip: string
   primeHelperLine: (boiRate: string) => string
+  mortgageModeSimple: string
+  mortgageModeAdvanced: string
+  mortgageTracksTitle: string
+  mortgageTracksTooltip: string
+  trackPrimeLabel: string
+  trackFixedLabel: string
+  trackVarLabel: string
+  trackShareHeader: string
+  trackRateHeader: string
+  trackSumOk: (total: string) => string
+  trackSumWarning: (total: string) => string
+  trackPrimeExemptNote: string
+  trackPrimeBoiNote: (prime: string) => string
   esLabel: string
   ipLabel: string
   cgtNote: string
@@ -149,8 +162,21 @@ export const LANG: Record<Lang, Translation> = {
     maintenanceRateLabel: 'Annual maintenance',
     maintenanceRateTooltip: 'Annual maintenance cost as a percentage of rent — repairs, wear, and ongoing costs. Deducted from rental income each month.',
     mortgageRateLabel: 'Effective mortgage rate',
-    mortgageRateTooltip: 'The blended effective rate across all your mortgage tracks. You can get this figure from your mortgage advisor or bank pre-approval. Typical range in Israel today: 4%–5.5%.',
+    mortgageRateTooltip: 'The blended effective rate across all your mortgage tracks. You can get this figure from your mortgage advisor or bank pre-approval. Typical range in Israel today: 4%–5.5%. Switch to "By track" to enter your real tracks instead.',
     primeHelperLine: (boi) => `Default based on current Bank of Israel rate (${boi})`,
+    mortgageModeSimple: 'Single rate',
+    mortgageModeAdvanced: 'By track',
+    mortgageTracksTitle: 'Mortgage tracks',
+    mortgageTracksTooltip: 'Israeli mortgages mix several tracks that behave differently. Enter the share of the loan and the rate for each — figures are on your loan agreement. The prime track is exempt from the early-repayment fee by law; the fixed and variable tracks are not.',
+    trackPrimeLabel: 'Prime',
+    trackFixedLabel: 'Fixed (unlinked)',
+    trackVarLabel: 'Variable / linked',
+    trackShareHeader: 'Share',
+    trackRateHeader: 'Rate',
+    trackSumOk: (total) => `Tracks total ${total}`,
+    trackSumWarning: (total) => `Tracks total ${total} — shares are normalized to 100%`,
+    trackPrimeExemptNote: 'Prime is exempt from the early-repayment fee; only the fixed and variable tracks are charged.',
+    trackPrimeBoiNote: (prime) => `Prime defaults to the current Bank of Israel rate + 1.5% (${prime})`,
     esLabel: 'Selling costs',
     ipLabel: 'Passive return (net)',
     cgtNote: 'Passive gain is calculated net of 25% capital gains tax at realization',
@@ -210,7 +236,7 @@ export const LANG: Record<Lang, Translation> = {
     perYear: '/ yr',
     scrollHint: 'Scroll to zoom · drag to pan',
     resetZoom: 'Reset zoom',
-    prepaymentScenarioTooltip: 'Set how far market rates have fallen below your mortgage rate; a bigger drop means a bigger fee, and if rates rose or held the fee is zero. One caveat keeps the estimate conservative: it applies the fee to the entire remaining balance even though the prime track is exempt by law, so the actual fee may be slightly lower.',
+    prepaymentScenarioTooltip: 'Set how far market rates have fallen below your mortgage rate; a bigger drop means a bigger fee, and if rates rose or held the fee is zero. In single-rate mode the fee is applied to the whole balance (a slightly conservative estimate, since the prime track is exempt by law). In by-track mode the prime track is excluded and only the fixed and variable tracks are charged.',
     prepaymentGapLabel: 'How much market rates have fallen since you locked in',
     prepaymentFeeTooltipLabel: 'Prepayment fee',
     prepaymentFeeTooltipLabelShort: 'Fee',
@@ -272,8 +298,21 @@ export const LANG: Record<Lang, Translation> = {
     maintenanceRateLabel: 'תחזוקה שנתית',
     maintenanceRateTooltip: 'עלות תחזוקה שנתית כאחוז מהשכירות — תיקונים, בלאי, ועלויות שוטפות. מנוכה מהכנסת השכירות בכל חודש.',
     mortgageRateLabel: 'ריבית משכנתה אפקטיבית',
-    mortgageRateTooltip: 'הריבית האפקטיבית הממוצעת על המשכנתה שלכם, לאחר שקלול כל המסלולים. ניתן לקבל נתון זה מיועץ המשכנתאות או מהאישור העקרוני של הבנק. טווח אופייני בישראל כיום: 4%–5.5%.',
+    mortgageRateTooltip: 'הריבית האפקטיבית הממוצעת על המשכנתה שלכם, לאחר שקלול כל המסלולים. ניתן לקבל נתון זה מיועץ המשכנתאות או מהאישור העקרוני של הבנק. טווח אופייני בישראל כיום: 4%–5.5%. ניתן לעבור ל"לפי מסלול" כדי להזין את המסלולים בפועל.',
     primeHelperLine: (boi) => `ברירת מחדל מבוססת על ריבית בנק ישראל עדכנית (${boi})`,
+    mortgageModeSimple: 'ריבית אחת',
+    mortgageModeAdvanced: 'לפי מסלול',
+    mortgageTracksTitle: 'מסלולי משכנתה',
+    mortgageTracksTooltip: 'משכנתה בישראל מורכבת ממספר מסלולים שמתנהגים אחרת. הזינו את חלקו של כל מסלול בהלוואה ואת הריבית שלו — הנתונים מופיעים בדף תנאי ההלוואה. מסלול הפריים פטור מעמלת פירעון מוקדם על־פי חוק; המסלול הקבוע והמשתנה אינם פטורים.',
+    trackPrimeLabel: 'פריים',
+    trackFixedLabel: 'קבועה לא צמודה',
+    trackVarLabel: 'משתנה / צמודה',
+    trackShareHeader: 'חלק',
+    trackRateHeader: 'ריבית',
+    trackSumOk: (total) => `סך המסלולים ${total}`,
+    trackSumWarning: (total) => `סך המסלולים ${total} — החלקים מנורמלים ל־100%`,
+    trackPrimeExemptNote: 'מסלול הפריים פטור מעמלת הפירעון המוקדם; רק המסלול הקבוע והמשתנה מחויבים.',
+    trackPrimeBoiNote: (prime) => `ברירת המחדל של הפריים היא ריבית בנק ישראל העדכנית + 1.5% (${prime})`,
     esLabel: 'עלויות מכירה',
     ipLabel: 'תשואה פסיבית (נטו) / שנה',
     cgtNote: 'הרווח הפסיבי מחושב נטו לאחר מס רווח הון 25% במימוש',
@@ -331,7 +370,7 @@ export const LANG: Record<Lang, Translation> = {
     perYear: 'שנה /',
     scrollHint: 'גלגלו לזום · גררו להזזה',
     resetZoom: 'איפוס זום',
-    prepaymentScenarioTooltip: 'כיוונו עד כמה ירדה ריבית השוק מתחת לריבית המשכנתה; ירידה גדולה יותר משמעה קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. הסתייגות אחת שומרת על הערכה שמרנית: הקנס מחושב על מלוא יתרת המשכנתה אף שמסלול הפריים פטור ממנו על־פי חוק, ולכן הקנס בפועל עשוי להיות נמוך מעט יותר.',
+    prepaymentScenarioTooltip: 'כיוונו עד כמה ירדה ריבית השוק מתחת לריבית המשכנתה; ירידה גדולה יותר משמעה קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. במצב ריבית אחת הקנס מחושב על מלוא היתרה (הערכה מעט שמרנית, שכן מסלול הפריים פטור על־פי חוק). במצב לפי מסלול מסלול הפריים מוחרג, ורק המסלול הקבוע והמשתנה מחויבים.',
     prepaymentGapLabel: 'כמה ירדה ריבית השוק מאז נטילת המשכנתה',
     prepaymentFeeTooltipLabel: 'קנס פירעון מוקדם',
     prepaymentFeeTooltipLabelShort: 'קנס',

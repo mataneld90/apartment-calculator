@@ -533,7 +533,8 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
             {group.sliders
               .filter(s =>
                 !(group.id === 'costs'    && s.key === 'Av0') &&
-                !(group.id === 'mortgage' && s.key === 'p')
+                !(group.id === 'mortgage' && s.key === 'p') &&
+                !(group.id === 'mortgage' && s.key === 'mortgageRate' && params.mortgageMode === 'advanced')
               )
               .map((def) => (
               <div key={def.key}>
@@ -558,6 +559,78 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
               </div>
             ))}
           </div>
+
+          {group.id === 'mortgage' && (() => {
+            const TRACK_ROWS = [
+              { label: t.trackPrimeLabel, shareKey: 'trackPrimeShare', rateKey: 'trackPrimeRate', exempt: true },
+              { label: t.trackFixedLabel, shareKey: 'trackFixedShare', rateKey: 'trackFixedRate', exempt: false },
+              { label: t.trackVarLabel,   shareKey: 'trackVarShare',   rateKey: 'trackVarRate',   exempt: false },
+            ] as const
+            const shareSum = params.trackPrimeShare + params.trackFixedShare + params.trackVarShare
+            const sumOff = Math.abs(shareSum - 1) > 0.005
+            return (
+              <div className="mt-2 pt-2 border-t border-[var(--c-border)]">
+                {/* Simple ⇄ By-track toggle */}
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-sm text-[var(--c-text-3)] flex-1" dir={isRTL ? 'rtl' : 'ltr'}>{t.mortgageTracksTitle}</span>
+                  <InfoTooltip text={t.mortgageTracksTooltip} />
+                  {(['simple', 'advanced'] as const).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => update('mortgageMode', m)}
+                      style={params.mortgageMode === m ? { background: palette.apt, color: '#fff', borderColor: palette.apt } : undefined}
+                      className="text-xs px-2 py-0.5 rounded border border-[var(--c-border)] text-[var(--c-text-3)] transition-colors"
+                    >
+                      {m === 'simple' ? t.mortgageModeSimple : t.mortgageModeAdvanced}
+                    </button>
+                  ))}
+                </div>
+
+                {params.mortgageMode === 'advanced' && (
+                  <div className="flex flex-col gap-1.5" dir={isRTL ? 'rtl' : 'ltr'}>
+                    {/* Column headers */}
+                    <div className="flex items-center gap-2 text-[11px] text-[var(--c-muted)]">
+                      <span className="flex-1" />
+                      <span className="w-14 text-center shrink-0">{t.trackShareHeader}</span>
+                      <span className="w-14 text-center shrink-0">{t.trackRateHeader}</span>
+                    </div>
+                    {TRACK_ROWS.map((row) => (
+                      <div key={row.shareKey} className="flex items-center gap-2">
+                        <span className="text-xs text-[var(--c-text-3)] leading-tight flex-1 min-w-0">{row.label}</span>
+                        <span className="w-14 text-center shrink-0 text-xs text-[var(--c-text)] tabular-nums" dir="ltr">
+                          <EditableValue
+                            displayNode={<bdi>{pct(params[row.shareKey] as number, 0)}</bdi>}
+                            rawValue={params[row.shareKey] as number}
+                            min={0}
+                            max={1}
+                            config={{ fromStored: v => v * 100, toStored: n => n / 100, decimals: 0, suffix: '%', inputSize: 3 }}
+                            onCommit={(v) => update(row.shareKey, v as never)}
+                          />
+                        </span>
+                        <span className="w-14 text-center shrink-0 text-xs text-[var(--c-text)] tabular-nums" dir="ltr">
+                          <EditableValue
+                            displayNode={<bdi>{pct(params[row.rateKey] as number, 2)}</bdi>}
+                            rawValue={params[row.rateKey] as number}
+                            min={0}
+                            max={0.12}
+                            config={{ fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 }}
+                            onCommit={(v) => update(row.rateKey, v as never)}
+                          />
+                        </span>
+                      </div>
+                    ))}
+                    <p className={`text-[11px] mt-0.5 ${sumOff ? 'text-amber-500' : 'text-[var(--c-muted)]'}`}>
+                      {sumOff ? t.trackSumWarning(pct(shareSum, 0)) : t.trackSumOk(pct(shareSum, 0))}
+                    </p>
+                    <p className="text-[11px] text-[var(--c-muted)] italic">{t.trackPrimeExemptNote}</p>
+                    {boiRate != null && (
+                      <p className="text-[11px] text-[var(--c-muted)]">{t.trackPrimeBoiNote(pct(boiRate + 0.015, 2))}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })()}
 
           {group.id === 'selling' && (
             <div className="mt-2 pt-2 border-t border-[var(--c-border)]">
