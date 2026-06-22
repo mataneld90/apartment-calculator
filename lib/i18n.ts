@@ -41,7 +41,7 @@ export type Translation = {
   trackRateHeader: string
   trackSumOk: (total: string) => string
   trackSumWarning: (total: string) => string
-  trackPrimeBoiNote: (prime: string) => string
+  trackPrimeTooltip: (boi: string, prime: string) => string
   esLabel: string
   ipLabel: string
   cgtNote: string
@@ -176,7 +176,7 @@ export const LANG: Record<Lang, Translation> = {
     trackRateHeader: 'Rate',
     trackSumOk: (total) => `Tracks total ${total}`,
     trackSumWarning: (total) => `Tracks total ${total} — shares are normalized to 100%`,
-    trackPrimeBoiNote: (prime) => `Prime defaults to the current Bank of Israel rate + 1.5% (${prime})`,
+    trackPrimeTooltip: (boi, prime) => `Prime tracks the Bank of Israel rate + 1.5%. BOI is currently ${boi}, so prime ≈ ${prime}. The default seeds this track at that rate.`,
     esLabel: 'Selling costs',
     ipLabel: 'Passive return (net)',
     cgtNote: 'Passive gain is calculated net of 25% capital gains tax at realization',
@@ -312,7 +312,7 @@ export const LANG: Record<Lang, Translation> = {
     trackRateHeader: 'ריבית',
     trackSumOk: (total) => `סך המסלולים ${total}`,
     trackSumWarning: (total) => `סך המסלולים ${total} — החלקים מנורמלים ל־100%`,
-    trackPrimeBoiNote: (prime) => `ברירת המחדל של הפריים היא ריבית בנק ישראל העדכנית + 1.5% (${prime})`,
+    trackPrimeTooltip: (boi, prime) => `הפריים נקבע לפי ריבית בנק ישראל + 1.5%. ריבית בנק ישראל כיום ${boi}, ולכן הפריים ≈ ${prime}. ברירת המחדל מאתחלת את המסלול בריבית זו.`,
     esLabel: 'עלויות מכירה',
     ipLabel: 'תשואה פסיבית (נטו) / שנה',
     cgtNote: 'הרווח הפסיבי מחושב נטו לאחר מס רווח הון 25% במימוש',

@@ -556,9 +556,9 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
 
           {group.id === 'mortgage' && (() => {
             const TRACK_ROWS = [
-              { label: t.trackPrimeLabel, shareKey: 'trackPrimeShare', rateKey: 'trackPrimeRate', exempt: true },
-              { label: t.trackFixedLabel, shareKey: 'trackFixedShare', rateKey: 'trackFixedRate', exempt: false },
-              { label: t.trackVarLabel,   shareKey: 'trackVarShare',   rateKey: 'trackVarRate',   exempt: false },
+              { label: t.trackPrimeLabel, shareKey: 'trackPrimeShare', rateKey: 'trackPrimeRate', exempt: true,  tooltip: t.trackPrimeTooltip(pct(BOI_RATE, 2), pct(BOI_RATE + 0.015, 2)) },
+              { label: t.trackFixedLabel, shareKey: 'trackFixedShare', rateKey: 'trackFixedRate', exempt: false, tooltip: undefined },
+              { label: t.trackVarLabel,   shareKey: 'trackVarShare',   rateKey: 'trackVarRate',   exempt: false, tooltip: undefined },
             ] as const
             const shareSum = params.trackPrimeShare + params.trackFixedShare + params.trackVarShare
             const sumOff = Math.abs(shareSum - 1) > 0.005
@@ -612,7 +612,10 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                     </div>
                     {TRACK_ROWS.map((row) => (
                       <div key={row.shareKey} className="flex items-center gap-2">
-                        <span className="text-xs text-[var(--c-text-3)] leading-tight flex-1 min-w-0">{row.label}</span>
+                        <span className="text-xs text-[var(--c-text-3)] leading-tight flex-1 min-w-0 flex items-center gap-1">
+                          {row.label}
+                          {row.tooltip && <InfoTooltip text={row.tooltip} />}
+                        </span>
                         <span className="w-14 text-center shrink-0 text-xs text-[var(--c-text)] tabular-nums" dir="ltr">
                           <EditableValue
                             displayNode={<bdi>{pct(params[row.shareKey] as number, 0)}</bdi>}
@@ -638,7 +641,6 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                     <p className={`text-[11px] mt-0.5 ${sumOff ? 'text-amber-500' : 'text-[var(--c-muted)]'}`}>
                       {sumOff ? t.trackSumWarning(pct(shareSum, 0)) : t.trackSumOk(pct(shareSum, 0))}
                     </p>
-                    <p className="text-[11px] text-[var(--c-muted)]">{t.trackPrimeBoiNote(pct(BOI_RATE + 0.015, 2))}</p>
                   </div>
                 )}
               </div>
