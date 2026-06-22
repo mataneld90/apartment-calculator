@@ -238,7 +238,7 @@ export const DEFAULT_PARAMS: Params = {
   Y: 30,
   Ip: 0.09,
   V: 0.07,
-  mortgageRate: 0.0435,  // fallback ≈ BOI 3.75% + 1.5% prime − 0.9% blend; overwritten by the live BOI fetch
+  mortgageRate: 0.0435,  // = BOI 3.75% + 1.5% prime − 0.9% blend. MANUAL: update when BOI changes (live fetch abandoned)
   Ri: 0.02,
   maintenanceRate: 0.07,
   buyerType: 'investor',
@@ -252,7 +252,7 @@ export const DEFAULT_PARAMS: Params = {
   // the simple-mode payment (annuity is linear in principal at a fixed rate) — only the fee drops,
   // since the prime third becomes exempt. Users then set their real per-track shares and rates.
   trackPrimeShare: 1 / 3,
-  trackPrimeRate: 0.0525,  // fallback prime = BOI 3.75% + 1.5%; overwritten by the live BOI fetch
+  trackPrimeRate: 0.0525,  // prime = BOI 3.75% + 1.5%. MANUAL: update when BOI changes (live fetch abandoned)
   trackFixedShare: 1 / 3,
   trackFixedRate: 0.0435,
   trackVarShare: 1 / 3,
