@@ -197,7 +197,7 @@ export const LANG: Record<Lang, Translation> = {
       buyerTypeSingle:
         'Applies to buyers who own no other apartment, or who sell their current one within 18 months of purchase. Tax rates are graduated and significantly lower than the investor track.',
       masShvach:
-        'Tax on real estate sale profit: 25% of net gain (sale proceeds minus purchase cost and recognized expenses). For an investment apartment — usually applies. For a primary residence — usually exempt. Co-ownership structures may qualify for exemption — consult a lawyer.',
+        'Tax on real estate sale profit: 25% of net gain (sale proceeds minus purchase cost and recognized expenses). It usually applies if you own other apartments. If this is your only residential apartment (דירה יחידה), held at least 18 months, it is usually exempt up to ₪5,008,000 (2024–2027) — even if you rent it out. Co-ownership and exemption rules are intricate — consult a lawyer.',
       R0: 'Monthly rent at the time of purchase, before annual increases. The calculator applies the rent increase once per year.',
       purchaseCostsRate: 'Transaction costs as a percentage of apartment value, excluding purchase tax. Typical breakdown: agent ~2% + VAT, lawyer ~0.5% + VAT, appraiser ~₪3,500–₪5,000, mortgage advisor by agreement. The default 5% suits most buyers.',
     },
@@ -331,7 +331,7 @@ export const LANG: Record<Lang, Translation> = {
       buyerTypeInvestor: 'חל על מי שמחזיקים בדירה נוספת ואינם מוכרים אותה לפני הרכישה. מס רכישה: 8% עד ₪5,872,725, ו-10% על החלק שמעבר. אם הדירה החדשה תשמש כמגוריכם העיקריים ותמכרו את הדירה הקיימת תוך 18 חודשים, עשויה לחול תקרת מימון של 75% — מומלץ להתייעץ עם יועץ משכנתאות.',
       buyerTypeSingle: 'חל על מי שאין בבעלותם דירה נוספת, או שמוכרים את דירתם הקיימת תוך 18 חודשים מהרכישה. שיעורי המס מדורגים ונמוכים משמעותית מהמסלול החלופי.',
       masShvach:
-        'מס על רווח המכירה בנדל"ן: 25% מהרווח הנקי (תמורת המכירה פחות הוצאות הרכישה והוצאות מוכרות). לדירת השקעה — לרוב חל. לדירה עיקרית — לרוב פטור. במבנה שותפות ייתכנו פטורים — התייעצו עם עורך דין.',
+        'מס על רווח המכירה בנדל"ן: 25% מהרווח הנקי (תמורת המכירה פחות הוצאות הרכישה והוצאות מוכרות). לרוב חל אם בבעלותכם דירות נוספות. אם זו דירתכם היחידה למגורים (דירה יחידה), שבבעלותכם לפחות 18 חודשים — לרוב פטורה עד ₪5,008,000 (2024–2027), גם אם היא מושכרת. כללי השותפות והפטור מורכבים — התייעצו עם עורך דין.',
       R0: 'שכירות חודשית בעת הרכישה, לפני עדכוני שכירות שנתיים. המחשבון מעדכן את השכירות אחת לשנה.',
       purchaseCostsRate: 'עלויות הרכישה כאחוז משווי הדירה, ללא מס רכישה. פירוט אופייני: מתווך ~2% + מע"מ, עו"ד ~0.5% + מע"מ, שמאי ~₪3,500–₪5,000, יועץ משכנתאות לפי הסכמה. ברירת המחדל 5% מתאימה לרוב הרוכשים.',
     },
