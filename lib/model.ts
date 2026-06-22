@@ -231,6 +231,13 @@ export function compute(params: Params): Results {
   return { points, crossovers, Tp, M0, Ep, S0, lockedRate, prepayFee: Math.round(fee0), irrApartment, irrPassive }
 }
 
+// Bank of Israel policy rate. THE manual knob: this is the single number to update when BOI moves
+// (the live BOI fetch was abandoned). Prime = BOI + 1.5%; the blended single-rate marks that down
+// 0.9pp to approximate an effective rate across all tracks.
+export const BOI_RATE = 0.0375
+const PRIME_RATE = BOI_RATE + 0.015        // standard Israeli prime
+const BLENDED_RATE = PRIME_RATE - 0.009     // ≈ effective blended rate across tracks
+
 export const DEFAULT_PARAMS: Params = {
   Av0: 2_500_000,
   p: 0.50,
@@ -238,7 +245,7 @@ export const DEFAULT_PARAMS: Params = {
   Y: 30,
   Ip: 0.09,
   V: 0.07,
-  mortgageRate: 0.0435,  // = BOI 3.75% + 1.5% prime − 0.9% blend. MANUAL: update when BOI changes (live fetch abandoned)
+  mortgageRate: BLENDED_RATE,
   Ri: 0.02,
   maintenanceRate: 0.07,
   buyerType: 'investor',
@@ -252,9 +259,9 @@ export const DEFAULT_PARAMS: Params = {
   // the simple-mode payment (annuity is linear in principal at a fixed rate) — only the fee drops,
   // since the prime third becomes exempt. Users then set their real per-track shares and rates.
   trackPrimeShare: 1 / 3,
-  trackPrimeRate: 0.0525,  // prime = BOI 3.75% + 1.5%. MANUAL: update when BOI changes (live fetch abandoned)
+  trackPrimeRate: PRIME_RATE,
   trackFixedShare: 1 / 3,
-  trackFixedRate: 0.0435,
+  trackFixedRate: BLENDED_RATE,
   trackVarShare: 1 / 3,
-  trackVarRate: 0.0435,
+  trackVarRate: BLENDED_RATE,
 }

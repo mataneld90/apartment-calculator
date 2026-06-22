@@ -75,7 +75,7 @@ function EditableValue({ displayNode, rawValue, min, max, config, onCommit }: {
   )
 }
 import type { Params } from '@/lib/types'
-import { DEFAULT_PARAMS, purchaseTaxInvestor, purchaseTaxSingle } from '@/lib/model'
+import { DEFAULT_PARAMS, purchaseTaxInvestor, purchaseTaxSingle, BOI_RATE } from '@/lib/model'
 import type { Results } from '@/lib/types'
 import type { Translation } from '@/lib/i18n'
 import type { ChartPalette } from '@/lib/colorPalette'
@@ -326,12 +326,11 @@ interface Props {
   only?: string[]
   palette: ChartPalette
   continuous?: boolean
-  boiRate?: number | null
   dpMode: 'amount' | 'fraction'
   onDpModeChange: (m: 'amount' | 'fraction') => void
 }
 
-export default function Sliders({ params, update, results, t, isRTL, only, palette, continuous, boiRate, dpMode, onDpModeChange }: Props) {
+export default function Sliders({ params, update, results, t, isRTL, only, palette, continuous, dpMode, onDpModeChange }: Props) {
   const visibleGroups = useMemo(
     () => only
       ? only.map(id => GROUPS.find(g => g.id === id)).filter((g): g is typeof GROUPS[0] => g !== undefined)
@@ -551,9 +550,9 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                   accentColor={group.id === 'passive' ? palette.pas : palette.apt}
                   editConfig={def.editConfig}
                 />
-                {def.key === 'mortgageRate' && boiRate != null && (
+                {def.key === 'mortgageRate' && (
                   <p className="text-xs text-[var(--c-muted)] mt-0.5 pb-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
-                    {t.primeHelperLine(pct(boiRate, 2))}
+                    {t.primeHelperLine(pct(BOI_RATE, 2))}
                   </p>
                 )}
               </div>
@@ -623,9 +622,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                       {sumOff ? t.trackSumWarning(pct(shareSum, 0)) : t.trackSumOk(pct(shareSum, 0))}
                     </p>
                     <p className="text-[11px] text-[var(--c-muted)] italic">{t.trackPrimeExemptNote}</p>
-                    {boiRate != null && (
-                      <p className="text-[11px] text-[var(--c-muted)]">{t.trackPrimeBoiNote(pct(boiRate + 0.015, 2))}</p>
-                    )}
+                    <p className="text-[11px] text-[var(--c-muted)]">{t.trackPrimeBoiNote(pct(BOI_RATE + 0.015, 2))}</p>
                   </div>
                 )}
               </div>

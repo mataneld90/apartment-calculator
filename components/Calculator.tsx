@@ -18,23 +18,6 @@ const Chart = dynamic(() => import('./Chart'), {
 
 const SLIDER_GROUPS: string[] = ['costs', 'mortgage', 'apartment', 'selling', 'passive']
 
-const BOI_CACHE_KEY = 'boiRateCache'
-const BOI_CACHE_TTL = 7 * 24 * 60 * 60 * 1000
-
-function readBoiCache(): number | null {
-  try {
-    const raw = localStorage.getItem(BOI_CACHE_KEY)
-    if (!raw) return null
-    const { rate, ts } = JSON.parse(raw)
-    if (Date.now() - ts > BOI_CACHE_TTL) return null
-    return typeof rate === 'number' ? rate : null
-  } catch { return null }
-}
-
-function writeBoiCache(rate: number) {
-  try { localStorage.setItem(BOI_CACHE_KEY, JSON.stringify({ rate, ts: Date.now() })) } catch {}
-}
-
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
@@ -45,7 +28,6 @@ function hexToRgba(hex: string, alpha: number): string {
 export default function Calculator() {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS)
   const [dpMode, setDpMode] = useState<'amount' | 'fraction'>('amount')
-  const [boiRate, setBoiRate] = useState<number | null>(null)
   const [lang, setLang] = useState<Lang>('he')
   const [methodologyOpen, setMethodologyOpen] = useState(false)
   const [underTheHoodOpen, setUnderTheHoodOpen] = useState(false)
@@ -72,30 +54,6 @@ export default function Calculator() {
       document.documentElement.classList.add('light')
     }
   }, [isDark])
-
-  // Fetch BOI rate on mount; use 7-day localStorage cache
-  useEffect(() => {
-    function applyRate(rate: number) {
-      setBoiRate(rate)
-      // Prime = Bank of Israel rate + 1.5% (standard Israeli definition). The single-rate default
-      // marks that down 0.9pp to approximate a blended effective rate across all tracks.
-      const prime = Math.round((rate + 0.015) * 10000) / 10000
-      const derived = Math.round((rate + 0.015 - 0.009) * 10000) / 10000
-      setParams(p => ({
-        ...p,
-        mortgageRate: derived,
-        trackPrimeRate: prime,          // by-track prime = live prime rate
-        trackFixedRate: derived,        // fixed/variable seeded to the blended rate as neutral starts
-        trackVarRate: derived,
-      }))
-    }
-    const cached = readBoiCache()
-    if (cached !== null) { applyRate(cached); return }
-    fetch('/api/boi-rate')
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(({ rate }: { rate: number }) => { writeBoiCache(rate); applyRate(rate) })
-      .catch(() => {})
-  }, [])
 
   // Auto-open on first visit
   useEffect(() => {
@@ -303,7 +261,6 @@ export default function Calculator() {
             only={SLIDER_GROUPS}
             palette={palette}
             continuous
-            boiRate={boiRate}
             dpMode={dpMode} onDpModeChange={setDpMode}
           />
         </div>
