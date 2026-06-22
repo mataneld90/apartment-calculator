@@ -81,7 +81,7 @@ export function compute(params: Params): Results {
 
   // Mortgage tracks. Simple mode = one non-exempt track at the effective rate (numerically
   // identical to the legacy single-rate model). Advanced mode splits the loan into prime
-  // (early-repayment-exempt by law), fixed-unlinked (קל"צ) and variable/linked tracks, each
+  // (early-repayment-exempt by law), fixed-unlinked (קל"צ) and variable-unlinked tracks, each
   // amortized as its own Spitzer loan over the shared term T.
   type Track = { principal: number; rate: number; exempt: boolean }
   let tracks: Track[]
@@ -264,5 +264,5 @@ export const DEFAULT_PARAMS: Params = {
   trackFixedShare: 1 / 3,
   trackFixedRate: 0.04,         // fixed-unlinked (קל"צ), typical today
   trackVarShare: 1 / 3,
-  trackVarRate: 0.0425,         // variable/linked, typical today
+  trackVarRate: 0.0425,         // variable-unlinked, typical today
 }

@@ -26,7 +26,7 @@ export interface Params {
   trackPrimeRate: number
   trackFixedShare: number   // קבועה לא צמודה (קל"צ)
   trackFixedRate: number
-  trackVarShare: number     // משתנה / צמודה
+  trackVarShare: number     // משתנה (לא צמודה)
   trackVarRate: number
 }
 
