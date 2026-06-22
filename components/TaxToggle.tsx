@@ -26,8 +26,9 @@ export default function TaxToggle({ label, tooltip, value, options, onChange, is
                 : 'bg-transparent text-[var(--c-muted)] border-[var(--c-toggle-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
             }`}
           >
+            {isRTL && opt.tooltip && <InfoTooltip text={opt.tooltip} />}
             {opt.label}
-            {opt.tooltip && <InfoTooltip text={opt.tooltip} />}
+            {!isRTL && opt.tooltip && <InfoTooltip text={opt.tooltip} />}
           </button>
         ))}
       </div>

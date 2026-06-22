@@ -28,11 +28,12 @@ export type Translation = {
   maintenanceRateTooltip: string
   mortgageRateLabel: string
   mortgageRateTooltip: string
-  primeHelperLine: (boiRate: string) => string
+  singleRateHint: string
   mortgageModeSimple: string
   mortgageModeAdvanced: string
-  mortgageTracksTitle: string
-  mortgageTracksTooltip: string
+  mortgageRateSectionTitle: string
+  mortgageModeSimpleTooltip: string
+  mortgageModeAdvancedTooltip: string
   trackPrimeLabel: string
   trackFixedLabel: string
   trackVarLabel: string
@@ -161,13 +162,14 @@ export const LANG: Record<Lang, Translation> = {
     riTooltip: "Expected annual rent increase. The 2% default matches the Bank of Israel's inflation target.",
     maintenanceRateLabel: 'Annual maintenance',
     maintenanceRateTooltip: 'Annual maintenance cost as a percentage of rent — repairs, wear, and ongoing costs. Deducted from rental income each month.',
-    mortgageRateLabel: 'Effective mortgage rate',
-    mortgageRateTooltip: 'The blended effective rate across all your mortgage tracks. You can get this figure from your mortgage advisor or bank pre-approval. Typical range in Israel today: 4%–5.5%. Switch to "By track" to enter your real tracks instead.',
-    primeHelperLine: (boi) => `Default based on current Bank of Israel rate (${boi})`,
+    mortgageRateLabel: 'Blended rate',
+    mortgageRateTooltip: 'A single rate that stands in for your whole mortgage — a rough estimate, since a real mortgage mixes several tracks at different rates. The default, 4.5%, reflects a typical Israeli mortgage today (BOI 3.75%, prime 5.25%). For real numbers, switch to "By track" and enter the rates from your loan agreement. In this mode the early-repayment fee is charged on the full balance.',
+    singleRateHint: 'Default 4.5% — a typical figure today; use "By track" for your real per-track rates',
     mortgageModeSimple: 'Single rate',
     mortgageModeAdvanced: 'By track',
-    mortgageTracksTitle: 'Mortgage tracks',
-    mortgageTracksTooltip: 'Israeli mortgages mix several tracks that behave differently. Enter the share of the loan and the rate for each — figures are on your loan agreement. The prime track is exempt from the early-repayment fee by law; the fixed and variable tracks are not.',
+    mortgageRateSectionTitle: 'Mortgage rate',
+    mortgageModeSimpleTooltip: 'One blended rate standing in for the whole mortgage — a quick approximation when you don\'t want to split it into tracks. The early-repayment fee is charged on the full balance.',
+    mortgageModeAdvancedTooltip: 'Split the loan into prime, fixed and variable tracks, each with its own share and rate (they\'re on your loan agreement). More accurate for the early-repayment fee: the prime track is exempt by law, so only fixed and variable are charged. The defaults blend to about the same rate as Single rate, so the payment stays similar — the fee is what drops.',
     trackPrimeLabel: 'Prime',
     trackFixedLabel: 'Fixed (unlinked)',
     trackVarLabel: 'Variable / linked',
@@ -297,13 +299,14 @@ export const LANG: Record<Lang, Translation> = {
     riTooltip: 'עליית שכר דירה שנתית צפויה. ברירת המחדל 2% תואמת את יעד האינפלציה של בנק ישראל.',
     maintenanceRateLabel: 'תחזוקה שנתית',
     maintenanceRateTooltip: 'עלות תחזוקה שנתית כאחוז מהשכירות — תיקונים, בלאי, ועלויות שוטפות. מנוכה מהכנסת השכירות בכל חודש.',
-    mortgageRateLabel: 'ריבית משכנתה אפקטיבית',
-    mortgageRateTooltip: 'הריבית האפקטיבית הממוצעת על המשכנתה שלכם, לאחר שקלול כל המסלולים. ניתן לקבל נתון זה מיועץ המשכנתאות או מהאישור העקרוני של הבנק. טווח אופייני בישראל כיום: 4%–5.5%. ניתן לעבור ל"לפי מסלול" כדי להזין את המסלולים בפועל.',
-    primeHelperLine: (boi) => `ברירת מחדל מבוססת על ריבית בנק ישראל עדכנית (${boi})`,
+    mortgageRateLabel: 'ריבית משוקללת',
+    mortgageRateTooltip: 'ריבית אחת שמייצגת את כל המשכנתה — אומדן גס, משום שמשכנתה אמיתית מורכבת ממספר מסלולים בריביות שונות. ברירת המחדל, 4.5%, משקפת משכנתה טיפוסית בישראל כיום (ריבית בנק ישראל 3.75%, פריים 5.25%). לנתונים אמיתיים עברו ל"לפי מסלול" והזינו את הריביות מדף תנאי ההלוואה. במצב זה עמלת הפירעון המוקדם מחושבת על מלוא היתרה.',
+    singleRateHint: 'ברירת מחדל 4.5% — נתון טיפוסי כיום; לריביות בפועל עברו ל"לפי מסלול"',
     mortgageModeSimple: 'ריבית אחת',
     mortgageModeAdvanced: 'לפי מסלול',
-    mortgageTracksTitle: 'מסלולי משכנתה',
-    mortgageTracksTooltip: 'משכנתה בישראל מורכבת ממספר מסלולים שמתנהגים אחרת. הזינו את חלקו של כל מסלול בהלוואה ואת הריבית שלו — הנתונים מופיעים בדף תנאי ההלוואה. מסלול הפריים פטור מעמלת פירעון מוקדם על־פי חוק; המסלול הקבוע והמשתנה אינם פטורים.',
+    mortgageRateSectionTitle: 'ריבית המשכנתה',
+    mortgageModeSimpleTooltip: 'ריבית אחת שמייצגת בקירוב את כל המשכנתה — קירוב מהיר כשלא מפרקים למסלולים. עמלת הפירעון המוקדם מחושבת על מלוא היתרה.',
+    mortgageModeAdvancedTooltip: 'פיצול ההלוואה למסלולי פריים, קבוע ומשתנה, לכל אחד חלק וריבית משלו (מופיעים בדף תנאי ההלוואה). מדויק יותר לעמלת הפירעון המוקדם: מסלול הפריים פטור על־פי חוק, ולכן רק הקבוע והמשתנה מחויבים. ברירות המחדל משוקללות לריבית דומה ל"ריבית אחת", כך שההחזר נשאר דומה — מה שיורד הוא העמלה.',
     trackPrimeLabel: 'פריים',
     trackFixedLabel: 'קבועה לא צמודה',
     trackVarLabel: 'משתנה / צמודה',

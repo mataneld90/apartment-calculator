@@ -533,7 +533,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
               .filter(s =>
                 !(group.id === 'costs'    && s.key === 'Av0') &&
                 !(group.id === 'mortgage' && s.key === 'p') &&
-                !(group.id === 'mortgage' && s.key === 'mortgageRate' && params.mortgageMode === 'advanced')
+                !(group.id === 'mortgage' && s.key === 'mortgageRate')
               )
               .map((def) => (
               <div key={def.key}>
@@ -550,11 +550,6 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                   accentColor={group.id === 'passive' ? palette.pas : palette.apt}
                   editConfig={def.editConfig}
                 />
-                {def.key === 'mortgageRate' && (
-                  <p className="text-xs text-[var(--c-muted)] mt-0.5 pb-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
-                    {t.primeHelperLine(pct(BOI_RATE, 2))}
-                  </p>
-                )}
               </div>
             ))}
           </div>
@@ -569,23 +564,45 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
             const sumOff = Math.abs(shareSum - 1) > 0.005
             return (
               <div className="mt-2 pt-2 border-t border-[var(--c-border)]">
-                {/* Simple ⇄ By-track toggle */}
+                {/* Rate-input mode toggle on top — governs the single slider vs the per-track rows below */}
                 <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-sm text-[var(--c-text-3)] flex-1" dir={isRTL ? 'rtl' : 'ltr'}>{t.mortgageTracksTitle}</span>
-                  <InfoTooltip text={t.mortgageTracksTooltip} />
+                  <span className="text-sm text-[var(--c-text-3)] flex-1" dir={isRTL ? 'rtl' : 'ltr'}>{t.mortgageRateSectionTitle}</span>
                   {(['simple', 'advanced'] as const).map((m) => (
                     <button
                       key={m}
                       onClick={() => update('mortgageMode', m)}
-                      style={params.mortgageMode === m ? { background: palette.apt, color: '#fff', borderColor: palette.apt } : undefined}
-                      className="text-xs px-2 py-0.5 rounded border border-[var(--c-border)] text-[var(--c-text-3)] transition-colors"
+                      className={`flex items-center gap-1 px-3 py-1 text-xs font-medium rounded border transition-colors ${
+                        params.mortgageMode === m
+                          ? 'bg-slate-600 text-white border-slate-600'
+                          : 'bg-transparent text-[var(--c-muted)] border-[var(--c-toggle-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
+                      }`}
                     >
                       {m === 'simple' ? t.mortgageModeSimple : t.mortgageModeAdvanced}
+                      <InfoTooltip text={m === 'simple' ? t.mortgageModeSimpleTooltip : t.mortgageModeAdvancedTooltip} />
                     </button>
                   ))}
                 </div>
 
-                {params.mortgageMode === 'advanced' && (
+                {params.mortgageMode === 'simple' ? (
+                  <div>
+                    <SliderRow
+                      label={t.mortgageRateLabel}
+                      tooltip={t.mortgageRateTooltip}
+                      min={0.02}
+                      max={0.10}
+                      step={0.0005}
+                      value={params.mortgageRate}
+                      displayValue={pct(params.mortgageRate, 2)}
+                      onChange={(v) => update('mortgageRate', v)}
+                      isRTL={isRTL}
+                      accentColor={palette.apt}
+                      editConfig={{ fromStored: v => v * 100, toStored: n => n / 100, decimals: 2, suffix: '%', inputSize: 5 }}
+                    />
+                    <p className="text-xs text-[var(--c-muted)] mt-0.5 pb-0.5" dir={isRTL ? 'rtl' : 'ltr'}>
+                      {t.singleRateHint}
+                    </p>
+                  </div>
+                ) : (
                   <div className="flex flex-col gap-1.5" dir={isRTL ? 'rtl' : 'ltr'}>
                     {/* Column headers */}
                     <div className="flex items-center gap-2 text-[11px] text-[var(--c-muted)]">

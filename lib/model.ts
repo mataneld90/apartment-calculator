@@ -231,12 +231,10 @@ export function compute(params: Params): Results {
   return { points, crossovers, Tp, M0, Ep, S0, lockedRate, prepayFee: Math.round(fee0), irrApartment, irrPassive }
 }
 
-// Bank of Israel policy rate. THE manual knob: this is the single number to update when BOI moves
-// (the live BOI fetch was abandoned). Prime = BOI + 1.5%; the blended single-rate marks that down
-// 0.9pp to approximate an effective rate across all tracks.
+// Bank of Israel policy rate. THE manual knob: update this one number when BOI moves
+// (the live BOI fetch was abandoned). Prime = BOI + 1.5% by definition (used for the prime track).
 export const BOI_RATE = 0.0375
-const PRIME_RATE = BOI_RATE + 0.015        // standard Israeli prime
-const BLENDED_RATE = PRIME_RATE - 0.009     // ≈ effective blended rate across tracks
+const PRIME_RATE = BOI_RATE + 0.015   // standard Israeli prime = BOI + 1.5%
 
 export const DEFAULT_PARAMS: Params = {
   Av0: 2_500_000,
@@ -245,7 +243,9 @@ export const DEFAULT_PARAMS: Params = {
   Y: 30,
   Ip: 0.09,
   V: 0.07,
-  mortgageRate: BLENDED_RATE,
+  // Single blended effective rate for the whole mortgage — a typical Israeli mortgage today.
+  // Standalone value (not derived from a personal deal); edit to your bank's quote.
+  mortgageRate: 0.045,
   Ri: 0.02,
   maintenanceRate: 0.07,
   buyerType: 'investor',
@@ -255,13 +255,14 @@ export const DEFAULT_PARAMS: Params = {
   scenarioDelta: 0.005,
 
   mortgageMode: 'simple',
-  // Advanced defaults: an even 3-way split at the same rate, so toggling to Advanced reproduces
-  // the simple-mode payment (annuity is linear in principal at a fixed rate) — only the fee drops,
-  // since the prime third becomes exempt. Users then set their real per-track shares and rates.
+  // By-track defaults: individually realistic rates that, in equal thirds, BLEND to the single
+  // rate above ((5.25 + 4.0 + 4.25) / 3 = 4.5%). So switching to By-track leaves the payment
+  // ~unchanged — the only meaningful difference is the lower early-repayment fee, because the
+  // prime track is exempt by law. Users then set their real per-track shares and rates.
   trackPrimeShare: 1 / 3,
-  trackPrimeRate: PRIME_RATE,
+  trackPrimeRate: PRIME_RATE,   // prime = BOI + 1.5% = 5.25%
   trackFixedShare: 1 / 3,
-  trackFixedRate: BLENDED_RATE,
+  trackFixedRate: 0.04,         // fixed-unlinked (קל"צ), typical today
   trackVarShare: 1 / 3,
-  trackVarRate: BLENDED_RATE,
+  trackVarRate: 0.0425,         // variable/linked, typical today
 }
