@@ -88,6 +88,24 @@ body {
   border-radius: 2px;
 }
 
+/* Same thin scrollbar as the slider sidebar, but desktop-only — mobile keeps the native scrollbar */
+@media (min-width: 1024px) {
+  .desktop-thin-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-border) transparent;
+  }
+  .desktop-thin-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .desktop-thin-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .desktop-thin-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--c-border);
+    border-radius: 2px;
+  }
+}
+
 input[type='range'] {
   accent-color: #2563eb;
   cursor: pointer;

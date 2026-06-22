@@ -515,7 +515,7 @@ function UnderTheHoodModalCalc({ isRTL, onClose }: { isRTL: boolean; onClose: ()
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
       <div
-        className="bg-[var(--bg-page)] border border-[var(--c-border)] rounded-lg max-w-2xl w-full max-h-[85vh] overflow-y-auto"
+        className="bg-[var(--bg-page)] border border-[var(--c-border)] rounded-lg max-w-2xl w-full max-h-[85vh] overflow-y-auto desktop-thin-scroll"
         onClick={e => e.stopPropagation()}
         dir={isHe ? 'rtl' : 'ltr'}
       >
