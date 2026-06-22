@@ -24,7 +24,7 @@ export interface Params {
   mortgageMode: MortgageMode
   trackPrimeShare: number
   trackPrimeRate: number
-  trackFixedShare: number   // קבועה לא צמודה (קל"צ)
+  trackFixedShare: number   // קבועה (לא צמודה), קל"צ
   trackFixedRate: number
   trackVarShare: number     // משתנה (לא צמודה)
   trackVarRate: number

@@ -638,7 +638,6 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                     <p className={`text-[11px] mt-0.5 ${sumOff ? 'text-amber-500' : 'text-[var(--c-muted)]'}`}>
                       {sumOff ? t.trackSumWarning(pct(shareSum, 0)) : t.trackSumOk(pct(shareSum, 0))}
                     </p>
-                    <p className="text-[11px] text-[var(--c-muted)] italic">{t.trackPrimeExemptNote}</p>
                     <p className="text-[11px] text-[var(--c-muted)]">{t.trackPrimeBoiNote(pct(BOI_RATE + 0.015, 2))}</p>
                   </div>
                 )}

@@ -41,7 +41,6 @@ export type Translation = {
   trackRateHeader: string
   trackSumOk: (total: string) => string
   trackSumWarning: (total: string) => string
-  trackPrimeExemptNote: string
   trackPrimeBoiNote: (prime: string) => string
   esLabel: string
   ipLabel: string
@@ -177,7 +176,6 @@ export const LANG: Record<Lang, Translation> = {
     trackRateHeader: 'Rate',
     trackSumOk: (total) => `Tracks total ${total}`,
     trackSumWarning: (total) => `Tracks total ${total} — shares are normalized to 100%`,
-    trackPrimeExemptNote: 'Prime is exempt from the early-repayment fee; only the fixed and variable tracks are charged.',
     trackPrimeBoiNote: (prime) => `Prime defaults to the current Bank of Israel rate + 1.5% (${prime})`,
     esLabel: 'Selling costs',
     ipLabel: 'Passive return (net)',
@@ -308,13 +306,12 @@ export const LANG: Record<Lang, Translation> = {
     mortgageModeSimpleTooltip: 'ריבית אחת שמייצגת בקירוב את כל המשכנתה — קירוב מהיר כשלא מפרקים למסלולים. עמלת הפירעון המוקדם מחושבת על מלוא היתרה.',
     mortgageModeAdvancedTooltip: 'פיצול ההלוואה למסלולי פריים, קבוע ומשתנה, לכל אחד חלק וריבית משלו (מופיעים בדף תנאי ההלוואה). מדויק יותר לעמלת הפירעון המוקדם: מסלול הפריים פטור על־פי חוק, ולכן רק הקבוע והמשתנה מחויבים. ברירות המחדל משוקללות לריבית דומה ל"ריבית אחת", כך שההחזר נשאר דומה — מה שיורד הוא העמלה. הערה: מסלולים צמודי מדד אינם ממודלים עדיין — כל מסלול מטופל כלא־צמוד והריבית מוקפאת ברמה של היום; הצמדה למדד אולי תיתווסף בגרסה עתידית.',
     trackPrimeLabel: 'פריים',
-    trackFixedLabel: 'קבועה לא צמודה',
+    trackFixedLabel: 'קבועה (לא צמודה)',
     trackVarLabel: 'משתנה (לא צמודה)',
     trackShareHeader: 'חלק',
     trackRateHeader: 'ריבית',
     trackSumOk: (total) => `סך המסלולים ${total}`,
     trackSumWarning: (total) => `סך המסלולים ${total} — החלקים מנורמלים ל־100%`,
-    trackPrimeExemptNote: 'מסלול הפריים פטור מעמלת הפירעון המוקדם; רק המסלול הקבוע והמשתנה מחויבים.',
     trackPrimeBoiNote: (prime) => `ברירת המחדל של הפריים היא ריבית בנק ישראל העדכנית + 1.5% (${prime})`,
     esLabel: 'עלויות מכירה',
     ipLabel: 'תשואה פסיבית (נטו) / שנה',
