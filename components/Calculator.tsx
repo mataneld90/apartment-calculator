@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, type ReactNode } from 'react'
 import { compute, DEFAULT_PARAMS } from '@/lib/model'
 import type { Params } from '@/lib/types'
 import { LANG, type Lang } from '@/lib/i18n'
@@ -524,127 +524,217 @@ function UnderTheHoodModalCalc({ isRTL, onClose }: { isRTL: boolean; onClose: ()
           <button onClick={onClose} className="text-[var(--c-text-3)] hover:text-[var(--c-text)] text-xl leading-none px-1">×</button>
         </div>
         <div className="px-6 py-5 text-sm text-[var(--c-muted)] leading-relaxed flex flex-col gap-4">
-          {isHe ? <UnderTheHoodContentHE tracker={false} /> : <UnderTheHoodContentEN tracker={false} />}
+          {isHe ? <UnderTheHoodContentHE isRTL /> : <UnderTheHoodContentEN isRTL={false} />}
         </div>
       </div>
     </div>
   )
 }
 
-function UnderTheHoodContentEN({ tracker }: { tracker: boolean }) {
+// ---- shared presentational helpers for the Under-the-hood content ----
+
+function HoodChevron({ open, isRTL }: { open: boolean; isRTL: boolean }) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      className="text-[var(--c-text-3)] shrink-0 transition-transform duration-150"
+      style={{ transform: open ? 'rotate(90deg)' : isRTL ? 'scaleX(-1)' : 'none' }}
+    >
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function HoodSection({
+  title,
+  summary,
+  defaultOpen = false,
+  isRTL,
+  children,
+}: {
+  title: ReactNode
+  summary: ReactNode
+  defaultOpen?: boolean
+  isRTL: boolean
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="rounded-lg border border-[var(--c-border)] overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2.5 px-4 py-3 text-start hover:bg-[var(--bg-control)] transition-colors"
+      >
+        <HoodChevron open={open} isRTL={isRTL} />
+        <span className="flex-1 min-w-0">
+          <span className="block font-semibold text-[var(--c-text-3)]">{title}</span>
+          {!open && <span className="block text-xs text-[var(--c-muted)] mt-0.5 opacity-80">{summary}</span>}
+        </span>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 flex flex-col gap-3">
+          <p className="text-xs text-[var(--c-muted)]">{summary}</p>
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function HoodFormula({ children }: { children: string }) {
+  return (
+    <pre
+      dir="ltr"
+      className="text-xs font-mono bg-[var(--bg-control)] rounded-lg px-4 py-3 overflow-x-auto whitespace-pre leading-relaxed text-[var(--c-text-3)]"
+    >
+      {children}
+    </pre>
+  )
+}
+
+function HoodDefRow({ term, children }: { term: ReactNode; children: ReactNode }) {
+  return (
+    <div className="grid grid-cols-[minmax(8rem,auto)_1fr] gap-x-3 gap-y-0.5 py-2 border-t border-[var(--c-border)] first:border-t-0 first:pt-0">
+      <span dir="ltr" className="font-mono font-medium text-[var(--c-text-3)]">{term}</span>
+      <span className="text-[var(--c-muted)]">{children}</span>
+    </div>
+  )
+}
+
+function HoodDefList({ children }: { children: ReactNode }) {
+  return <div className="text-xs">{children}</div>
+}
+
+function HoodNote({ children }: { children: ReactNode }) {
+  return <p className="text-xs text-[var(--c-muted)]">{children}</p>
+}
+
+function UnderTheHoodContentEN({ isRTL }: { isRTL: boolean }) {
   return (
     <>
-      <p>This section is for those who want the exact calculations. The two curves on the chart are:</p>
-      <ul className="flex flex-col gap-1 ml-2">
-        <li><strong className="text-[var(--c-text-3)]">A(t)</strong> — the apartment&apos;s net gain if sold at month t</li>
-        <li><strong className="text-[var(--c-text-3)]">P(t)</strong> — the passive investment&apos;s net gain if sold at month t</li>
-      </ul>
-      <p>Both start from the same upfront capital, <strong className="text-[var(--c-text-3)]">E</strong> (down payment + purchase tax + transaction costs).</p>
+      <p>
+        The exact calculations behind the two curves. Both <strong className="text-[var(--c-text-3)]">A(t)</strong> (apartment)
+        and <strong className="text-[var(--c-text-3)]">P(t)</strong> (passive) start from the same upfront capital{' '}
+        <strong className="text-[var(--c-text-3)]">E</strong> — down payment + purchase tax + transaction costs — and show
+        the net gain if you exited at month <strong className="text-[var(--c-text-3)]">t</strong>.
+      </p>
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">Apartment, A(t):</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`A(t) = SaleValue(t) − SellingCosts(t) − RemainingMortgage(t)
-       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t) − PrepaymentFee(t)`}</pre>
-        <ul className="flex flex-col gap-1 ml-2 mt-2 text-xs">
-          <li><strong className="text-[var(--c-text-3)]">SaleValue(t)</strong> = purchase price grown at the appreciation rate, compounded monthly</li>
-          <li><strong className="text-[var(--c-text-3)]">SellingCosts(t)</strong> = SaleValue(t) × selling-costs %</li>
-          <li><strong className="text-[var(--c-text-3)]">RemainingMortgage(t)</strong> = {tracker ? 'balance from the actual bank amortization schedule' : 'balance from the amortization schedule'}</li>
-          <li><strong className="text-[var(--c-text-3)]">CumulativeCashFlow(t)</strong> = running sum of (rent − mortgage − maintenance) each month; normally negative, since mortgage usually exceeds rent</li>
-          <li><strong className="text-[var(--c-text-3)]">BettermentTax(t)</strong> = מס שבח, see below</li>
-          <li><strong className="text-[var(--c-text-3)]">PrepaymentFee(t)</strong> = early-repayment penalty on the mortgage, see below</li>
-          {tracker && <li><strong className="text-[var(--c-text-3)]">ApartmentValue</strong> is anchored to the most recent recorded valuation, then grown at the appreciation rate</li>}
-          {tracker && <li>Past months use actual logged cash flows; future months use the projected rent schedule and amortization table.</li>}
-        </ul>
-      </div>
+      <HoodSection isRTL={isRTL} defaultOpen title="Apartment · A(t)" summary="What you'd walk away with if you sold the apartment at month t.">
+        <HoodFormula>{`A(t) =  SaleValue(t)
+      − SellingCosts(t)
+      − RemainingMortgage(t)
+      − E
+      − CumulativeExpenses(t)
+      + CumulativeCashFlow(t)
+      − BettermentTax(t)
+      − PrepaymentFee(t)`}</HoodFormula>
+        <HoodDefList>
+          <HoodDefRow term="SaleValue(t)">purchase price grown at the appreciation rate, compounded monthly</HoodDefRow>
+          <HoodDefRow term="SellingCosts(t)">SaleValue(t) × selling-costs %</HoodDefRow>
+          <HoodDefRow term="RemainingMortgage(t)">balance from the amortization schedule</HoodDefRow>
+          <HoodDefRow term="CumulativeCashFlow(t)">running sum of (rent − mortgage − maintenance); usually negative, since mortgage exceeds rent</HoodDefRow>
+          <HoodDefRow term="BettermentTax(t)">מס שבח — see its section below</HoodDefRow>
+          <HoodDefRow term="PrepaymentFee(t)">early-repayment penalty — see its section below</HoodDefRow>
+        </HoodDefList>
+      </HoodSection>
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">Passive, P(t):</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`P(t) = (Portfolio(t) − CostBasis(t)) × (1 − 25%)`}</pre>
-        <ul className="flex flex-col gap-1 ml-2 mt-2 text-xs">
-          <li><strong className="text-[var(--c-text-3)]">Portfolio(t)</strong> = E invested on day one, compounded monthly at the passive return, plus each month&apos;s shortfall (mortgage − rent − maintenance, when positive) added and compounded</li>
-          <li><strong className="text-[var(--c-text-3)]">CostBasis(t)</strong> = E + cumulative shortfalls invested</li>
-          <li>25% is capital gains tax (מס רווח הון), applied to the gain at sale only</li>
-        </ul>
-      </div>
+      <HoodSection isRTL={isRTL} defaultOpen title="Passive · P(t)" summary="The same capital invested in a passive fund instead, net of tax at sale.">
+        <HoodFormula>{`P(t) = (Portfolio(t) − CostBasis(t)) × (1 − 25%)`}</HoodFormula>
+        <HoodDefList>
+          <HoodDefRow term="Portfolio(t)">E invested on day one, compounded monthly at the passive return, plus each month&apos;s shortfall (mortgage − rent − maintenance, when positive) added and compounded</HoodDefRow>
+          <HoodDefRow term="CostBasis(t)">E + cumulative shortfalls invested</HoodDefRow>
+          <HoodDefRow term="25%">capital gains tax (מס רווח הון), applied to the gain at sale only</HoodDefRow>
+        </HoodDefList>
+      </HoodSection>
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">Betterment tax — מס שבח:</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
-BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
-        <p className="text-xs mt-2">When not exempt, the full gain is taxed at 25%. This is a simplification — real מס שבח is computed on the inflation-adjusted gain after deductible costs.</p>
-      </div>
+      <HoodSection isRTL={isRTL} title="Betterment tax · מס שבח" summary="The apartment&apos;s sale tax, ceiling-aware when the exemption applies.">
+        <HoodFormula>{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
+BettermentTax   = RealGain × Taxable portion × 25%`}</HoodFormula>
+        <HoodNote>When not exempt, the full gain is taxed at 25%. This is a simplification — real מס שבח is computed on the inflation-adjusted gain after deductible costs.</HoodNote>
+      </HoodSection>
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">Prepayment fee — קנס פירעון מוקדם:</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed">{`rc = MortgageRate / 12     rm = MarketRate / 12     n = months remaining
-AF(r, n) = (1 − (1 + r)^(−n)) / r          (= n when r = 0)
-PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</pre>
-        <p className="text-xs mt-2">Selling before the mortgage ends means repaying the balance early. If market rates have fallen below your contractual rate, the bank charges a capitalization penalty for the interest it loses. The rate-drop slider sets how far the market rate sits below your contractual rate, so a bigger gap means a bigger fee, and if rates rose or held the fee is zero. The penalty is the present value of the lost interest: each remaining payment is discounted at the market rate versus your contractual rate, and the difference between those two present values is the fee. In single-rate mode the fee is applied to the whole balance — a slightly conservative estimate, since the prime track is exempt by law. Switch the mortgage input to by-track mode to exclude the prime track and charge only the fixed and variable tracks.</p>
-      </div>
+      <HoodSection isRTL={isRTL} title="Prepayment fee · קנס פירעון מוקדם" summary="Capitalization penalty for repaying the mortgage early when market rates have fallen.">
+        <HoodFormula>{`rc = MortgageRate / 12
+rm = MarketRate / 12
+n  = months remaining
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">Annualized return (IRR):</p>
-        <p className="text-xs">For each possible exit month, the monthly cash-flow stream (−E at month 0, monthly net flows, proceeds at exit) is solved for the rate that sets its net present value to zero, then annualized. Plotted across all exit months, this produces the IRR curves.</p>
-      </div>
+AF(r, n) = (1 − (1 + r)^(−n)) / r        (= n when r = 0)
+
+PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</HoodFormula>
+        <HoodNote>Selling before the mortgage ends means repaying the balance early. If market rates have fallen below your contractual rate, the bank charges a capitalization penalty for the interest it loses. The rate-drop slider sets how far the market rate sits below your contractual rate, so a bigger gap means a bigger fee, and if rates rose or held the fee is zero. The penalty is the present value of the lost interest: each remaining payment is discounted at the market rate versus your contractual rate, and the difference between those two present values is the fee.</HoodNote>
+        <HoodNote><strong className="text-[var(--c-text-3)]">Single-rate vs by-track:</strong> in single-rate mode the fee is applied to the whole balance — a slightly conservative estimate, since the prime track is exempt by law. Switch the mortgage input to by-track mode to exclude the prime track and charge only the fixed and variable tracks.</HoodNote>
+      </HoodSection>
+
+      <HoodSection isRTL={isRTL} title="Annualized return · IRR" summary="The annualized rate that makes the full cash-flow stream break even.">
+        <HoodNote>For each possible exit month, the monthly cash-flow stream (−E at month 0, monthly net flows, proceeds at exit) is solved for the rate that sets its net present value to zero, then annualized. Plotted across all exit months, this produces the IRR curves.</HoodNote>
+      </HoodSection>
     </>
   )
 }
 
-function UnderTheHoodContentHE({ tracker }: { tracker: boolean }) {
+function UnderTheHoodContentHE({ isRTL }: { isRTL: boolean }) {
   return (
-    <div dir="rtl">
-      <p>החלק הזה מיועד למי שרוצה לראות את החישוב המדויק. שתי העקומות בגרף הן:</p>
-      <ul className="flex flex-col gap-1 mr-2">
-        <li><strong className="text-[var(--c-text-3)]">A(t)</strong> — הרווח הנקי מהדירה אם תימכר בחודש <bdi>t</bdi></li>
-        <li><strong className="text-[var(--c-text-3)]">P(t)</strong> — הרווח הנקי מההשקעה הפסיבית אם תמומש בחודש <bdi>t</bdi></li>
-      </ul>
-      <p>שתיהן מתחילות מאותו הון התחלתי, <strong className="text-[var(--c-text-3)]">E</strong> (הון עצמי + מס רכישה + עלויות עסקה).</p>
+    <div dir="rtl" className="flex flex-col gap-4">
+      <p>
+        החישוב המדויק שמאחורי שתי העקומות. גם <strong className="text-[var(--c-text-3)]"><bdi>A(t)</bdi></strong> (דירה)
+        וגם <strong className="text-[var(--c-text-3)]"><bdi>P(t)</bdi></strong> (פסיבי) מתחילות מאותו הון התחלתי{' '}
+        <strong className="text-[var(--c-text-3)]"><bdi>E</bdi></strong> — הון עצמי + מס רכישה + עלויות עסקה — ומראות
+        את הרווח הנקי אם תצאו בחודש <strong className="text-[var(--c-text-3)]"><bdi>t</bdi></strong>.
+      </p>
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">דירה, <bdi>A(t)</bdi>:</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`A(t) = SaleValue(t) − SellingCosts(t) − RemainingMortgage(t)
-       − E − CumulativeExpenses(t) + CumulativeCashFlow(t) − BettermentTax(t) − PrepaymentFee(t)`}</pre>
-        <ul className="flex flex-col gap-1 mr-2 mt-2 text-xs">
-          <li><strong className="text-[var(--c-text-3)]">SaleValue(t)</strong> = מחיר הרכישה שגדל בקצב עליית הערך, בריבית-דריבית חודשית</li>
-          <li><strong className="text-[var(--c-text-3)]">SellingCosts(t)</strong> = <bdi>SaleValue(t)</bdi> × אחוז עלויות המכירה</li>
-          <li><strong className="text-[var(--c-text-3)]">RemainingMortgage(t)</strong> = {tracker ? 'היתרה מלוח הסילוקין בפועל של הבנק' : 'היתרה מלוח הסילוקין'}</li>
-          <li><strong className="text-[var(--c-text-3)]">CumulativeCashFlow(t)</strong> = סכום מצטבר של (שכירות − משכנתה − תחזוקה) בכל חודש; בדרך כלל שלילי, מכיוון שהמשכנתה גבוהה מהשכירות</li>
-          <li><strong className="text-[var(--c-text-3)]">BettermentTax(t)</strong> = ראו בהמשך</li>
-          <li><strong className="text-[var(--c-text-3)]">PrepaymentFee(t)</strong> = קנס פירעון מוקדם על המשכנתה, ראו בהמשך</li>
-          {tracker && <li><strong className="text-[var(--c-text-3)]">SaleValue</strong> מעוגן להערכת השווי המוקלטת האחרונה, ואז גדל בקצב ההתייקרות</li>}
-          {tracker && <li>חודשים שעברו משתמשים בתזרים בפועל שנרשם; חודשים עתידיים — בלוח השכירות ולוח הסילוקין המחושב.</li>}
-        </ul>
-      </div>
+      <HoodSection isRTL={isRTL} defaultOpen title={<><bdi>דירה · A(t)</bdi></>} summary="מה שתקבלו אם תמכרו את הדירה בחודש t.">
+        <HoodFormula>{`A(t) =  SaleValue(t)
+      − SellingCosts(t)
+      − RemainingMortgage(t)
+      − E
+      − CumulativeExpenses(t)
+      + CumulativeCashFlow(t)
+      − BettermentTax(t)
+      − PrepaymentFee(t)`}</HoodFormula>
+        <HoodDefList>
+          <HoodDefRow term="SaleValue(t)">מחיר הרכישה שגדל בקצב עליית הערך, בריבית-דריבית חודשית</HoodDefRow>
+          <HoodDefRow term="SellingCosts(t)"><span dir="ltr">SaleValue(t)</span> × אחוז עלויות המכירה</HoodDefRow>
+          <HoodDefRow term="RemainingMortgage(t)">היתרה מלוח הסילוקין</HoodDefRow>
+          <HoodDefRow term="CumulativeCashFlow(t)">סכום מצטבר של (שכירות − משכנתה − תחזוקה); בדרך כלל שלילי, כי המשכנתה גבוהה מהשכירות</HoodDefRow>
+          <HoodDefRow term="BettermentTax(t)">מס שבח — ראו בסעיף בהמשך</HoodDefRow>
+          <HoodDefRow term="PrepaymentFee(t)">קנס פירעון מוקדם — ראו בסעיף בהמשך</HoodDefRow>
+        </HoodDefList>
+      </HoodSection>
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">פסיבי, <bdi>P(t)</bdi>:</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`P(t) = (Portfolio(t) − CostBasis(t)) × (1 − 25%)`}</pre>
-        <ul className="flex flex-col gap-1 mr-2 mt-2 text-xs">
-          <li><strong className="text-[var(--c-text-3)]">Portfolio(t)</strong> = <bdi>E</bdi> שמושקע ביום הראשון, בריבית-דריבית חודשית לפי התשואה הפסיבית, בתוספת הגירעון של כל חודש (משכנתה − שכירות − תחזוקה, כשהוא חיובי) שנוסף ומצטבר</li>
-          <li><strong className="text-[var(--c-text-3)]">CostBasis(t)</strong> = <bdi>E</bdi> + סך הגירעונות שהושקעו</li>
-          <li>ה-<bdi>25%</bdi> הוא מס רווח הון, מוחל על הרווח במימוש בלבד</li>
-        </ul>
-      </div>
+      <HoodSection isRTL={isRTL} defaultOpen title={<><bdi>פסיבי · P(t)</bdi></>} summary="אותו הון מושקע בקרן פסיבית במקום, בניכוי מס במימוש.">
+        <HoodFormula>{`P(t) = (Portfolio(t) − CostBasis(t)) × (1 − 25%)`}</HoodFormula>
+        <HoodDefList>
+          <HoodDefRow term="Portfolio(t)"><span dir="ltr">E</span> שמושקע ביום הראשון, בריבית-דריבית חודשית לפי התשואה הפסיבית, בתוספת הגירעון של כל חודש (משכנתה − שכירות − תחזוקה, כשהוא חיובי) שנוסף ומצטבר</HoodDefRow>
+          <HoodDefRow term="CostBasis(t)"><span dir="ltr">E</span> + סך הגירעונות שהושקעו</HoodDefRow>
+          <HoodDefRow term="25%">מס רווח הון, מוחל על הרווח במימוש בלבד</HoodDefRow>
+        </HoodDefList>
+      </HoodSection>
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">מס שבח:</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
-BettermentTax    = RealGain × Taxable portion × 25%`}</pre>
-        <p className="text-xs mt-2">ללא פטור, מלוא הרווח ממוסה ב-<bdi>25%</bdi>. זוהי הפשטה — מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות מוכרות.</p>
-      </div>
+      <HoodSection isRTL={isRTL} title="מס שבח" summary="מס המכירה של הדירה, מודע לתקרה כשחל פטור.">
+        <HoodFormula>{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
+BettermentTax   = RealGain × Taxable portion × 25%`}</HoodFormula>
+        <HoodNote>ללא פטור, מלוא הרווח ממוסה ב-<span dir="ltr">25%</span>. זוהי הפשטה — מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות מוכרות.</HoodNote>
+      </HoodSection>
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">קנס פירעון מוקדם:</p>
-        <pre className="text-xs bg-[var(--bg-control)] border border-[var(--c-border)] rounded p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed" dir="ltr">{`rc = MortgageRate / 12     rm = MarketRate / 12     n = months remaining
-AF(r, n) = (1 − (1 + r)^(−n)) / r          (= n when r = 0)
-PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</pre>
-        <p className="text-xs mt-2">מכירה לפני תום תקופת המשכנתה משמעה פירעון היתרה מוקדם. אם ריבית השוק ירדה מתחת לריבית החוזית שלכם, הבנק גובה עמלת היוון על הריבית שהוא מפסיד. מחוון ירידת הריבית קובע עד כמה ריבית השוק נמוכה מהריבית החוזית, כך שפער גדול יותר משמעו קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. הקנס הוא הערך הנוכחי של הריבית האבודה: כל תשלום עתידי שנותר מהוון בריבית השוק לעומת הריבית החוזית, וההפרש בין שני הערכים הנוכחיים הללו הוא הקנס. במצב ריבית אחת הקנס מחושב על מלוא היתרה — הערכה מעט שמרנית, שכן מסלול הפריים פטור על־פי חוק. מעבר להזנה לפי מסלול מחריג את מסלול הפריים ומחייב רק את המסלול הקבוע והמשתנה.</p>
-      </div>
+      <HoodSection isRTL={isRTL} title="קנס פירעון מוקדם" summary="עמלת היוון על פירעון מוקדם של המשכנתה כשריבית השוק ירדה.">
+        <HoodFormula>{`rc = MortgageRate / 12
+rm = MarketRate / 12
+n  = months remaining
 
-      <div>
-        <p className="font-medium text-[var(--c-text-3)] mb-1">תשואה שנתית (<bdi>IRR</bdi>):</p>
-        <p className="text-xs">עבור כל חודש יציאה אפשרי, פותרים את סדרת התזרימים החודשית (<bdi>−E</bdi> בחודש <bdi>0</bdi>, תזרימים חודשיים, התמורה ביציאה) עבור הריבית שמאפסת את הערך הנוכחי הנקי, וממירים לתשואה שנתית. בפריסה על פני כל חודשי היציאה מתקבלות עקומות ה-<bdi>IRR</bdi>.</p>
-      </div>
+AF(r, n) = (1 − (1 + r)^(−n)) / r        (= n when r = 0)
+
+PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</HoodFormula>
+        <HoodNote>מכירה לפני תום תקופת המשכנתה משמעה פירעון היתרה מוקדם. אם ריבית השוק ירדה מתחת לריבית החוזית שלכם, הבנק גובה עמלת היוון על הריבית שהוא מפסיד. מחוון ירידת הריבית קובע עד כמה ריבית השוק נמוכה מהריבית החוזית, כך שפער גדול יותר משמעו קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. הקנס הוא הערך הנוכחי של הריבית האבודה: כל תשלום עתידי שנותר מהוון בריבית השוק לעומת הריבית החוזית, וההפרש בין שני הערכים הנוכחיים הללו הוא הקנס.</HoodNote>
+        <HoodNote><strong className="text-[var(--c-text-3)]">ריבית אחת מול לפי מסלול:</strong> במצב ריבית אחת הקנס מחושב על מלוא היתרה — הערכה מעט שמרנית, שכן מסלול הפריים פטור על־פי חוק. מעבר להזנה לפי מסלול מחריג את מסלול הפריים ומחייב רק את המסלול הקבוע והמשתנה.</HoodNote>
+      </HoodSection>
+
+      <HoodSection isRTL={isRTL} title={<><bdi>תשואה שנתית · IRR</bdi></>} summary="התשואה השנתית שמאפסת את הערך הנוכחי של כל סדרת התזרימים.">
+        <HoodNote>עבור כל חודש יציאה אפשרי, פותרים את סדרת התזרימים החודשית (<span dir="ltr">−E</span> בחודש <span dir="ltr">0</span>, תזרימים חודשיים, התמורה ביציאה) עבור הריבית שמאפסת את הערך הנוכחי הנקי, וממירים לתשואה שנתית. בפריסה על פני כל חודשי היציאה מתקבלות עקומות ה-<span dir="ltr">IRR</span>.</HoodNote>
+      </HoodSection>
     </div>
   )
 }
