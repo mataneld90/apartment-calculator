@@ -275,7 +275,7 @@ export const LANG: Record<Lang, Translation> = {
   },
   he: {
     title: 'דירה מול השקעה פסיבית',
-    subtitle: 'נדל״ן ישראלי מול השקעה פסיבית — מתי כל אחד עדיף.',
+    subtitle: 'נדל״ן ישראלי מול השקעה פסיבית - מתי כל אחד עדיף.',
     langToggle: 'EN',
     purchaseTaxLabel: 'מס רכישה',
     masShvachLabel: 'מס שבח',
