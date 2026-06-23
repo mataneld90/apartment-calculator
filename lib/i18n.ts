@@ -139,7 +139,7 @@ export type Translation = {
 export const LANG: Record<Lang, Translation> = {
   en: {
     title: 'Apartment vs. Passive Investment',
-    subtitle: 'Israeli real estate vs. passive investing — see when each wins.',
+    subtitle: 'Israeli real estate vs. passive investing - see when each wins.',
     langToggle: 'עב',
     purchaseTaxLabel: 'Purchase tax',
     masShvachLabel: 'Capital gains tax (מס שבח)',
