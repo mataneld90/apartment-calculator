@@ -407,7 +407,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const showPeak = peakVal > 1
   const peakLabel = t.peakAdvantage(shortShekel(peakVal), (peakMonth / 12).toFixed(1))
 
-  const MARGIN_TOP = 30
+  const MARGIN_TOP = fill ? 20 : 30
   const XAXIS_HEIGHT = 30
   const LABEL_TOP = MARGIN_TOP + 20
 
