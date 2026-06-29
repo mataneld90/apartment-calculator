@@ -263,8 +263,25 @@ export default function Calculator() {
             continuous
             dpMode={dpMode} onDpModeChange={setDpMode}
           />
+          {/* Legal disclaimer — scrolls with the sliders on mobile (copyright stays pinned below) */}
+          <p className="mt-4 pt-3 border-t border-[var(--c-border)] text-xs text-slate-400 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
+            {isRTL
+              ? 'למטרות מידע בלבד. אינו מהווה ייעוץ פיננסי, מיסויי או משפטי. יש להתייעץ עם אנשי מקצוע לפני קבלת החלטות.'
+              : 'For informational purposes only. Not financial, tax, or legal advice. Consult professionals before making decisions.'
+            }
+          </p>
         </div>
       </div>
+
+      {/* Compact pinned byline — mobile only (full footer above is desktop-only) */}
+      <footer className="lg:hidden shrink-0 px-4 py-1 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
+        <p className="text-[10px] text-[var(--c-muted)]">
+          {isRTL
+            ? <>© 2026 <a href="https://www.linkedin.com/in/matan-eldar-5796321b5/" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">מתן אלדר</a> · לשימוש אישי בחינם</>
+            : <>© 2026 <a href="https://www.linkedin.com/in/matan-eldar-5796321b5/" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">Matan Eldar</a> · Free for personal use</>
+          }
+        </p>
+      </footer>
 
       {/* Desktop two-column layout — ≥1024px */}
       <div className="hidden lg:flex flex-1 min-h-0 gap-4 px-4 py-4">
@@ -332,8 +349,8 @@ export default function Calculator() {
         </section>
       </div>
 
-      {/* Legal disclaimer footer */}
-      <footer className="shrink-0 px-4 py-2 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Legal disclaimer footer — desktop only (mobile keeps a compact byline + scrolls the disclaimer) */}
+      <footer className="hidden lg:block shrink-0 px-4 py-2 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
         <p className="text-xs text-slate-400">
           {isRTL
             ? 'למטרות מידע בלבד. אינו מהווה ייעוץ פיננסי, מיסויי או משפטי. יש להתייעץ עם אנשי מקצוע לפני קבלת החלטות.'
