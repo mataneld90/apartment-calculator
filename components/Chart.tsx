@@ -781,20 +781,13 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
               padding: 2,
             }}
           >
-            {(isRTL ? (['bars', 'rentmort'] as const) : (['rentmort', 'bars'] as const)).map((sv) => (
-              <button
-                key={sv}
-                onClick={(e) => { e.stopPropagation(); setCashFlowSubView(sv) }}
-                style={cashFlowSubView === sv ? { background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.09)' } : undefined}
-                className={`text-xs px-2 py-0.5 rounded transition-colors ${
-                  cashFlowSubView === sv
-                    ? 'text-[var(--c-text)] font-medium'
-                    : 'text-[var(--c-muted)] hover:text-[var(--c-text)]'
-                }`}
-              >
-                {sv === 'rentmort' ? rentSubViewLabel : t.cashFlowSubViewBars}
-              </button>
-            ))}
+            {/* Single toggle: shows the current sub-view, tap to switch to the other */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setCashFlowSubView(cashFlowSubView === 'rentmort' ? 'bars' : 'rentmort') }}
+              className="text-xs px-2 py-0.5 rounded text-[var(--c-text)] font-medium transition-opacity hover:opacity-70"
+            >
+              {cashFlowSubView === 'rentmort' ? rentSubViewLabel : t.cashFlowSubViewBars}
+            </button>
           </div>
         )}
 
@@ -1167,6 +1160,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                   minWidth: 130,
                   whiteSpace: 'nowrap',
                   pointerEvents: 'auto',
+                  zIndex: 20,
                 }}
                 dir={isRTL ? 'rtl' : 'ltr'}
                 onTouchStart={(e) => e.stopPropagation()}
