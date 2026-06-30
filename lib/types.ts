@@ -1,6 +1,7 @@
 export type BuyerType = 'investor' | 'single'
 export type MasShvach = 'exempt' | '25%'
 export type MortgageMode = 'simple' | 'advanced'
+export type Occupancy = 'rentout' | 'livein'
 
 export interface Params {
   Av0: number
@@ -13,6 +14,8 @@ export interface Params {
   Ri: number
   maintenanceRate: number
   buyerType: BuyerType
+  occupancy: Occupancy   // rentout = tenant pays you; livein = you avoid paying rent elsewhere
+  liveInRent: number     // livein only: monthly rent you'd otherwise pay elsewhere (the avoided-rent benefit). R0 stays the apartment's own market rent = maintenance basis
   purchaseCostsRate: number
   Es: number
   masShvach: MasShvach

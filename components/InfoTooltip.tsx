@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 
 export default function InfoTooltip({ text }: { text: string }) {
   if (!text) return null
+  const isRTL = /[֐-׿]/.test(text)  // contains Hebrew → render tooltip RTL
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const ref = useRef<SVGSVGElement>(null)
 
@@ -48,6 +49,7 @@ export default function InfoTooltip({ text }: { text: string }) {
             transform: 'translateY(-100%)',
             zIndex: 9999,
           }}
+          dir={isRTL ? 'rtl' : 'ltr'}
           className="w-56 bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] text-[var(--c-text-2)] text-xs rounded p-2 pointer-events-none leading-relaxed shadow-lg"
         >
           {text}

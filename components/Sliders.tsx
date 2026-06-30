@@ -118,6 +118,15 @@ const GROUPS: { id: string; getTitle: (t: Translation) => string; sliders: Slide
         editConfig: { fromStored: v => v, toStored: n => n, decimals: 0, prefix: '₪', inputSize: 5 },
       },
       {
+        // live-in only (filtered out otherwise): the rent you'd otherwise pay elsewhere
+        key: 'liveInRent',
+        getLabel: (t) => t.liveInRentLabel,
+        getTooltip: (t) => t.liveInRentTooltip,
+        min: 0, max: 15_000, step: 100,
+        display: (v) => shekel(v),
+        editConfig: { fromStored: v => v, toStored: n => n, decimals: 0, prefix: '₪', inputSize: 5 },
+      },
+      {
         key: 'Ri',
         getLabel: (t) => t.riLabel,
         getTooltip: (t) => t.riTooltip,
@@ -386,6 +395,22 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
             {group.getTitle(t)}
           </div>
 
+          {/* Occupancy toggle — top of THE APARTMENT, governs how rent is framed */}
+          {group.id === 'apartment' && (
+            <div className="mb-3">
+              <TaxToggle
+                label={t.occupancyLabel}
+                isRTL={isRTL}
+                value={params.occupancy}
+                options={[
+                  { value: 'rentout', label: t.occupancyRentOut, tooltip: t.tooltips.occupancyRentOut },
+                  { value: 'livein', label: t.occupancyLiveIn, tooltip: t.tooltips.occupancyLiveIn },
+                ]}
+                onChange={(v) => update('occupancy', v as Params['occupancy'])}
+              />
+            </div>
+          )}
+
           {/* Av0 purchase price — top of AT PURCHASE, before toggle */}
           {group.id === 'costs' && (() => {
             const av0 = group.sliders.find(s => s.key === 'Av0')
@@ -533,13 +558,23 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
               .filter(s =>
                 !(group.id === 'costs'    && s.key === 'Av0') &&
                 !(group.id === 'mortgage' && s.key === 'p') &&
-                !(group.id === 'mortgage' && s.key === 'mortgageRate')
+                !(group.id === 'mortgage' && s.key === 'mortgageRate') &&
+                !(s.key === 'liveInRent' && params.occupancy !== 'livein')
               )
-              .map((def) => (
+              .map((def) => {
+              // Live-in mode: R0 is reframed as the apartment's market rent (maintenance basis);
+              // the rent you avoid is the separate liveInRent slider. Math reflects the split.
+              const liveIn = params.occupancy === 'livein'
+              const liveInLabel = liveIn && def.key === 'R0' ? t.r0LabelLiveIn : undefined
+              const liveInTooltip = !liveIn ? undefined
+                : def.key === 'R0' ? t.tooltips.R0LiveIn
+                : def.key === 'maintenanceRate' ? t.maintenanceRateTooltipLiveIn
+                : undefined
+              return (
               <div key={def.key}>
                 <SliderRow
-                  label={def.getLabel(t, params[def.key] as number)}
-                  tooltip={def.getTooltip(t)}
+                  label={liveInLabel ?? def.getLabel(t, params[def.key] as number)}
+                  tooltip={liveInTooltip ?? def.getTooltip(t)}
                   min={def.min}
                   max={def.max}
                   step={def.step}
@@ -551,7 +586,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                   editConfig={def.editConfig}
                 />
               </div>
-            ))}
+            )})}
           </div>
 
           {group.id === 'mortgage' && (() => {

@@ -16,7 +16,7 @@ import {
   ReferenceLine,
   ReferenceDot,
 } from 'recharts'
-import type { ChartPoint } from '@/lib/types'
+import type { ChartPoint, Occupancy } from '@/lib/types'
 import type { Translation } from '@/lib/i18n'
 import { getChartPalette } from '@/lib/colorPalette'
 import { shortShekel, shekel } from '@/lib/formatters'
@@ -36,6 +36,7 @@ interface Props {
   diffHintReady?: boolean
   irrApartment?: (number | null)[]
   irrPassive?:   (number | null)[]
+  occupancy?: Occupancy
 }
 
 type View = 'gains' | 'diff' | 'cashflow' | 'irr'
@@ -75,7 +76,7 @@ function niceStep(range: number): number {
   return 10 * mag
 }
 
-function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t }: {
+function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t, rentLegendLabel }: {
   view: View
   cashFlowSubView: 'rentmort' | 'bars'
   APT: string
@@ -83,6 +84,7 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t }: {
   DIFF: string
   isRTL: boolean
   t: Translation
+  rentLegendLabel: string
 }) {
   const dir = isRTL ? 'rtl' : 'ltr'
   const swatch = (color: string, square: boolean) => (
@@ -105,7 +107,7 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t }: {
     : isCashFlow
       ? cashFlowSubView === 'bars'
         ? [{ color: APT, label: t.cashFlowLegendPositive, square: true }, { color: PAS, label: t.cashFlowLegendNegative, square: true }]
-        : [{ color: APT, label: t.cashFlowRentLegend, square: false }, { color: PAS, label: t.cashFlowMortgageLegend, square: false }]
+        : [{ color: APT, label: rentLegendLabel, square: false }, { color: PAS, label: t.cashFlowMortgageLegend, square: false }]
       : [{ color: APT, label: t.apartmentLine, square: false }, { color: PAS, label: t.passiveLine, square: false }]
   return (
     <div className="flex justify-center items-center gap-4 text-xs text-slate-400 select-none" style={{ height: 20 }} dir={dir}>
@@ -119,7 +121,12 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t }: {
   )
 }
 
-export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive }: Props) {
+export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive, occupancy = 'rentout' }: Props) {
+  // Live-in: rent is avoided, not received — relabel the cashflow rent series/legend (math unchanged)
+  const isLiveIn = occupancy === 'livein'
+  const rentLegendLabel = isLiveIn ? t.cashFlowRentLegendLiveIn : t.cashFlowRentLegend
+  const rentRowLabel    = isLiveIn ? t.cashFlowRentLabelLiveIn  : t.cashFlowRentLabel
+  const rentSubViewLabel = isLiveIn ? t.cashFlowSubViewRentLiveIn : t.cashFlowSubViewRent
   const palette = getChartPalette(false, isDark)
   const APT  = palette.apt
   const PAS  = palette.pas
@@ -598,7 +605,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
 
   const rentMortRows = (rent: number, mortgage: number, cashFlow: number) => (
     <>
-      <p style={{ color: APT }}>{t.cashFlowRentLabel}{' '}<span dir="ltr">{shekel(rent)}</span></p>
+      <p style={{ color: APT }}>{rentRowLabel}{' '}<span dir="ltr">{shekel(rent)}</span></p>
       <p style={{ color: PAS }}>{t.cashFlowMortgageLabel}{' '}<span dir="ltr">{shekel(mortgage)}</span></p>
       <p style={{ color: cashFlow >= 0 ? APT : PAS }}>{t.cashFlowLabel}{' '}<span dir="ltr">{shekel(cashFlow)}</span></p>
     </>
@@ -614,12 +621,13 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     if (!pt) return null
     return (
       <div className="bg-[var(--tooltip-bg)] border border-[var(--tooltip-border)] rounded p-2 text-xs shadow-lg backdrop-blur-sm" dir={isRTL ? 'rtl' : 'ltr'}>
-        <p className="text-[var(--c-muted)] mb-1">
+        <p className="text-[var(--c-muted)]">
           {isRTL
             ? <span dir="ltr">{t.yearLabel2} {(Number(label) + 1) / 12}</span>
             : `${t.yearLabel2} ${(Number(label) + 1) / 12}`
           }
         </p>
+        <p style={{ color: 'var(--c-muted)', fontSize: 10, marginBottom: 2 }}>{t.cashFlowMonthlyNote}</p>
         {cashFlowSubView === 'rentmort'
           ? rentMortRows(pt.monthlyRent, pt.monthlyMortgage, pt.cashFlow)
           : barsRow(pt.cashFlow)
@@ -657,7 +665,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         <div className={`flex items-center gap-2${isRTL ? ' flex-row-reverse' : ''}`}>
           <span className="text-sm text-slate-400 font-normal whitespace-nowrap" dir={isRTL ? 'rtl' : 'ltr'}>{t.chartViewLabel}</span>
           <div className={`flex gap-1${isRTL ? ' flex-row-reverse' : ''}`}>
-            {(['gains', 'diff', 'cashflow', 'irr'] as View[]).map((v) => {
+            {(['gains', 'diff', 'irr', 'cashflow'] as View[]).map((v) => {
               const isActive = view === v
               const isDiff = v === 'diff'
               const isCashFlow = v === 'cashflow'
@@ -784,7 +792,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                     : 'text-[var(--c-muted)] hover:text-[var(--c-text)]'
                 }`}
               >
-                {sv === 'rentmort' ? t.cashFlowSubViewRent : t.cashFlowSubViewBars}
+                {sv === 'rentmort' ? rentSubViewLabel : t.cashFlowSubViewBars}
               </button>
             ))}
           </div>
@@ -867,7 +875,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                     content={() => (
                       <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', fontSize: 13, color: 'var(--chart-tick)' }}>
                         {[
-                          { label: t.cashFlowRentLegend, color: APT, dashed: false },
+                          { label: rentLegendLabel, color: APT, dashed: false },
                           { label: t.cashFlowMortgageLegend, color: PAS, dashed: true },
                         ].map(({ label, color, dashed }) => (
                           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flexDirection: isRTL ? 'row-reverse' : 'row' }}>
@@ -1177,6 +1185,9 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                     : `${t.monthLabel} ${resolvedMonth} · ${t.yearLabel2} ${(resolvedMonth / 12).toFixed(1)}`
                   }
                 </p>
+                {view === 'cashflow' && (
+                  <p style={{ color: 'var(--c-muted)', fontSize: 10, marginBottom: 2 }}>{t.cashFlowMonthlyNote}</p>
+                )}
                 {view === 'cashflow' ? (
                   cashFlowSubView === 'rentmort'
                     ? rentMortRows(pt.monthlyRent, pt.monthlyMortgage, pt.cashFlow)
@@ -1211,7 +1222,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
         })()}
       </div>
 
-      {fill && <CompactLegend view={view} cashFlowSubView={cashFlowSubView} APT={APT} PAS={PAS} DIFF={DIFF} isRTL={isRTL} t={t} />}
+      {fill && <CompactLegend view={view} cashFlowSubView={cashFlowSubView} APT={APT} PAS={PAS} DIFF={DIFF} isRTL={isRTL} t={t} rentLegendLabel={rentLegendLabel} />}
 
       {/* Summary sentence */}
       {view === 'cashflow' ? (

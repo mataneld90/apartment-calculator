@@ -145,7 +145,7 @@ export default function Calculator() {
               }
             </div>
 
-            {/* Navigation row — always dir="ltr" so ← is always left, → is always right */}
+            {/* Navigation row - always dir="ltr" so ← is always left, → is always right */}
             <div className="mt-5 flex items-center justify-between" dir="ltr">
               <button
                 onClick={() => goToMethodologyPage(isRTL ? methodologyPage + 1 : methodologyPage - 1)}
@@ -231,12 +231,12 @@ export default function Calculator() {
         </div>
       </header>
 
-      {/* Mobile split layout — only visible below 1024px */}
+      {/* Mobile split layout - only visible below 1024px */}
       <div className="lg:hidden flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Top: chart fixed at ~48dvh */}
         <div className="shrink-0 h-[56dvh] overflow-hidden pt-0 px-3 pb-1.5">
           <div className="border border-[var(--c-border)] rounded-lg p-3 h-full" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} />
           </div>
         </div>
         {/* Summary bar */}
@@ -263,7 +263,7 @@ export default function Calculator() {
             continuous
             dpMode={dpMode} onDpModeChange={setDpMode}
           />
-          {/* Legal disclaimer — scrolls with the sliders on mobile (copyright stays pinned below) */}
+          {/* Legal disclaimer - scrolls with the sliders on mobile (copyright stays pinned below) */}
           <p className="mt-4 pt-3 border-t border-[var(--c-border)] text-xs text-slate-400 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
             {isRTL
               ? 'למטרות מידע בלבד. אינו מהווה ייעוץ פיננסי, מיסויי או משפטי. יש להתייעץ עם אנשי מקצוע לפני קבלת החלטות.'
@@ -273,7 +273,7 @@ export default function Calculator() {
         </div>
       </div>
 
-      {/* Compact pinned byline — mobile only (full footer above is desktop-only) */}
+      {/* Compact pinned byline - mobile only (full footer above is desktop-only) */}
       <footer className="lg:hidden shrink-0 px-4 py-1 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
         <p className="text-[10px] text-[var(--c-muted)]">
           {isRTL
@@ -283,7 +283,7 @@ export default function Calculator() {
         </p>
       </footer>
 
-      {/* Desktop two-column layout — ≥1024px */}
+      {/* Desktop two-column layout - ≥1024px */}
       <div className="hidden lg:flex flex-1 min-h-0 gap-4 px-4 py-4">
 
         {/* Left column: scrollable parameter inputs */}
@@ -341,15 +341,15 @@ export default function Calculator() {
             </div>
           </div>
 
-          {/* Chart — fills remaining height */}
+          {/* Chart - fills remaining height */}
           <div className="flex-1 min-h-0 border border-[var(--c-border)] rounded-lg p-4 flex flex-col" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} />
           </div>
 
         </section>
       </div>
 
-      {/* Legal disclaimer footer — desktop only (mobile keeps a compact byline + scrolls the disclaimer) */}
+      {/* Legal disclaimer footer - desktop only (mobile keeps a compact byline + scrolls the disclaimer) */}
       <footer className="hidden lg:block shrink-0 px-4 py-2 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
         <p className="text-xs text-slate-400">
           {isRTL
@@ -393,7 +393,7 @@ function MethodologyPageEN({ page }: { page: number }) {
       <p>
         <strong className="text-[var(--c-text-3)]">Apartment scenario:</strong> You buy an
         apartment with a mortgage and rent it out. The gain at each month is what you would walk
-        away with if you sold then — sale price minus remaining mortgage, total purchase costs,
+        away with if you sold then - sale price minus remaining mortgage, total purchase costs,
         cumulative cash flow over the period (total mortgage payments minus total rent received),
         selling costs, and מס שבח if applicable.
       </p>
@@ -403,6 +403,15 @@ function MethodologyPageEN({ page }: { page: number }) {
         mortgage payment exceeds rent, the negative cash flow is also invested in securities. In
         months where rent exceeds the mortgage, no additional investment is made to the passive
         portfolio. The passive gain is the net return after capital gains tax at realization (25%).
+      </p>
+      <p>
+        <strong className="text-[var(--c-text-3)]">Renting it out vs living in it:</strong> By default
+        the apartment is rented out and you collect rent. If instead you live in it, you collect no
+        rent but avoid paying rent to live elsewhere - economically the same benefit, so it takes the
+        rent&apos;s place in the cash flow. In live-in mode you set two rents: the apartment&apos;s own
+        market rent (what a tenant would pay, and the basis for maintenance) and the rent you&apos;d
+        otherwise pay elsewhere (the benefit that offsets the mortgage). When the two are equal, the
+        result matches renting it out.
       </p>
     </div>
   )
@@ -415,19 +424,19 @@ function MethodologyPageEN({ page }: { page: number }) {
         payment and <span dir="ltr">₪1,000,000</span> mortgage.
       </p>
       <p>
-        In the passive scenario, the full purchase outlay — down payment + purchase tax + transaction
-        costs — is invested in the stock market on day of purchase. In this example that totals{' '}
+        In the passive scenario, the full purchase outlay - down payment + purchase tax + transaction
+        costs - is invested in the stock market on day of purchase. In this example that totals{' '}
         <span dir="ltr">₪1,200,000</span> invested on day 1.
       </p>
       <p>
-        Mortgage payment: <span dir="ltr">₪6,000</span>, rental income: <span dir="ltr">₪5,500</span> — a
+        Mortgage payment: <span dir="ltr">₪6,000</span>, rental income: <span dir="ltr">₪5,500</span> - a
         negative cash flow of <span dir="ltr">₪500</span>. In the passive scenario, that <span dir="ltr">₪500</span> is
-        also invested in the market — money that would have come out of pocket in the apartment
+        also invested in the market - money that would have come out of pocket in the apartment
         scenario.
       </p>
       <p>
         A few years later: mortgage payment still <span dir="ltr">₪6,000</span>, rental income <span dir="ltr">₪6,200</span>{' '}
-        (rent has increased over time) — a positive cash flow of <span dir="ltr">₪200</span>. In the passive scenario,
+        (rent has increased over time) - a positive cash flow of <span dir="ltr">₪200</span>. In the passive scenario,
         nothing is added to the portfolio that month.
       </p>
     </div>
@@ -437,21 +446,21 @@ function MethodologyPageEN({ page }: { page: number }) {
     <div className="flex flex-col gap-3">
       <p className="font-medium text-[var(--c-text-3)]">Chart views:</p>
       <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
-        <li><strong className="text-[var(--c-text-3)]">Gains</strong> — shows both curves side by side: the apartment&apos;s net gain at realisation versus the passive investment&apos;s net gain at realisation. The points where the curves intersect are the moments when one scenario overtakes the other.</li>
-        <li><strong className="text-[var(--c-text-3)]">Difference</strong> — shows the gap between the two scenarios (apartment minus passive). When the curve is above zero, the apartment is ahead. When below zero, passive investment is ahead. The height of the curve at any point shows the size of the advantage.</li>
-        <li><strong className="text-[var(--c-text-3)]">Cash flow</strong> — shows monthly rent income and mortgage payment as lines, and the net monthly cash flow as bars. Negative bars (months where mortgage exceeds rent) represent money invested in the passive scenario.</li>
-        <li><strong className="text-[var(--c-text-3)]">Annualized return</strong> — shows each scenario&apos;s annualized return (IRR) for every possible exit month: the single yearly rate the capital effectively earned if sold then. This compares the two scenarios as rates of return rather than shekel amounts. The default view starts from year two, since the return in the first months is extreme or undefined.</li>
+        <li><strong className="text-[var(--c-text-3)]">Gains</strong> - shows both curves side by side: the apartment&apos;s net gain at realisation versus the passive investment&apos;s net gain at realisation. The points where the curves intersect are the moments when one scenario overtakes the other.</li>
+        <li><strong className="text-[var(--c-text-3)]">Difference</strong> - shows the gap between the two scenarios (apartment minus passive). When the curve is above zero, the apartment is ahead. When below zero, passive investment is ahead. The height of the curve at any point shows the size of the advantage.</li>
+        <li><strong className="text-[var(--c-text-3)]">Cash flow</strong> - shows monthly rent income and mortgage payment as lines, and the net monthly cash flow as bars. Negative bars (months where mortgage exceeds rent) represent money invested in the passive scenario.</li>
+        <li><strong className="text-[var(--c-text-3)]">Annualized return</strong> - shows each scenario&apos;s annualized return (IRR) for every possible exit month: the single yearly rate the capital effectively earned if sold then. This compares the two scenarios as rates of return rather than shekel amounts. The default view starts from year two, since the return in the first months is extreme or undefined.</li>
       </ul>
       <CollapsibleSection label="Key assumptions:">
         <ul className="list-disc list-inside flex flex-col gap-1 ml-2">
-          <li>Spitzer (שפיצר) amortization — fixed monthly mortgage payment, standard in Israel</li>
+          <li>Spitzer (שפיצר) amortization - fixed monthly mortgage payment, standard in Israel</li>
           <li>Purchase tax: 8% flat for an additional apartment (10% above ₪5,872,725); graduated rates for a first apartment</li>
-          <li>מס שבח on apartment sale: estimated 25% of the gain. When set to exempt — single-apartment exemption applies up to a ceiling; see &ldquo;Under the hood&rdquo;</li>
-          <li>Capital gains tax (מס רווח הון) on passive investment: 25% at realization only. The apartment is taxed via מס שבח, the portfolio via מס רווח הון — same rate, different taxes</li>
-          <li>A prepayment fee may apply when selling before the mortgage ends, if market rates have fallen below your rate — set via the rate-drop slider; see &ldquo;Under the hood&rdquo;</li>
+          <li>מס שבח on apartment sale: estimated 25% of the gain. When set to exempt - single-apartment exemption applies up to a ceiling; see &ldquo;Under the hood&rdquo;</li>
+          <li>Capital gains tax (מס רווח הון) on passive investment: 25% at realization only. The apartment is taxed via מס שבח, the portfolio via מס רווח הון - same rate, different taxes</li>
+          <li>A prepayment fee may apply when selling before the mortgage ends, if market rates have fallen below your rate - set via the rate-drop slider; see &ldquo;Under the hood&rdquo;</li>
           <li>Maintenance: an estimated annual cost (default 7% of rent), deducted from rental income each month</li>
           <li>In any month where the mortgage exceeds rent, the difference is invested in the passive scenario; a positive-cash-flow month adds nothing to the portfolio</li>
-          <li>All figures are nominal ILS — both scenarios are affected by inflation similarly, so the comparison remains valid</li>
+          <li>All figures are nominal ILS - both scenarios are affected by inflation similarly, so the comparison remains valid</li>
           <li>This models a purchase → rent → sell scenario</li>
         </ul>
       </CollapsibleSection>
@@ -468,7 +477,7 @@ function MethodologyPageHE({ page }: { page: number }) {
       <p>המחשבון משווה שני תרחישים עבור אותו הון:</p>
       <p>
         <strong className="text-[var(--c-text-3)]">תרחיש דירה: </strong>קונים דירה עם משכנתה
-        ומשכירים אותה. הרווח בכל חודש הוא הרווח הנקי אם תמכרו אז — מחיר המכירה בניכוי יתרת
+        ומשכירים אותה. הרווח בכל חודש הוא הרווח הנקי אם תמכרו אז - מחיר המכירה בניכוי יתרת
         המשכנתה, כל הוצאות הרכישה, התזרים המצטבר לאורך התקופה (סך תשלומי המשכנתה פחות סך הכנסות השכירות), עלויות המכירה, ומס שבח (אם רלוונטי).
       </p>
       <p>
@@ -476,6 +485,14 @@ function MethodologyPageHE({ page }: { page: number }) {
         (הון עצמי + כל עלויות הרכישה) בשוק ההון. בכל חודש שבו תשלום המשכנתה עולה על שכר הדירה,
         התזרים השלילי מושקע אף הוא בניירות ערך. בחודשים שבהם השכירות עולה על המשכנתה, אין השקעה
         נוספת בתיק הפסיבי. הרווח הפסיבי הוא הרווח הנקי לאחר מס רווח הון במימוש (25%).
+      </p>
+      <p>
+        <strong className="text-[var(--c-text-3)]">השכרה מול מגורים: </strong>כברירת מחדל הדירה
+        מושכרת ואתם גובים שכר דירה. אם במקום זאת אתם גרים בה, אינכם גובים שכר דירה אך חוסכים תשלום
+        שכר דירה במקום אחר - תועלת כלכלית זהה, ולכן היא תופסת את מקום השכירות בתזרים. במצב מגורים אתם
+        מגדירים שני שכרי דירה: שכר הדירה של הדירה עצמה בשוק (מה ששוכר היה משלם, ובסיס התחזוקה) ושכר
+        הדירה שהייתם משלמים במקום אחר (התועלת שמקזזת את המשכנתה). כששני הסכומים שווים, התוצאה זהה
+        להשכרה.
       </p>
     </div>
   )
@@ -487,13 +504,13 @@ function MethodologyPageHE({ page }: { page: number }) {
         נניח דירה במחיר <span dir="ltr">₪2,000,000</span> עם הון עצמי של <span dir="ltr">₪1,000,000</span> ומשכנתה של <span dir="ltr">₪1,000,000</span>.
       </p>
       <p>
-        בתרחיש הפסיבי, כל ההון שהוצא ביום הרכישה — הון עצמי + מס רכישה + עלויות עסקה — מושקע בשוק ההון ביום הרכישה. בדוגמה זו הסכום הכולל הוא <span dir="ltr">₪1,200,000</span> המושקעים ביום הראשון.
+        בתרחיש הפסיבי, כל ההון שהוצא ביום הרכישה - הון עצמי + מס רכישה + עלויות עסקה - מושקע בשוק ההון ביום הרכישה. בדוגמה זו הסכום הכולל הוא <span dir="ltr">₪1,200,000</span> המושקעים ביום הראשון.
       </p>
       <p>
-        תשלום משכנתה: <span dir="ltr">₪6,000</span>, הכנסה משכירות: <span dir="ltr">₪5,500</span> — תזרים שלילי של <span dir="ltr">₪500</span>. בתרחיש הפסיבי, <span dir="ltr">₪500</span> אלו מושקעים אף הם בשוק ההון — כסף שהיה יוצא מכיסכם בתרחיש הדירה.
+        תשלום משכנתה: <span dir="ltr">₪6,000</span>, הכנסה משכירות: <span dir="ltr">₪5,500</span> - תזרים שלילי של <span dir="ltr">₪500</span>. בתרחיש הפסיבי, <span dir="ltr">₪500</span> אלו מושקעים אף הם בשוק ההון - כסף שהיה יוצא מכיסכם בתרחיש הדירה.
       </p>
       <p>
-        כעבור כמה שנים: תשלום המשכנתה עדיין <span dir="ltr">₪6,000</span>, הכנסה משכירות <span dir="ltr">₪6,200</span> (השכירות עלתה עם הזמן) — תזרים חיובי של <span dir="ltr">₪200</span>. בתרחיש הפסיבי, חודש זה לא מוסיף דבר לתיק.
+        כעבור כמה שנים: תשלום המשכנתה עדיין <span dir="ltr">₪6,000</span>, הכנסה משכירות <span dir="ltr">₪6,200</span> (השכירות עלתה עם הזמן) - תזרים חיובי של <span dir="ltr">₪200</span>. בתרחיש הפסיבי, חודש זה לא מוסיף דבר לתיק.
       </p>
     </div>
   )
@@ -502,21 +519,21 @@ function MethodologyPageHE({ page }: { page: number }) {
     <div className="flex flex-col gap-3">
       <p className="font-medium text-[var(--c-text-3)]">תצוגות הגרף:</p>
       <ul className="list-disc list-inside flex flex-col gap-1 mr-2">
-        <li><strong className="text-[var(--c-text-3)]">רווחים</strong> — מציג שתי עקומות במקביל: רווח נקי במימוש של הדירה מול רווח נקי במימוש של ההשקעה הפסיבית. נקודות החציה בין העקומות הן הרגעים שבהם אחד התרחישים עולה על השני.</li>
-        <li><strong className="text-[var(--c-text-3)]">הפרש</strong> — מציג את ההפרש בין שני התרחישים (דירה פחות פסיבי). כשהעקומה מעל האפס — הדירה עדיפה. כשהיא מתחת לאפס — ההשקעה הפסיבית עדיפה. גובה העקומה בכל נקודה מראה את גודל היתרון.</li>
-        <li><strong className="text-[var(--c-text-3)]">תזרים</strong> — מציג את הכנסת השכירות ותשלום המשכנתה כקווים, ואת התזרים החודשי הנקי כעמודות. עמודות שליליות (חודשים שבהם המשכנתה עולה על השכירות) מייצגות כסף המושקע בתרחיש הפסיבי.</li>
-        <li><strong className="text-[var(--c-text-3)]">תשואה שנתית</strong> — מציג את התשואה השנתית (<bdi>IRR</bdi>) של כל תרחיש עבור כל חודש יציאה אפשרי: שיעור התשואה השנתית שההון הניב בפועל אם נמכר באותו חודש. תצוגה זו משווה את שני התרחישים כשיעורי תשואה ולא בסכומי שקלים. תצוגת ברירת המחדל מתחילה משנה שנייה, שכן בחודשים הראשונים התשואה קיצונית או אינה מוגדרת.</li>
+        <li><strong className="text-[var(--c-text-3)]">רווחים</strong> - מציג שתי עקומות במקביל: רווח נקי במימוש של הדירה מול רווח נקי במימוש של ההשקעה הפסיבית. נקודות החציה בין העקומות הן הרגעים שבהם אחד התרחישים עולה על השני.</li>
+        <li><strong className="text-[var(--c-text-3)]">הפרש</strong> - מציג את ההפרש בין שני התרחישים (דירה פחות פסיבי). כשהעקומה מעל האפס - הדירה עדיפה. כשהיא מתחת לאפס - ההשקעה הפסיבית עדיפה. גובה העקומה בכל נקודה מראה את גודל היתרון.</li>
+        <li><strong className="text-[var(--c-text-3)]">תזרים</strong> - מציג את הכנסת השכירות ותשלום המשכנתה כקווים, ואת התזרים החודשי הנקי כעמודות. עמודות שליליות (חודשים שבהם המשכנתה עולה על השכירות) מייצגות כסף המושקע בתרחיש הפסיבי.</li>
+        <li><strong className="text-[var(--c-text-3)]">תשואה שנתית</strong> - מציג את התשואה השנתית (<bdi>IRR</bdi>) של כל תרחיש עבור כל חודש יציאה אפשרי: שיעור התשואה השנתית שההון הניב בפועל אם נמכר באותו חודש. תצוגה זו משווה את שני התרחישים כשיעורי תשואה ולא בסכומי שקלים. תצוגת ברירת המחדל מתחילה משנה שנייה, שכן בחודשים הראשונים התשואה קיצונית או אינה מוגדרת.</li>
       </ul>
       <CollapsibleSection label="הנחות מרכזיות:" isRTL>
         <ul className="list-disc list-inside flex flex-col gap-1 mr-2" dir="rtl">
-          <li>שיטת שפיצר — תשלום משכנתה חודשי קבוע, סטנדרט בישראל</li>
+          <li>שיטת שפיצר - תשלום משכנתה חודשי קבוע, סטנדרט בישראל</li>
           <li>מס רכישה: <bdi>8%</bdi> גורף לדירה נוספת (<bdi>10%</bdi> מעל <bdi>₪5,872,725</bdi>); מדרגות לדירה יחידה</li>
-          <li>מס שבח על מכירת הדירה: <bdi>25%</bdi> מהרווח (משוער). בבחירת פטור — פטור לדירה יחידה עד תקרה; ראו &quot;מאחורי הקלעים&quot;</li>
-          <li>מס רווח הון על השקעה פסיבית: <bdi>25%</bdi> במימוש בלבד. הדירה ממוסה במס שבח, התיק במס רווח הון — אותו שיעור, מס שונה</li>
-          <li>ייתכן קנס פירעון מוקדם במכירה לפני תום המשכנתה, אם ריבית השוק ירדה מתחת לריבית שלכם — נקבע באמצעות מחוון ירידת הריבית; ראו &quot;מאחורי הקלעים&quot;</li>
+          <li>מס שבח על מכירת הדירה: <bdi>25%</bdi> מהרווח (משוער). בבחירת פטור - פטור לדירה יחידה עד תקרה; ראו &quot;מאחורי הקלעים&quot;</li>
+          <li>מס רווח הון על השקעה פסיבית: <bdi>25%</bdi> במימוש בלבד. הדירה ממוסה במס שבח, התיק במס רווח הון - אותו שיעור, מס שונה</li>
+          <li>ייתכן קנס פירעון מוקדם במכירה לפני תום המשכנתה, אם ריבית השוק ירדה מתחת לריבית שלכם - נקבע באמצעות מחוון ירידת הריבית; ראו &quot;מאחורי הקלעים&quot;</li>
           <li>תחזוקה: עלות שנתית משוערת (ברירת מחדל <bdi>7%</bdi> מהשכירות), מנוכה מהשכירות מדי חודש</li>
           <li>בכל חודש שבו המשכנתה גדולה מהשכירות, ההפרש מושקע בתרחיש הפסיבי; חודש עם תזרים חיובי לא מוסיף לתיק</li>
-          <li>כל הנתונים נומינליים — שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה תקפה</li>
+          <li>כל הנתונים נומינליים - שני התרחישים מושפעים מאינפלציה באופן דומה, ולכן ההשוואה תקפה</li>
           <li>המחשבון מדמה רכישה ← השכרה ← מכירה</li>
         </ul>
       </CollapsibleSection>
@@ -636,7 +653,7 @@ function UnderTheHoodContentEN({ isRTL }: { isRTL: boolean }) {
       <p>
         The exact calculations behind the two curves. Both <strong className="text-[var(--c-text-3)]">A(t)</strong> (apartment)
         and <strong className="text-[var(--c-text-3)]">P(t)</strong> (passive) start from the same upfront capital{' '}
-        <strong className="text-[var(--c-text-3)]">E</strong> — down payment + purchase tax + transaction costs — and show
+        <strong className="text-[var(--c-text-3)]">E</strong> - down payment + purchase tax + transaction costs - and show
         the net gain if you exited at month <strong className="text-[var(--c-text-3)]">t</strong>.
       </p>
 
@@ -654,8 +671,8 @@ function UnderTheHoodContentEN({ isRTL }: { isRTL: boolean }) {
           <HoodDefRow term="SellingCosts(t)">SaleValue(t) × selling-costs %</HoodDefRow>
           <HoodDefRow term="RemainingMortgage(t)">balance from the amortization schedule</HoodDefRow>
           <HoodDefRow term="CumulativeCashFlow(t)">running sum of (rent − mortgage − maintenance); usually negative, since mortgage exceeds rent</HoodDefRow>
-          <HoodDefRow term="BettermentTax(t)">מס שבח — see its section below</HoodDefRow>
-          <HoodDefRow term="PrepaymentFee(t)">early-repayment penalty — see its section below</HoodDefRow>
+          <HoodDefRow term="BettermentTax(t)">מס שבח - see its section below</HoodDefRow>
+          <HoodDefRow term="PrepaymentFee(t)">early-repayment penalty - see its section below</HoodDefRow>
         </HoodDefList>
       </HoodSection>
 
@@ -668,10 +685,15 @@ function UnderTheHoodContentEN({ isRTL }: { isRTL: boolean }) {
         </HoodDefList>
       </HoodSection>
 
+      <HoodSection isRTL={isRTL} title="Renting out vs living in" summary="Where the rent in the cash flow comes from, and what maintenance is based on.">
+        <HoodNote>The cash flow carries one rent term, but it means different things by mode. <strong className="text-[var(--c-text-3)]">Rent it out:</strong> the rent is what a tenant pays you - the apartment&apos;s own market rent. <strong className="text-[var(--c-text-3)]">Live in it:</strong> you collect no rent but avoid paying rent to live elsewhere, and that avoided rent takes the rent&apos;s place in the cash flow, since saving a payment is economically the same as receiving one.</HoodNote>
+        <HoodNote>Either way, <strong className="text-[var(--c-text-3)]">maintenance is always a percentage of the apartment&apos;s own market rent</strong> - it is a cost of the property itself, independent of what you&apos;d pay to live elsewhere. So live-in mode exposes two rents: the apartment&apos;s market rent (the maintenance basis) and the rent you&apos;d otherwise pay (the benefit). Set them equal and the live-in result is identical to renting it out.</HoodNote>
+      </HoodSection>
+
       <HoodSection isRTL={isRTL} title="Betterment tax · מס שבח" summary="The apartment&apos;s sale tax, ceiling-aware when the exemption applies.">
         <HoodFormula>{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
 BettermentTax   = RealGain × Taxable portion × 25%`}</HoodFormula>
-        <HoodNote>When not exempt, the full gain is taxed at 25%. This is a simplification — real מס שבח is computed on the inflation-adjusted gain after deductible costs.</HoodNote>
+        <HoodNote>When not exempt, the full gain is taxed at 25%. This is a simplification - real מס שבח is computed on the inflation-adjusted gain after deductible costs.</HoodNote>
       </HoodSection>
 
       <HoodSection isRTL={isRTL} title="Prepayment fee · קנס פירעון מוקדם" summary="Capitalization penalty for repaying the mortgage early when market rates have fallen.">
@@ -683,7 +705,7 @@ AF(r, n) = (1 − (1 + r)^(−n)) / r        (= n when r = 0)
 
 PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</HoodFormula>
         <HoodNote>Selling before the mortgage ends means repaying the balance early. If market rates have fallen below your contractual rate, the bank charges a capitalization penalty for the interest it loses. The rate-drop slider sets how far the market rate sits below your contractual rate, so a bigger gap means a bigger fee, and if rates rose or held the fee is zero. The penalty is the present value of the lost interest: each remaining payment is discounted at the market rate versus your contractual rate, and the difference between those two present values is the fee.</HoodNote>
-        <HoodNote><strong className="text-[var(--c-text-3)]">Single-rate vs by-track:</strong> in single-rate mode the fee is applied to the whole balance — a slightly conservative estimate, since the prime track is exempt by law. Switch the mortgage input to by-track mode to exclude the prime track and charge only the fixed and variable tracks.</HoodNote>
+        <HoodNote><strong className="text-[var(--c-text-3)]">Single-rate vs by-track:</strong> in single-rate mode the fee is applied to the whole balance - a slightly conservative estimate, since the prime track is exempt by law. Switch the mortgage input to by-track mode to exclude the prime track and charge only the fixed and variable tracks.</HoodNote>
       </HoodSection>
 
       <HoodSection isRTL={isRTL} title="Annualized return · IRR" summary="The annualized rate that makes the full cash-flow stream break even.">
@@ -699,7 +721,7 @@ function UnderTheHoodContentHE({ isRTL }: { isRTL: boolean }) {
       <p>
         החישוב המדויק שמאחורי שתי העקומות. גם <strong className="text-[var(--c-text-3)]"><bdi>A(t)</bdi></strong> (דירה)
         וגם <strong className="text-[var(--c-text-3)]"><bdi>P(t)</bdi></strong> (פסיבי) מתחילות מאותו הון התחלתי{' '}
-        <strong className="text-[var(--c-text-3)]"><bdi>E</bdi></strong> — הון עצמי + מס רכישה + עלויות עסקה — ומראות
+        <strong className="text-[var(--c-text-3)]"><bdi>E</bdi></strong> - הון עצמי + מס רכישה + עלויות עסקה - ומראות
         את הרווח הנקי אם תצאו בחודש <strong className="text-[var(--c-text-3)]"><bdi>t</bdi></strong>.
       </p>
 
@@ -717,8 +739,8 @@ function UnderTheHoodContentHE({ isRTL }: { isRTL: boolean }) {
           <HoodDefRow term="SellingCosts(t)"><span dir="ltr">SaleValue(t)</span> × אחוז עלויות המכירה</HoodDefRow>
           <HoodDefRow term="RemainingMortgage(t)">היתרה מלוח הסילוקין</HoodDefRow>
           <HoodDefRow term="CumulativeCashFlow(t)">סכום מצטבר של (שכירות − משכנתה − תחזוקה); בדרך כלל שלילי, כי המשכנתה גבוהה מהשכירות</HoodDefRow>
-          <HoodDefRow term="BettermentTax(t)">מס שבח — ראו בסעיף בהמשך</HoodDefRow>
-          <HoodDefRow term="PrepaymentFee(t)">קנס פירעון מוקדם — ראו בסעיף בהמשך</HoodDefRow>
+          <HoodDefRow term="BettermentTax(t)">מס שבח - ראו בסעיף בהמשך</HoodDefRow>
+          <HoodDefRow term="PrepaymentFee(t)">קנס פירעון מוקדם - ראו בסעיף בהמשך</HoodDefRow>
         </HoodDefList>
       </HoodSection>
 
@@ -731,10 +753,15 @@ function UnderTheHoodContentHE({ isRTL }: { isRTL: boolean }) {
         </HoodDefList>
       </HoodSection>
 
+      <HoodSection isRTL={isRTL} title="השכרה מול מגורים" summary="מהיכן מגיעה השכירות בתזרים, ועל מה מבוססת התחזוקה.">
+        <HoodNote>בתזרים מופיע מונח שכירות אחד, אך משמעותו שונה בכל מצב. <strong className="text-[var(--c-text-3)]">השכרה:</strong> השכירות היא מה ששוכר משלם לכם - שכר הדירה של הדירה עצמה בשוק. <strong className="text-[var(--c-text-3)]">מגורים:</strong> אינכם גובים שכר דירה אך חוסכים תשלום שכר דירה במקום אחר, ושכר הדירה הנחסך תופס את מקום השכירות בתזרים, שכן חיסכון בתשלום שקול כלכלית לקבלתו.</HoodNote>
+        <HoodNote>בכל מקרה, <strong className="text-[var(--c-text-3)]">התחזוקה היא תמיד אחוז משכר הדירה של הדירה עצמה בשוק</strong> - היא עלות של הנכס עצמו, ללא תלות במה שהייתם משלמים כדי לגור במקום אחר. לכן במצב המגורים מוגדרים שני שכרי דירה: שכר הדירה בשוק (בסיס התחזוקה) ושכר הדירה שהייתם משלמים (התועלת). הגדירו אותם שווים והתוצאה במגורים זהה להשכרה.</HoodNote>
+      </HoodSection>
+
       <HoodSection isRTL={isRTL} title="מס שבח" summary="מס המכירה של הדירה, מודע לתקרה כשחל פטור.">
         <HoodFormula>{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
 BettermentTax   = RealGain × Taxable portion × 25%`}</HoodFormula>
-        <HoodNote>ללא פטור, מלוא הרווח ממוסה ב-<span dir="ltr">25%</span>. זוהי הפשטה — מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות מוכרות.</HoodNote>
+        <HoodNote>ללא פטור, מלוא הרווח ממוסה ב-<span dir="ltr">25%</span>. זוהי הפשטה - מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות מוכרות.</HoodNote>
       </HoodSection>
 
       <HoodSection isRTL={isRTL} title="קנס פירעון מוקדם" summary="עמלת היוון על פירעון מוקדם של המשכנתה כשריבית השוק ירדה.">
@@ -746,7 +773,7 @@ AF(r, n) = (1 − (1 + r)^(−n)) / r        (= n when r = 0)
 
 PrepaymentFee(t) = max(0, MonthlyPayment × (AF(rm, n) − AF(rc, n)))`}</HoodFormula>
         <HoodNote>מכירה לפני תום תקופת המשכנתה משמעה פירעון היתרה מוקדם. אם ריבית השוק ירדה מתחת לריבית החוזית שלכם, הבנק גובה עמלת היוון על הריבית שהוא מפסיד. מחוון ירידת הריבית קובע עד כמה ריבית השוק נמוכה מהריבית החוזית, כך שפער גדול יותר משמעו קנס גדול יותר, ואם הריבית עלתה או נותרה ללא שינוי הקנס אפס. הקנס הוא הערך הנוכחי של הריבית האבודה: כל תשלום עתידי שנותר מהוון בריבית השוק לעומת הריבית החוזית, וההפרש בין שני הערכים הנוכחיים הללו הוא הקנס.</HoodNote>
-        <HoodNote><strong className="text-[var(--c-text-3)]">ריבית אחת מול לפי מסלול:</strong> במצב ריבית אחת הקנס מחושב על מלוא היתרה — הערכה מעט שמרנית, שכן מסלול הפריים פטור על־פי חוק. מעבר להזנה לפי מסלול מחריג את מסלול הפריים ומחייב רק את המסלול הקבוע והמשתנה.</HoodNote>
+        <HoodNote><strong className="text-[var(--c-text-3)]">ריבית אחת מול לפי מסלול:</strong> במצב ריבית אחת הקנס מחושב על מלוא היתרה - הערכה מעט שמרנית, שכן מסלול הפריים פטור על־פי חוק. מעבר להזנה לפי מסלול מחריג את מסלול הפריים ומחייב רק את המסלול הקבוע והמשתנה.</HoodNote>
       </HoodSection>
 
       <HoodSection isRTL={isRTL} title={<><bdi>תשואה שנתית · IRR</bdi></>} summary="התשואה השנתית שמאפסת את הערך הנוכחי של כל סדרת התזרימים.">
