@@ -54,13 +54,8 @@ Never use literal directional characters (→, ←, ▶, ◀) as hardcoded stati
 - Before any reset or when stuck, commit completed work and update `## ACTIVE TASK` with what's done vs pending.
 
 ## ACTIVE TASK
-**v2 live-in apartment — DONE (incl. the Phase 2 decoupled-rents model change). Awaiting user review at localhost:3000, then commit.**
-Model semantics now (model.ts loop ~line 148):
-- `marketRent = R0·(1+Ri)^yr` = THIS apartment's market rent. ALWAYS the maintenance basis (`maintenance = marketRent·maintRate/12`), in both modes. Also the collected rent when renting out.
-- `incomeRent` (offsets mortgage in flow) = marketRent (rentout) OR `liveInRent·(1+Ri)^yr` (livein = the rent you'd pay ELSEWHERE, the avoided-rent benefit).
-- `flow = incomeRent − maintenance − mort`. VERIFIED: rentout ≡ livein when liveInRent==R0 (max |Δ|=0 over 360mo). Lowering liveInRent reduces apt advantage; maintenance unchanged (delta == avoided-rent delta exactly).
-UI: occupancy toggle (השכרה/מגורים) at top of Property group. In livein: R0 relabels to "Apartment's market rent / שכר הדירה בשוק" (maintenance basis), and a NEW liveInRent slider appears ("Rent you'd otherwise pay / שכר דירה שהייתם משלמים", default 6000=R0). Chart cashflow rent bar = incomeRent, labeled "rent avoided".
-Files: types.ts (+occupancy +liveInRent), model.ts (split + DEFAULT_PARAMS liveInRent:6000), Sliders.tsx (toggle + liveInRent slider filtered to livein + R0/maint live-in tooltips), i18n.ts (EN+HE keys; dropped unused riTooltipLiveIn), Chart.tsx (occupancy prop + resolved rent labels), Calculator.tsx (occupancy prop; compute(params) picks up rest), InfoTooltip.tsx (auto-RTL via Hebrew detection).
-ALSO this session: chart view-button reorder gains/diff/IRR/cashflow (Chart.tsx ~660); full em-dash→hyphen sweep in i18n.ts (38 replaced, en-dash date ranges preserved).
-STILL OPEN: methodology/under-the-hood modal doesn't yet explain occupancy/decoupled rents (optional). Nothing committed yet — visual review pending.
-Deferred Phase 2 remainder: rental-income tax on the rent-out side (only thing left that makes modes diverge when liveInRent==marketRent).
+(none — v2 live-in apartment is DONE, committed 44155ea, deployed to apartment-calc.com, pushed to layout-redesign.)
+
+REMINDER for next session: the user has something to tell me about the 18-month rule and מס שבח — ask them.
+
+Deferred (not started): rental-income tax on the rent-out side — the only remaining thing that would make rent-out vs live-in diverge when liveInRent==marketRent. See memory session_state.md for the full v2 model write-up.
