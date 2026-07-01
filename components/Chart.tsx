@@ -786,7 +786,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
               onClick={(e) => { e.stopPropagation(); setCashFlowSubView(cashFlowSubView === 'rentmort' ? 'bars' : 'rentmort') }}
               className="text-xs px-2 py-0.5 rounded text-[var(--c-text)] font-medium transition-opacity hover:opacity-70"
             >
-              {cashFlowSubView === 'rentmort' ? rentSubViewLabel : t.cashFlowSubViewBars}
+              {cashFlowSubView === 'rentmort' ? t.cashFlowSubViewBars : rentSubViewLabel}
             </button>
           </div>
         )}
