@@ -54,8 +54,6 @@ Never use literal directional characters (→, ←, ▶, ◀) as hardcoded stati
 - Before any reset or when stuck, commit completed work and update `## ACTIVE TASK` with what's done vs pending.
 
 ## ACTIVE TASK
-(none — v2 live-in apartment is DONE, committed 44155ea, deployed to apartment-calc.com, pushed to layout-redesign.)
+(none — all shipped. Latest: 18-month מס שבח cliff + cashflow toggle polish, commit 29dc3b3, deployed to apartment-calc.com, pushed. The 18-month reminder is resolved.)
 
-REMINDER for next session: the user has something to tell me about the 18-month rule and מס שבח — ask them.
-
-Deferred (not started): rental-income tax on the rent-out side — the only remaining thing that would make rent-out vs live-in diverge when liveInRent==marketRent. See memory session_state.md for the full v2 model write-up.
+Deferred (not started): rental-income tax on the rent-out side — the only remaining thing that would make rent-out vs live-in diverge when liveInRent==marketRent. See memory session_state.md for the full write-up.
