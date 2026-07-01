@@ -694,6 +694,7 @@ function UnderTheHoodContentEN({ isRTL }: { isRTL: boolean }) {
         <HoodFormula>{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
 BettermentTax   = RealGain × Taxable portion × 25%`}</HoodFormula>
         <HoodNote>When not exempt, the full gain is taxed at 25%. This is a simplification - real מס שבח is computed on the inflation-adjusted gain after deductible costs.</HoodNote>
+        <HoodNote>The single-apartment exemption also requires owning the apartment at least 18 months. Selling earlier is taxed in full at 25%, so in exempt mode A(t) steps up at month 18.</HoodNote>
       </HoodSection>
 
       <HoodSection isRTL={isRTL} title="Prepayment fee · קנס פירעון מוקדם" summary="Capitalization penalty for repaying the mortgage early when market rates have fallen.">
@@ -762,6 +763,7 @@ function UnderTheHoodContentHE({ isRTL }: { isRTL: boolean }) {
         <HoodFormula>{`Taxable portion = max(0, SaleValue − 5,008,000) / SaleValue   (when exempt)
 BettermentTax   = RealGain × Taxable portion × 25%`}</HoodFormula>
         <HoodNote>ללא פטור, מלוא הרווח ממוסה ב-<span dir="ltr">25%</span>. זוהי הפשטה - מס שבח בפועל מחושב על הרווח הריאלי הצמוד למדד לאחר ניכוי הוצאות מוכרות.</HoodNote>
+        <HoodNote>הפטור לדירה יחידה מותנה גם בבעלות של לפחות <bdi>18</bdi> חודשים. מכירה מוקדמת יותר ממוסה במלואה ב-<span dir="ltr">25%</span>, ולכן במצב פטור <bdi>A(t)</bdi> עולה מדרגה בחודש ה-<bdi>18</bdi>.</HoodNote>
       </HoodSection>
 
       <HoodSection isRTL={isRTL} title="קנס פירעון מוקדם" summary="עמלת היוון על פירעון מוקדם של המשכנתה כשריבית השוק ירדה.">

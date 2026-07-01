@@ -32,8 +32,11 @@ function annuityFactor(r: number, n: number): number {
 }
 
 const CGT = 0.25
-// 2024–2027 single-apartment מס שבח exemption ceiling — periodically indexed by the tax authority
+// 2024-2027 single-apartment מס שבח exemption ceiling - periodically indexed by the tax authority
 const MAS_SHVACH_EXEMPT_CEILING = 5_008_000
+// Single-apartment exemption requires holding the apartment at least 18 months; selling earlier
+// is taxed in full at 25%. Creates a tax cliff (A(t) step-up) at month 18 in exempt mode.
+const MAS_SHVACH_MIN_MONTHS = 18
 
 export function purchaseTaxInvestor(A: number): number {
   const b1 = 5_872_725
@@ -184,9 +187,14 @@ export function compute(params: Params): Results {
       if (masShvach === '25%') {
         masShvachTax = gain * 0.25
       } else if (masShvach === 'exempt') {
-        // Ceiling-aware: gain proportional to value above the ceiling is taxed at 25%
-        const taxablePortion = Math.max(0, Av_x - MAS_SHVACH_EXEMPT_CEILING) / Av_x
-        masShvachTax = gain * taxablePortion * 0.25
+        if (x < MAS_SHVACH_MIN_MONTHS) {
+          // Held < 18 months: single-apartment exemption not yet available, full gain taxed
+          masShvachTax = gain * 0.25
+        } else {
+          // Ceiling-aware: gain proportional to value above the ceiling is taxed at 25%
+          const taxablePortion = Math.max(0, Av_x - MAS_SHVACH_EXEMPT_CEILING) / Av_x
+          masShvachTax = gain * taxablePortion * 0.25
+        }
       }
     }
     const N_x = netProceeds + F - Ep - rem - masShvachTax
