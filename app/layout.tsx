@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   // Google Search Console (HTML-tag method): replace the placeholder below with the
   // token from Search Console > Settings > Ownership verification > HTML tag.
-  verification: { google: 'PASTE_SEARCH_CONSOLE_TOKEN_HERE' },
+  verification: { google: 'wYcvj5smCa_-VlWlQPYraYTuWauLNfAjegrmQSsOyHU' },
   openGraph: {
     type: 'website',
     locale: 'he_IL',
