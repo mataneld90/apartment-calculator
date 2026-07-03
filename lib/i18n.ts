@@ -148,6 +148,8 @@ export type Translation = {
   irrLabel: string
   irrApt: string
   irrPas: string
+  feedbackLink: string
+  fullVersionPrefix: string
 }
 
 export const LANG: Record<Lang, Translation> = {
@@ -300,6 +302,8 @@ export const LANG: Record<Lang, Translation> = {
     irrLabel: 'IRR',
     irrApt: 'Apartment',
     irrPas: 'Passive',
+    feedbackLink: 'Send feedback',
+    fullVersionPrefix: 'Full version at ',
   },
   he: {
     title: 'דירה מול השקעה פסיבית',
@@ -448,5 +452,7 @@ export const LANG: Record<Lang, Translation> = {
     irrLabel: 'תשואה שנתית (IRR)',
     irrApt: 'דירה',
     irrPas: 'פסיבי',
+    feedbackLink: 'שליחת משוב',
+    fullVersionPrefix: 'הגרסה המלאה ב-',
   },
 }

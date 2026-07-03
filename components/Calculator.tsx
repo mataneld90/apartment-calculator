@@ -41,6 +41,13 @@ export default function Calculator() {
   const results = useMemo(() => compute(params), [params])
   const t = LANG[lang]
   const isRTL = lang === 'he'
+  const [isEmbedded, setIsEmbedded] = useState(false)
+
+  useEffect(() => {
+    // True when the calc runs inside someone else's iframe (e.g. the moneyplan.co.il embed).
+    // A cross-origin parent makes window.top access throw, which itself means we're framed.
+    try { setIsEmbedded(window.self !== window.top) } catch { setIsEmbedded(true) }
+  }, [])
 
   useEffect(() => {
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr'
@@ -281,6 +288,10 @@ export default function Calculator() {
             : <>© 2026 <a href="https://www.linkedin.com/in/matan-eldar-5796321b5/" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">Matan Eldar</a> · Free for personal use</>
           }
         </p>
+        <p className="text-[10px] text-[var(--c-muted)]">
+          <a href="mailto:matan.eldar89@gmail.com?subject=apartment-calc%20feedback" className="text-[var(--c-muted)] hover:underline">{t.feedbackLink}</a>
+          {isEmbedded && <> · {t.fullVersionPrefix}<a dir="ltr" href="https://apartment-calc.com" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">apartment-calc.com</a></>}
+        </p>
       </footer>
 
       {/* Desktop two-column layout - ≥1024px */}
@@ -362,6 +373,10 @@ export default function Calculator() {
             ? <>© 2026 <a href="https://www.linkedin.com/in/matan-eldar-5796321b5/" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">מתן אלדר</a> · לשימוש אישי בחינם</>
             : <>© 2026 <a href="https://www.linkedin.com/in/matan-eldar-5796321b5/" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">Matan Eldar</a> · Free for personal use</>
           }
+        </p>
+        <p className="text-xs text-[var(--c-muted)] text-center">
+          <a href="mailto:matan.eldar89@gmail.com?subject=apartment-calc%20feedback" className="text-[var(--c-muted)] hover:underline">{t.feedbackLink}</a>
+          {isEmbedded && <> · {t.fullVersionPrefix}<a dir="ltr" href="https://apartment-calc.com" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">apartment-calc.com</a></>}
         </p>
       </footer>
     </div>
