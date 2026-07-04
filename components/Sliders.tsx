@@ -403,8 +403,8 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
                 isRTL={isRTL}
                 value={params.occupancy}
                 options={[
-                  { value: 'rentout', label: t.occupancyRentOut, tooltip: t.tooltips.occupancyRentOut },
                   { value: 'livein', label: t.occupancyLiveIn, tooltip: t.tooltips.occupancyLiveIn },
+                  { value: 'rentout', label: t.occupancyRentOut, tooltip: t.tooltips.occupancyRentOut },
                 ]}
                 onChange={(v) => update('occupancy', v as Params['occupancy'])}
               />
