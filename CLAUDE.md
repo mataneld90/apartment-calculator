@@ -54,6 +54,30 @@ Never use literal directional characters (→, ←, ▶, ◀) as hardcoded stati
 - Before any reset or when stuck, commit completed work and update `## ACTIVE TASK` with what's done vs pending.
 
 ## ACTIVE TASK
-(none — all shipped. Latest: 18-month מס שבח cliff + cashflow toggle polish, commit 29dc3b3, deployed to apartment-calc.com, pushed. The 18-month reminder is resolved.)
+Canonical host consolidation (www.apartment-calc.com)
+
+DONE (code, DEPLOYED): commit 70e3d8a on branch layout-redesign normalized all
+host references to https://www.apartment-calc.com - metadataBase in
+app/layout.tsx (fixes canonical + og:url), public/sitemap.xml <loc>,
+public/robots.txt Sitemap:, and both attribution hrefs in
+components/Calculator.tsx. Built + deployed to apartment-calculator-mey; live
+www artifacts verified (canonical, og:url, robots Sitemap:, sitemap <loc> all
+show the www host).
+
+DONE (manual, outside repo):
+- Firebase Hosting: apex apartment-calc.com now 301-redirects to www (was
+  serving 200 - duplicate content). Verified live: https apex -> 301 ->
+  https://www.apartment-calc.com/ ; www returns 200. (Minor: http apex is a
+  2-hop http->https-apex->www; acceptable, http is rarely the entry point.)
+- Google Search Console (per user): Domain property for apartment-calc.com
+  verified via Namecheap DNS TXT. Sitemap
+  https://www.apartment-calc.com/sitemap.xml submitted.
+
+OPEN:
+- [ ] GSC (~few days out): confirm Sitemaps tab shows "Success" + page count.
+- [ ] GSC (~1-2 weeks out): confirm Pages/Indexing shows the page indexed.
+
+Previously shipped: 18-month מס שבח cliff + cashflow toggle polish, commit
+29dc3b3, deployed, pushed (resolved).
 
 Deferred (not started): rental-income tax on the rent-out side — the only remaining thing that would make rent-out vs live-in diverge when liveInRent==marketRent. See memory session_state.md for the full write-up.
