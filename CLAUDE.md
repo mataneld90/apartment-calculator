@@ -54,28 +54,31 @@ Never use literal directional characters (→, ←, ▶, ◀) as hardcoded stati
 - Before any reset or when stuck, commit completed work and update `## ACTIVE TASK` with what's done vs pending.
 
 ## ACTIVE TASK
-Canonical host consolidation (www.apartment-calc.com)
+Spotlight/guided tour (branch layout-redesign, NOT deployed, NOT pushed)
 
-DONE (code, DEPLOYED): commit 70e3d8a on branch layout-redesign normalized all
-host references to https://www.apartment-calc.com - metadataBase in
-app/layout.tsx (fixes canonical + og:url), public/sitemap.xml <loc>,
-public/robots.txt Sitemap:, and both attribution hrefs in
-components/Calculator.tsx. Built + deployed to apartment-calculator-mey; live
-www artifacts verified (canonical, og:url, robots Sitemap:, sitemap <loc> all
-show the www host).
-
-DONE (manual, outside repo):
-- Firebase Hosting: apex apartment-calc.com now 301-redirects to www (was
-  serving 200 - duplicate content). Verified live: https apex -> 301 ->
-  https://www.apartment-calc.com/ ; www returns 200. (Minor: http apex is a
-  2-hop http->https-apex->www; acceptable, http is rarely the entry point.)
-- Google Search Console (per user): Domain property for apartment-calc.com
-  verified via Namecheap DNS TXT. Sitemap
-  https://www.apartment-calc.com/sitemap.xml submitted.
+DONE:
+- Tour.tsx complete + wired in Calculator.tsx (auto-opens on first visit via
+  localStorage hasVisitedBefore; "How this works" header button starts it;
+  10 steps EN+HE; chart steps switch the chart view). Committed bc0d055.
+- Dev-server containment: package.json dev-script thread caps +
+  next.config.ts turbopack root pin, commit 31b7fa0. RULE: run the dev
+  server ONLY via
+  `systemd-run --user --unit=calcdev -p TasksMax=500 --working-directory=. /usr/bin/npm run dev`
+  (bare `npm run dev` wedged the whole WSL session twice).
+- VISUALLY VERIFIED 2026-07-05: all 10 steps screenshotted in HE-desktop,
+  EN-desktop, HE-mobile (~/projects/tour-shots-2026-07-05/). Spotlight hole,
+  card placement, RTL page indicator, chart-view switching all correct.
 
 OPEN:
-- [ ] GSC (~few days out): confirm Sitemaps tab shows "Success" + page count.
-- [ ] GSC (~1-2 weeks out): confirm Pages/Indexing shows the page indexed.
+- [ ] USER DECISION: dead methodology modal - the tour replaced it
+      (methodologyOpen / setIsFirstVisitPanel(true) never called). Remove
+      MethodologyPageHE/EN + goToMethodologyPage etc., or re-expose it?
+- [ ] After decision: build + deploy + push (11 commits ahead of origin).
+
+Previous task (canonical host consolidation, www.apartment-calc.com):
+shipped + deployed (70e3d8a); apex 301->www verified; GSC domain property
+verified + sitemap submitted. Remaining GSC checks (user's login):
+Sitemaps "Success" (~days), page indexed (~1-2 weeks).
 
 Previously shipped: 18-month מס שבח cliff + cashflow toggle polish, commit
 29dc3b3, deployed, pushed (resolved).
