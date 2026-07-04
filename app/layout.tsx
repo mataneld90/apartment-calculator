@@ -3,7 +3,7 @@ import Analytics from '@/components/Analytics'
 import './globals.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://apartment-calc.com'),
+  metadataBase: new URL('https://www.apartment-calc.com'),
   title: 'מחשבון דירה להשקעה מול שוק ההון | השוואה לישראל',
   description:
     'מחשבון חינמי שמשווה דירה להשקעה מול שוק ההון: מתי קניית דירה עדיפה על השקעה פסיבית במדד. מתחשב במס שבח, מסלולי משכנתה, עמלת פירעון מוקדם, תזרים מזומנים ו-IRR.',

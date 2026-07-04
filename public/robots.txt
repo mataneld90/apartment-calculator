@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://apartment-calc.com/sitemap.xml
+Sitemap: https://www.apartment-calc.com/sitemap.xml

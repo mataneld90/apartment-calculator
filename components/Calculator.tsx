@@ -291,7 +291,7 @@ export default function Calculator() {
         </p>
         {isEmbedded && (
           <p className="text-[10px] text-[var(--c-muted)]">
-            {t.fullVersionPrefix}<a dir="ltr" href="https://apartment-calc.com" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">apartment-calc.com</a>
+            {t.fullVersionPrefix}<a dir="ltr" href="https://www.apartment-calc.com" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">apartment-calc.com</a>
           </p>
         )}
       </footer>
@@ -379,7 +379,7 @@ export default function Calculator() {
         </p>
         {isEmbedded && (
           <p className="text-xs text-[var(--c-muted)] text-center">
-            {t.fullVersionPrefix}<a dir="ltr" href="https://apartment-calc.com" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">apartment-calc.com</a>
+            {t.fullVersionPrefix}<a dir="ltr" href="https://www.apartment-calc.com" target="_blank" rel="noopener noreferrer" className="text-[var(--c-muted)] hover:underline">apartment-calc.com</a>
           </p>
         )}
       </footer>
