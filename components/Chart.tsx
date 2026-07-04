@@ -37,9 +37,10 @@ interface Props {
   irrApartment?: (number | null)[]
   irrPassive?:   (number | null)[]
   occupancy?: Occupancy
+  tourView?: View          // when the guided tour drives the active view
 }
 
-type View = 'gains' | 'diff' | 'cashflow' | 'irr'
+export type View = 'gains' | 'diff' | 'cashflow' | 'irr'
 
 const TOTAL = 360
 
@@ -121,7 +122,7 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t, rentLe
   )
 }
 
-export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive, occupancy = 'rentout' }: Props) {
+export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive, occupancy = 'rentout', tourView }: Props) {
   // Live-in: rent is avoided, not received — relabel the cashflow rent series/legend (math unchanged)
   const isLiveIn = occupancy === 'livein'
   const rentLegendLabel = isLiveIn ? t.cashFlowRentLegendLiveIn : t.cashFlowRentLegend
@@ -150,6 +151,9 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   irrDomainRef.current = irrDomain
   const viewRef = useRef<View>(view)
   viewRef.current = view
+
+  // The guided tour steps through the chart views; reflect its choice.
+  useEffect(() => { if (tourView) setView(tourView) }, [tourView])
   const touchState = useRef<
     | { type: 'drag'; startX: number; startY: number; startTime: number; origS: number; span: number; panning: boolean }
     | { type: 'pinch'; startDist: number; origSpan: number; origCenter: number }
@@ -659,7 +663,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   }
 
   return (
-    <div dir="ltr" className={`relative w-full flex flex-col gap-0 lg:gap-1${fill || stretch ? ' h-full' : ''}`}>
+    <div data-tour="chart" dir="ltr" className={`relative w-full flex flex-col gap-0 lg:gap-1${fill || stretch ? ' h-full' : ''}`}>
       {/* Header row */}
       <div className={`flex items-center justify-between h-6${isRTL ? ' flex-row-reverse' : ''}`}>
         <div className={`flex items-center gap-2${isRTL ? ' flex-row-reverse' : ''}`}>

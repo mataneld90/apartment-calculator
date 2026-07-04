@@ -8,6 +8,8 @@ import { getChartPalette } from '@/lib/colorPalette'
 import { shekel } from '@/lib/formatters'
 import dynamic from 'next/dynamic'
 import Sliders from './Sliders'
+import Tour, { type TourStep } from './Tour'
+import type { View } from './Chart'
 
 const Chart = dynamic(() => import('./Chart'), {
   ssr: false,
@@ -42,6 +44,8 @@ export default function Calculator() {
   const t = LANG[lang]
   const isRTL = lang === 'he'
   const [isEmbedded, setIsEmbedded] = useState(false)
+  const [tourOpen, setTourOpen] = useState(false)
+  const [tourStep, setTourStep] = useState(0)
 
   useEffect(() => {
     // True when the calc runs inside someone else's iframe (e.g. the moneyplan.co.il embed).
@@ -62,11 +66,11 @@ export default function Calculator() {
     }
   }, [isDark])
 
-  // Auto-open on first visit
+  // Auto-open the guided tour on first visit
   useEffect(() => {
     if (!localStorage.getItem('hasVisitedBefore')) {
-      setMethodologyOpen(true)
-      setIsFirstVisitPanel(true)
+      setTourStep(0)
+      setTourOpen(true)
     }
   }, [])
 
@@ -95,6 +99,69 @@ export default function Calculator() {
     markVisited()
     setMethodologyOpen(false)
     setIsFirstVisitPanel(false)
+    if (isFirstVisit) {
+      setDiffHintReady(true)
+      setTimeout(() => {
+        setShowHowItWorksHint(true)
+        setTimeout(() => setShowHowItWorksHint(false), 2500)
+      }, 300)
+    }
+  }
+
+  // Guided "How this works" tour — walks the input panels in story order
+  // (purchase → mortgage → property → sale → passive), then each chart view.
+  const tourSteps: TourStep[] = useMemo(() => isRTL ? [
+    { target: null, title: 'מה משווים כאן',
+      body: 'רכישת דירה עם משכנתה מול השקעת אותו הכסף בשוק ההון. מגדירים את הנתונים בצד, וקוראים את התוצאה בגרף.' },
+    { target: 'panel-costs', title: 'רכישה',
+      body: 'עלויות הרכישה החד-פעמיות: מחיר הדירה, מס רכישה ועלויות נלוות.' },
+    { target: 'panel-mortgage', title: 'משכנתה',
+      body: 'המימון: הון עצמי, תקופה וריבית - ריבית משוקללת אחת או פירוט לפי מסלול.' },
+    { target: 'panel-apartment', title: 'נכס',
+      body: 'הדירה עצמה: שכר דירה, עליית ערך ותחזוקה. למעלה בוחרים בין השכרה למגורים.' },
+    { target: 'panel-selling', title: 'מכירה',
+      body: <>עלויות היציאה במכירה: עלויות מכירה ומס שבח.</> },
+    { target: 'panel-passive', title: 'השקעה פסיבית',
+      body: 'האלטרנטיבה במספר אחד: התשואה השנתית שאותו הכסף היה מניב בשוק ההון.' },
+    { target: 'chart', chartView: 'gains', title: 'רווחים',
+      body: 'שני התרחישים זה מול זה - הרווח הנקי אילו מכרתם בכל חודש. נקודת החיתוך היא הרגע שבו אחד עוקף את השני.' },
+    { target: 'chart', chartView: 'diff', title: 'הפרש',
+      body: 'דירה פחות פסיבי. מעל האפס הדירה מובילה, מתחת לאפס השוק מוביל. גובה העקומה הוא גודל היתרון.' },
+    { target: 'chart', chartView: 'irr', title: 'תשואה שנתית',
+      body: <>התשואה השנתית (<bdi>IRR</bdi>) של כל תרחיש לכל חודש יציאה אפשרי - השוואה כשיעורי תשואה, לא בשקלים.</> },
+    { target: 'chart', chartView: 'cashflow', title: 'תזרים',
+      body: <>שכר הדירה מול המשכנתה כקווים, והתזרים החודשי הנקי כעמודות. עמודות שליליות הן כסף שמושקע בצד הפסיבי. הנוסחאות המלאות מופיעות תחת &quot;מאחורי הקלעים&quot;.</> },
+  ] : [
+    { target: null, title: 'What this compares',
+      body: 'Buying an apartment with a mortgage vs investing the same money in the market. Set your inputs on the side, then read the result in the chart.' },
+    { target: 'panel-costs', title: 'Purchase',
+      body: 'The one-time cost of buying: price, purchase tax and fees.' },
+    { target: 'panel-mortgage', title: 'Mortgage',
+      body: 'Your financing: down payment, term and rate - a single blended rate, or broken out per track.' },
+    { target: 'panel-apartment', title: 'Property',
+      body: 'The apartment itself: rent, appreciation and upkeep. Up top, choose renting it out or living in it.' },
+    { target: 'panel-selling', title: 'Sale',
+      body: <>Exit costs when you sell: selling fees and <bdi>מס שבח</bdi>.</> },
+    { target: 'panel-passive', title: 'Passive investment',
+      body: 'The alternative in one number: the annual market return the same cash would earn.' },
+    { target: 'chart', chartView: 'gains', title: 'Gains',
+      body: 'Both scenarios side by side - the net gain if you sold in each month. Where the lines cross is where one overtakes the other.' },
+    { target: 'chart', chartView: 'diff', title: 'Difference',
+      body: 'Apartment minus passive. Above zero the apartment leads; below zero the market leads. The height is the size of the lead.' },
+    { target: 'chart', chartView: 'irr', title: 'Annualized return',
+      body: 'Each scenario’s yearly return (IRR) for every exit month - comparing them as rates, not shekels.' },
+    { target: 'chart', chartView: 'cashflow', title: 'Cash flow',
+      body: <>Monthly rent vs mortgage as lines, net flow as bars. Negative bars are money invested on the passive side. Full formulas live under &quot;Under the hood&quot;.</> },
+  ], [isRTL])
+
+  function startTour() {
+    setTourStep(0)
+    setTourOpen(true)
+  }
+  function closeTour() {
+    const isFirstVisit = !localStorage.getItem('hasVisitedBefore')
+    markVisited()
+    setTourOpen(false)
     if (isFirstVisit) {
       setDiffHintReady(true)
       setTimeout(() => {
@@ -191,6 +258,17 @@ export default function Calculator() {
         <UnderTheHoodModalCalc isRTL={isRTL} onClose={() => setUnderTheHoodOpen(false)} />
       )}
 
+      {/* Guided "How this works" tour */}
+      <Tour
+        open={tourOpen}
+        steps={tourSteps}
+        index={tourStep}
+        isRTL={isRTL}
+        onNext={() => setTourStep(s => Math.min(s + 1, tourSteps.length - 1))}
+        onPrev={() => setTourStep(s => Math.max(s - 1, 0))}
+        onClose={closeTour}
+      />
+
       {/* Header */}
       <header className="shrink-0 border-b border-[var(--c-border)] px-4 py-1.5 sm:py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-start sm:justify-between sm:gap-3">
@@ -218,7 +296,7 @@ export default function Calculator() {
               )}
             </button>
             <button
-              onClick={() => setMethodologyOpen(true)}
+              onClick={startTour}
               className={`px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors${showHowItWorksHint ? ' hint-pulse' : ''}`}
               style={showHowItWorksHint ? {
                 '--hint-glow-start': hexToRgba(palette.pas, 0.7),
@@ -243,7 +321,7 @@ export default function Calculator() {
         {/* Top: chart fixed at ~48dvh */}
         <div className="shrink-0 h-[56dvh] overflow-hidden pt-0 px-3 pb-1.5">
           <div className="border border-[var(--c-border)] rounded-lg p-3 h-full" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} />
           </div>
         </div>
         {/* Summary bar */}
@@ -356,7 +434,7 @@ export default function Calculator() {
 
           {/* Chart - fills remaining height */}
           <div className="flex-1 min-h-0 border border-[var(--c-border)] rounded-lg p-4 flex flex-col" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} />
           </div>
 
         </section>

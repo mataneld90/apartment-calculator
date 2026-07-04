@@ -383,6 +383,7 @@ export default function Sliders({ params, update, results, t, isRTL, only, palet
       {visibleGroups.map((group) => (
         <div
           key={group.id}
+          data-tour={`panel-${group.id}`}
           className={continuous
             ? 'rounded-lg p-3'
             : 'border border-[var(--c-border)] rounded-lg p-3'}
