@@ -20,6 +20,35 @@ function visibleTarget(name: string): HTMLElement | null {
   return els.find(el => el.offsetParent !== null || el.getClientRects().length > 0) ?? els[0] ?? null
 }
 
+// Nearest ancestor that scrolls vertically (the mobile sliders live in one).
+function scrollParent(el: HTMLElement): HTMLElement | null {
+  let p = el.parentElement
+  while (p) {
+    if (/(auto|scroll)/.test(getComputedStyle(p).overflowY)) return p
+    p = p.parentElement
+  }
+  return null
+}
+
+// A target taller than its scrollport can never be fully on screen; its raw
+// bounding box would spotlight the neighbors it's clipped behind. Intersect
+// the rect with every clipping ancestor so the hole hugs the VISIBLE part.
+function visibleRect(el: HTMLElement): { x1: number; y1: number; x2: number; y2: number } {
+  const r = el.getBoundingClientRect()
+  let x1 = r.left, y1 = r.top, x2 = r.right, y2 = r.bottom
+  let p = el.parentElement
+  while (p) {
+    const s = getComputedStyle(p)
+    if (/(auto|scroll|hidden|clip)/.test(s.overflowY) || /(auto|scroll|hidden|clip)/.test(s.overflowX)) {
+      const pr = p.getBoundingClientRect()
+      x1 = Math.max(x1, pr.left); y1 = Math.max(y1, pr.top)
+      x2 = Math.min(x2, pr.right); y2 = Math.min(y2, pr.bottom)
+    }
+    p = p.parentElement
+  }
+  return { x1, y1, x2: Math.max(x1, x2), y2: Math.max(y1, y2) }
+}
+
 export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRTL, onToggleLang, langToggleLabel }: {
   open: boolean
   steps: TourStep[]
@@ -41,7 +70,14 @@ export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRT
     const el = targetRef.current
     if (!el) { setRect(null); return }
     const r = el.getBoundingClientRect()
-    setRect({ x: r.left - PAD, y: r.top - PAD, w: r.width + PAD * 2, h: r.height + PAD * 2 })
+    const { x1, y1, x2, y2 } = visibleRect(el)
+    // Pad only the sides that were NOT clamped, so the ring never bleeds
+    // onto whatever the target is clipped behind.
+    const pT = y1 - r.top > 0.5 ? 0 : PAD
+    const pB = r.bottom - y2 > 0.5 ? 0 : PAD
+    const pL = x1 - r.left > 0.5 ? 0 : PAD
+    const pR = r.right - x2 > 0.5 ? 0 : PAD
+    setRect({ x: x1 - pL, y: y1 - pT, w: (x2 - x1) + pL + pR, h: (y2 - y1) + pT + pB })
   }, [])
 
   // On step change: locate the target, scroll it into view, then measure once
@@ -52,7 +88,11 @@ export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRT
     const el = visibleTarget(step.target)
     targetRef.current = el
     if (!el) { setRect(null); return }
-    el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    // Tall targets (mobile panels) align to the top of the scrollport so the
+    // header shows; anything that fits is centered as before.
+    const sp = scrollParent(el)
+    const tall = sp !== null && el.offsetHeight > sp.clientHeight - 24
+    el.scrollIntoView({ block: tall ? 'start' : 'center', behavior: 'smooth' })
     const raf = requestAnimationFrame(() => requestAnimationFrame(readRect))
     const settle = setTimeout(readRect, 420)
     return () => { cancelAnimationFrame(raf); clearTimeout(settle) }

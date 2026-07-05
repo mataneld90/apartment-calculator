@@ -74,6 +74,17 @@ export default function Calculator() {
     }
   }, [])
 
+  // Below lg the layout changes (e.g. the summary bar shows only 2 of its 4
+  // values), and some tour copy must match what's actually on screen.
+  const [isNarrow, setIsNarrow] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const sync = () => setIsNarrow(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
   // Reset page to 1 whenever panel opens
   useEffect(() => {
     if (methodologyOpen) {
@@ -118,7 +129,9 @@ export default function Calculator() {
     { target: 'panel-mortgage', title: 'משכנתה',
       body: 'המימון: הון עצמי, תקופה וריבית - ריבית משוקללת אחת או פירוט לפי מסלול. את גובה המימון קובעים דרך סכום ההון העצמי, או דרך אחוז המימון של הבנק.' },
     { target: 'summary', title: 'סה"כ הוצאות רכישה',
-      body: 'כמה כסף יוצא מהכיס ביום הרכישה: הון עצמי, מס רכישה ועלויות נלוות. מתעדכן לפי פאנלי הרכישה והמשכנתה.' },
+      body: isNarrow
+        ? 'כמה כסף יוצא מהכיס ביום הרכישה, וכמה ממנו הון עצמי. מתעדכן לפי פאנלי הרכישה והמשכנתה.'
+        : 'כמה כסף יוצא מהכיס ביום הרכישה: הון עצמי, מס רכישה ועלויות נלוות. מתעדכן לפי פאנלי הרכישה והמשכנתה.' },
     { target: 'panel-apartment', title: 'נכס',
       body: 'הדירה עצמה: שכר דירה, עליית ערך ותחזוקה. למעלה בוחרים בין השכרה למגורים.' },
     { target: 'panel-selling', title: 'מכירה',
@@ -145,7 +158,9 @@ export default function Calculator() {
     { target: 'panel-mortgage', title: 'Mortgage',
       body: 'Your financing: down payment, term and rate - a single blended rate, or broken out per track. Set the financing via the down-payment amount, or via the bank’s financing percent.' },
     { target: 'summary', title: 'Total paid to buy',
-      body: 'The cash out of pocket on purchase day: down payment, purchase tax and transaction costs. Updates as you change the Purchase and Mortgage panels.' },
+      body: isNarrow
+        ? 'The cash out of pocket on purchase day, and how much of it is the down payment. Updates as you change the Purchase and Mortgage panels.'
+        : 'The cash out of pocket on purchase day: down payment, purchase tax and transaction costs. Updates as you change the Purchase and Mortgage panels.' },
     { target: 'panel-apartment', title: 'Property',
       body: 'The apartment itself: rent, appreciation and upkeep. Up top, choose renting it out or living in it.' },
     { target: 'panel-selling', title: 'Sale',
@@ -164,7 +179,7 @@ export default function Calculator() {
       body: 'The same picture as net-flow bars: rent minus mortgage and upkeep. Negative bars are money invested on the passive side.' },
     { target: 'under-the-hood', title: 'Under the hood',
       body: 'That’s it! The full formulas and assumptions behind the numbers live here, any time.' },
-  ], [isRTL])
+  ], [isRTL, isNarrow])
 
   // The tour narrates the DEFAULT scenario (crossovers, positive-flow year,
   // prepayment fee), so it resets the inputs for its duration and restores
