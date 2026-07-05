@@ -33,7 +33,6 @@ interface Props {
   fill?: boolean
   stretch?: boolean
   isDark: boolean
-  diffHintReady?: boolean
   irrApartment?: (number | null)[]
   irrPassive?:   (number | null)[]
   occupancy?: Occupancy
@@ -124,7 +123,7 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t, rentLe
   )
 }
 
-export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive, occupancy = 'rentout', tourView, tourSubView, tourOpen }: Props) {
+export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, irrApartment, irrPassive, occupancy = 'rentout', tourView, tourSubView, tourOpen }: Props) {
   // Live-in: rent is avoided, not received — relabel the cashflow rent series/legend (math unchanged)
   const isLiveIn = occupancy === 'livein'
   const rentLegendLabel = isLiveIn ? t.cashFlowRentLegendLiveIn : t.cashFlowRentLegend
@@ -140,10 +139,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const [chartWidth, setChartWidth] = useState(480)
   const [chartHeight, setChartHeight] = useState(360)
   const [measuredPlotHeight, setMeasuredPlotHeight] = useState<number | null>(null)
-  const [showHint, setShowHint] = useState(false)
-  const [hintVisible, setHintVisible] = useState(false)
-  const [showCashFlowHint, setShowCashFlowHint] = useState(false)
-  const [cashFlowHintVisible, setCashFlowHintVisible] = useState(false)
   const divRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ startX: number; origS: number; span: number } | null>(null)
   const [irrDomain, setIrrDomain] = useState<[number, number]>([24, TOTAL])
@@ -230,6 +225,27 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     }
     return result
   }, [irrApartment, irrPassive])
+
+  // Winner-decides-background bands for the IRR view, from the IRR curves
+  // themselves (their crossovers can differ from the gains crossovers).
+  const irrBands = useMemo(() => {
+    if (!irrApartment || !irrPassive) return []
+    let first: number | null = null
+    for (let m = 1; m <= TOTAL; m++) {
+      if (irrApartment[m] != null && irrPassive[m] != null) { first = m; break }
+    }
+    if (first === null) return []
+    const result: { x1: number; x2: number; apt: boolean }[] = []
+    let apt = (irrApartment[first] as number) >= (irrPassive[first] as number)
+    let prev = first
+    for (const c of irrCrossovers) {
+      result.push({ x1: prev, x2: c.month, apt })
+      apt = !apt
+      prev = c.month
+    }
+    result.push({ x1: prev, x2: TOTAL, apt })
+    return result
+  }, [irrApartment, irrPassive, irrCrossovers])
 
   const setCursor = (c: string) => {
     if (divRef.current) divRef.current.style.cursor = c
@@ -389,32 +405,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
     if (view !== 'cashflow') setCashFlowSubView('rentmort')
   }, [view])
 
-  // Sequential first-visit hints: diff hint at 6s, cashflow hint at ~14.5s
-  useEffect(() => {
-    if (!diffHintReady) return
-    const timers: ReturnType<typeof setTimeout>[] = []
-
-    timers.push(setTimeout(() => setShowHint(true), 6000))
-    timers.push(setTimeout(() => setHintVisible(true), 6050))
-    timers.push(setTimeout(() => setHintVisible(false), 12050))
-    timers.push(setTimeout(() => {
-      setShowHint(false)
-      localStorage.setItem('hasSeenDifferenceHint', 'true')
-    }, 12550))
-
-    if (!localStorage.getItem('hasSeenCashFlowHint')) {
-      timers.push(setTimeout(() => setShowCashFlowHint(true), 14500))
-      timers.push(setTimeout(() => setCashFlowHintVisible(true), 14550))
-      timers.push(setTimeout(() => setCashFlowHintVisible(false), 20550))
-      timers.push(setTimeout(() => {
-        setShowCashFlowHint(false)
-        localStorage.setItem('hasSeenCashFlowHint', 'true')
-      }, 21050))
-    }
-
-    return () => timers.forEach(clearTimeout)
-  }, [diffHintReady])
-
   const onMouseDown = (e: React.MouseEvent) => {
     const isIrr = view === 'irr'
     const curDomain = isIrr ? irrDomain : domain
@@ -505,6 +495,10 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
 
   const visibleBands = bands
     .map(b => ({ ...b, x1: Math.max(b.x1, start || 1), x2: Math.min(b.x2, end) }))
+    .filter(b => b.x1 < b.x2)
+
+  const visibleIrrBands = irrBands
+    .map(b => ({ ...b, x1: Math.max(b.x1, irrDomain[0]), x2: Math.min(b.x2, irrDomain[1]) }))
     .filter(b => b.x1 < b.x2)
 
   const yVals = view === 'diff'
@@ -706,12 +700,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           <div className={`flex gap-1${isRTL ? ' flex-row-reverse' : ''}`}>
             {(['gains', 'diff', 'irr', 'cashflow'] as View[]).map((v) => {
               const isActive = view === v
-              const isDiff = v === 'diff'
-              const isCashFlow = v === 'cashflow'
               const label = v === 'gains' ? t.viewGains : v === 'diff' ? t.viewDiff : v === 'cashflow' ? t.viewCashFlow : (isRTL ? 'תשואה שנתית' : 'IRR')
-              const hinting = (isDiff && showHint && !isActive) || (isCashFlow && showCashFlowHint && !isActive)
-              const hintBright = (isDiff && hintVisible) || (isCashFlow && cashFlowHintVisible)
-              const hintColor = palette.pas
               return (
                 <button
                   key={v}
@@ -721,12 +710,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
                       ? 'bg-slate-600 text-white border-slate-600'
                       : 'bg-transparent text-[var(--c-muted)] border-[var(--c-border)] hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)]'
                   }`}
-                  style={hinting ? {
-                    backgroundColor: hintBright ? hintColor : undefined,
-                    color: hintBright ? 'white' : undefined,
-                    borderColor: hintBright ? hintColor : undefined,
-                    transition: `background-color ${hintBright ? '300ms' : '500ms'}, color ${hintBright ? '300ms' : '500ms'}, border-color ${hintBright ? '300ms' : '500ms'}`,
-                  } : undefined}
                 >
                   {label}
                 </button>
@@ -743,56 +726,6 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           </button>
         )}
       </div>
-
-      {/* Diff hint */}
-      {showHint && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 30,
-            ...(isRTL ? { right: 0 } : { left: 0 }),
-            zIndex: 10,
-            width: 'max-content',
-            maxWidth: 'min(500px, 100%)',
-            background: isDark ? 'rgba(15,20,30,0.92)' : 'rgba(30,40,55,0.88)',
-            border: '1px solid rgba(150,170,200,0.4)',
-            borderRadius: 8,
-            padding: '6px 12px',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
-            opacity: hintVisible ? 1 : 0,
-            transition: hintVisible ? 'opacity 300ms' : 'opacity 500ms',
-            pointerEvents: 'none',
-          }}
-          dir={isRTL ? 'rtl' : 'ltr'}
-        >
-          <span className="text-sm italic" style={{ color: 'rgba(210,220,235,0.9)' }}>{t.diffHint}</span>
-        </div>
-      )}
-
-      {/* Cash flow hint */}
-      {showCashFlowHint && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 30,
-            ...(isRTL ? { right: 0 } : { left: 0 }),
-            zIndex: 10,
-            width: 'max-content',
-            maxWidth: 'min(500px, 100%)',
-            background: isDark ? 'rgba(15,20,30,0.92)' : 'rgba(30,40,55,0.88)',
-            border: '1px solid rgba(150,170,200,0.4)',
-            borderRadius: 8,
-            padding: '6px 12px',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.35)',
-            opacity: cashFlowHintVisible ? 1 : 0,
-            transition: cashFlowHintVisible ? 'opacity 300ms' : 'opacity 500ms',
-            pointerEvents: 'none',
-          }}
-          dir={isRTL ? 'rtl' : 'ltr'}
-        >
-          <span className="text-sm italic" style={{ color: 'rgba(210,220,235,0.9)' }}>{t.cashFlowHint}</span>
-        </div>
-      )}
 
       <div
         ref={divRef}
@@ -830,23 +763,26 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
           </div>
         )}
 
-        {/* Background color bands — only for gains/diff views */}
-        {(view === 'gains' || view === 'diff') && (
+        {/* Background color bands — winner decides background (gains/diff/irr) */}
+        {(view === 'gains' || view === 'diff' || view === 'irr') && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {visibleBands.map(({ x1, x2, apt }) => (
-              <div
-                key={x1}
-                style={{
-                  position: 'absolute',
-                  left: toAbsX(x1),
-                  top: MARGIN_TOP,
-                  width: Math.max(0, toAbsX(x2) - toAbsX(x1)),
-                  height: measuredPlotHeight ?? plotHeightPx,
-                  background: apt ? palette.npFill : palette.pnFill,
-                  opacity: apt ? palette.npFillOpacity : palette.pnFillOpacity,
-                }}
-              />
-            ))}
+            {(view === 'irr' ? visibleIrrBands : visibleBands).map(({ x1, x2, apt }) => {
+              const fx = view === 'irr' ? irrToAbsX : toAbsX
+              return (
+                <div
+                  key={x1}
+                  style={{
+                    position: 'absolute',
+                    left: fx(x1),
+                    top: MARGIN_TOP,
+                    width: Math.max(0, fx(x2) - fx(x1)),
+                    height: measuredPlotHeight ?? plotHeightPx,
+                    background: apt ? palette.npFill : palette.pnFill,
+                    opacity: apt ? palette.npFillOpacity : palette.pnFillOpacity,
+                  }}
+                />
+              )
+            })}
           </div>
         )}
 
