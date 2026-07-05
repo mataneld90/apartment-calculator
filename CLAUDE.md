@@ -93,10 +93,17 @@ DONE:
   summary strip/byline. Summary-card copy is isNarrow-aware (mobile
   strip shows only 2 of 4 values). Desktop approved by user.
 
+- Methodology modal REMOVED (295b526, user-approved after coverage
+  audit): tour+hood cover it; two orphans preserved - hood "Scope"
+  section (nominal ILS, purchase->rent->sell, shortfall rule) + positive-
+  months clause on the monthly-flow tour card. Dead first-visit hint
+  system in Chart removed too.
+- IRR view got the winner-decides-background bands (5cab0b4), computed
+  from the IRR curves' own crossovers (differ from gains crossovers).
+
 OPEN:
-- [ ] USER DECISION: dead methodology modal - the tour replaced it
-      (methodologyOpen / setIsFirstVisitPanel(true) never called). Remove
-      MethodologyPageHE/EN + goToMethodologyPage etc., or re-expose it?
+- [ ] User reviews modal removal + IRR bands on :3000, then deploy+push
+      (2 local commits ahead of origin).
 
 Previous task (canonical host consolidation, www.apartment-calc.com):
 shipped + deployed (70e3d8a); apex 301->www verified; GSC domain property
