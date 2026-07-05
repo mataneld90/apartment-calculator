@@ -73,6 +73,12 @@ DONE:
   reword), cashflow split into lines + bars cards (chartSubView plumbing),
   final under-the-hood card, lang toggle on card 1, indigo card background,
   removed post-tour diff/flow button flash. Re-verified HE+EN headless.
+- Round 2 (4fadc21): tour card is theme-INDEPENDENT bright (indigo-50 bg,
+  hardcoded slate text) - dark variant blended into the dim overlay.
+- Round 3 (d8a24c5, 13 steps): dp-copy fix (percent = bank's financing
+  fraction), new summary-strip card 4 (data-tour="summary"), grey flash on
+  the cashflow sub-toggle when the tour flips it, ESC exits, params reset
+  to defaults during tour + restored on any exit.
 
 OPEN:
 - [ ] User re-reviews the revised tour on localhost:3000.
