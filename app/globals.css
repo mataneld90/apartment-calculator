@@ -21,6 +21,8 @@
   --chart-crossover: #64748b;
   --tooltip-bg: rgba(30, 41, 59, 0.85);
   --tooltip-border: #475569;
+  --tour-card-bg: #1f2947;
+  --tour-card-border: rgba(129, 140, 248, 0.45);
 }
 
 .light {
@@ -45,6 +47,8 @@
   --chart-crossover: #94a3b8;
   --tooltip-bg: rgba(248, 250, 252, 0.97);
   --tooltip-border: #e2e8f0;
+  --tour-card-bg: #eef2ff;
+  --tour-card-border: #c7d2fe;
 }
 
 * {

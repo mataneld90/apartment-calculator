@@ -116,42 +116,50 @@ export default function Calculator() {
     { target: 'panel-costs', title: 'רכישה',
       body: 'עלויות הרכישה החד-פעמיות: מחיר הדירה, מס רכישה ועלויות נלוות.' },
     { target: 'panel-mortgage', title: 'משכנתה',
-      body: 'המימון: הון עצמי, תקופה וריבית - ריבית משוקללת אחת או פירוט לפי מסלול.' },
+      body: 'המימון: הון עצמי, תקופה וריבית - ריבית משוקללת אחת או פירוט לפי מסלול. את ההון העצמי מזינים כסכום או כאחוז ממחיר הדירה.' },
     { target: 'panel-apartment', title: 'נכס',
       body: 'הדירה עצמה: שכר דירה, עליית ערך ותחזוקה. למעלה בוחרים בין השכרה למגורים.' },
     { target: 'panel-selling', title: 'מכירה',
-      body: <>עלויות היציאה במכירה: עלויות מכירה ומס שבח.</> },
+      body: <>עלויות היציאה במכירה: עלויות מכירה, מס שבח, וקנס פירעון מוקדם שנקבע לפי מחוון ירידת הריבית.</> },
     { target: 'panel-passive', title: 'השקעה פסיבית',
       body: 'האלטרנטיבה במספר אחד: התשואה השנתית שאותו הכסף היה מניב בשוק ההון.' },
     { target: 'chart', chartView: 'gains', title: 'רווחים',
-      body: 'שני התרחישים זה מול זה - הרווח הנקי אילו מכרתם בכל חודש. נקודת החיתוך היא הרגע שבו אחד עוקף את השני.' },
+      body: 'שני התרחישים זה מול זה - הרווח הנקי אילו מכרתם בכל חודש. נקודות החיתוך הן הרגעים שבהם אחד עוקף את השני.' },
     { target: 'chart', chartView: 'diff', title: 'הפרש',
-      body: 'דירה פחות פסיבי. מעל האפס הדירה מובילה, מתחת לאפס השוק מוביל. גובה העקומה הוא גודל היתרון.' },
+      body: 'רווח מימוש הדירה פחות רווח מימוש ההשקעה הפסיבית. גובה העקומה הוא גודל היתרון. מעל האפס הדירה מובילה, מתחת לאפס השוק מוביל.' },
     { target: 'chart', chartView: 'irr', title: 'תשואה שנתית',
       body: <>התשואה השנתית (<bdi>IRR</bdi>) של כל תרחיש לכל חודש יציאה אפשרי - השוואה כשיעורי תשואה, לא בשקלים.</> },
-    { target: 'chart', chartView: 'cashflow', title: 'תזרים',
-      body: <>שכר הדירה מול המשכנתה כקווים, והתזרים החודשי הנקי כעמודות. עמודות שליליות הן כסף שמושקע בצד הפסיבי. הנוסחאות המלאות מופיעות תחת &quot;מאחורי הקלעים&quot;.</> },
+    { target: 'chart', chartView: 'cashflow', chartSubView: 'rentmort', title: 'תזרים',
+      body: 'שכר הדירה מול תשלום המשכנתה כקווים - רואים מתי השכירות מדביקה את המשכנתה.' },
+    { target: 'chart', chartView: 'cashflow', chartSubView: 'bars', title: 'תזרים חודשי',
+      body: 'אותה תמונה כעמודות של תזרים נקי: שכירות פחות משכנתה ותחזוקה. עמודות שליליות הן כסף שמושקע בצד הפסיבי.' },
+    { target: 'under-the-hood', title: 'מאחורי הקלעים',
+      body: 'זהו! הנוסחאות המלאות וההנחות של החישוב זמינות כאן, בכל שלב.' },
   ] : [
     { target: null, title: 'What this compares',
       body: 'Buying an apartment with a mortgage vs investing the same money in the market. Set your inputs on the side, then read the result in the chart.' },
     { target: 'panel-costs', title: 'Purchase',
       body: 'The one-time cost of buying: price, purchase tax and fees.' },
     { target: 'panel-mortgage', title: 'Mortgage',
-      body: 'Your financing: down payment, term and rate - a single blended rate, or broken out per track.' },
+      body: 'Your financing: down payment, term and rate - a single blended rate, or broken out per track. The down payment can be entered as an amount or as a percent of the price.' },
     { target: 'panel-apartment', title: 'Property',
       body: 'The apartment itself: rent, appreciation and upkeep. Up top, choose renting it out or living in it.' },
     { target: 'panel-selling', title: 'Sale',
-      body: <>Exit costs when you sell: selling fees and <bdi>מס שבח</bdi>.</> },
+      body: <>Exit costs when you sell: selling fees, <bdi>מס שבח</bdi>, and a prepayment fee set by the rate-drop slider.</> },
     { target: 'panel-passive', title: 'Passive investment',
       body: 'The alternative in one number: the annual market return the same cash would earn.' },
     { target: 'chart', chartView: 'gains', title: 'Gains',
-      body: 'Both scenarios side by side - the net gain if you sold in each month. Where the lines cross is where one overtakes the other.' },
+      body: 'Both scenarios side by side - the net gain if you sold in each month. The crossover points are the moments one overtakes the other.' },
     { target: 'chart', chartView: 'diff', title: 'Difference',
-      body: 'Apartment minus passive. Above zero the apartment leads; below zero the market leads. The height is the size of the lead.' },
+      body: 'The apartment’s realized gain minus the passive investment’s realized gain. The height of the curve is the size of the lead. Above zero the apartment leads; below zero the market leads.' },
     { target: 'chart', chartView: 'irr', title: 'Annualized return',
       body: 'Each scenario’s yearly return (IRR) for every exit month - comparing them as rates, not shekels.' },
-    { target: 'chart', chartView: 'cashflow', title: 'Cash flow',
-      body: <>Monthly rent vs mortgage as lines, net flow as bars. Negative bars are money invested on the passive side. Full formulas live under &quot;Under the hood&quot;.</> },
+    { target: 'chart', chartView: 'cashflow', chartSubView: 'rentmort', title: 'Cash flow',
+      body: 'Monthly rent vs the mortgage payment as lines - see when rent catches up with the mortgage.' },
+    { target: 'chart', chartView: 'cashflow', chartSubView: 'bars', title: 'Monthly flow',
+      body: 'The same picture as net-flow bars: rent minus mortgage and upkeep. Negative bars are money invested on the passive side.' },
+    { target: 'under-the-hood', title: 'Under the hood',
+      body: 'That’s it! The full formulas and assumptions behind the numbers live here, any time.' },
   ], [isRTL])
 
   function startTour() {
@@ -162,8 +170,8 @@ export default function Calculator() {
     const isFirstVisit = !localStorage.getItem('hasVisitedBefore')
     markVisited()
     setTourOpen(false)
+    // The tour walks every chart view itself, so no diff/cashflow button hint here.
     if (isFirstVisit) {
-      setDiffHintReady(true)
       setTimeout(() => {
         setShowHowItWorksHint(true)
         setTimeout(() => setShowHowItWorksHint(false), 2500)
@@ -267,6 +275,8 @@ export default function Calculator() {
         onNext={() => setTourStep(s => Math.min(s + 1, tourSteps.length - 1))}
         onPrev={() => setTourStep(s => Math.max(s - 1, 0))}
         onClose={closeTour}
+        onToggleLang={() => setLang(l => l === 'en' ? 'he' : 'en')}
+        langToggleLabel={t.langToggle}
       />
 
       {/* Header */}
@@ -308,6 +318,7 @@ export default function Calculator() {
             </button>
             <button
               onClick={() => setUnderTheHoodOpen(true)}
+              data-tour="under-the-hood"
               className="px-2 py-0.5 sm:px-3 sm:py-1.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs sm:text-sm font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors"
             >
               {isRTL ? 'מאחורי הקלעים' : 'Under the hood'}
@@ -321,7 +332,7 @@ export default function Calculator() {
         {/* Top: chart fixed at ~48dvh */}
         <div className="shrink-0 h-[56dvh] overflow-hidden pt-0 px-3 pb-1.5">
           <div className="border border-[var(--c-border)] rounded-lg p-3 h-full" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} tourSubView={tourOpen ? tourSteps[tourStep]?.chartSubView : undefined} />
           </div>
         </div>
         {/* Summary bar */}
@@ -434,7 +445,7 @@ export default function Calculator() {
 
           {/* Chart - fills remaining height */}
           <div className="flex-1 min-h-0 border border-[var(--c-border)] rounded-lg p-4 flex flex-col" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} tourSubView={tourOpen ? tourSteps[tourStep]?.chartSubView : undefined} />
           </div>
 
         </section>

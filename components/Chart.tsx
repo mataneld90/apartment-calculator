@@ -38,6 +38,7 @@ interface Props {
   irrPassive?:   (number | null)[]
   occupancy?: Occupancy
   tourView?: View          // when the guided tour drives the active view
+  tourSubView?: 'rentmort' | 'bars'  // tour's choice within the cashflow view
 }
 
 export type View = 'gains' | 'diff' | 'cashflow' | 'irr'
@@ -122,7 +123,7 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t, rentLe
   )
 }
 
-export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive, occupancy = 'rentout', tourView }: Props) {
+export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive, occupancy = 'rentout', tourView, tourSubView }: Props) {
   // Live-in: rent is avoided, not received — relabel the cashflow rent series/legend (math unchanged)
   const isLiveIn = occupancy === 'livein'
   const rentLegendLabel = isLiveIn ? t.cashFlowRentLegendLiveIn : t.cashFlowRentLegend
@@ -162,6 +163,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const [tapMonth, setTapMonth] = useState<number | null>(null)
   const [activeBarMonth, setActiveBarMonth] = useState<number | null>(null)
   const [cashFlowSubView, setCashFlowSubView] = useState<'rentmort' | 'bars'>('rentmort')
+  useEffect(() => { if (tourSubView) setCashFlowSubView(tourSubView) }, [tourSubView])
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isZoomed = view === 'irr'
     ? (irrDomain[0] !== 24 || irrDomain[1] !== TOTAL)

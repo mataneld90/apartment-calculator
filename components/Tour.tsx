@@ -6,6 +6,7 @@ export type TourStep = {
   title: string
   body: ReactNode
   chartView?: 'gains' | 'diff' | 'irr' | 'cashflow'
+  chartSubView?: 'rentmort' | 'bars'
 }
 
 type Rect = { x: number; y: number; w: number; h: number }
@@ -19,7 +20,7 @@ function visibleTarget(name: string): HTMLElement | null {
   return els.find(el => el.offsetParent !== null || el.getClientRects().length > 0) ?? els[0] ?? null
 }
 
-export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRTL }: {
+export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRTL, onToggleLang, langToggleLabel }: {
   open: boolean
   steps: TourStep[]
   index: number
@@ -27,6 +28,8 @@ export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRT
   onPrev: () => void
   onClose: () => void
   isRTL: boolean
+  onToggleLang?: () => void
+  langToggleLabel?: string
 }) {
   const [rect, setRect] = useState<Rect | null>(null)
   const targetRef = useRef<HTMLElement | null>(null)
@@ -113,17 +116,27 @@ export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRT
       )}
 
       <div
-        className="fixed rounded-lg border border-[var(--c-border)] bg-[var(--bg-page)] shadow-xl p-4"
+        className="fixed rounded-lg border border-[var(--tour-card-border)] bg-[var(--tour-card-bg)] shadow-xl p-4"
         style={{ left: cardLeft, top: cardTop, width: CARD_W }}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div className="flex justify-between items-start gap-2">
           <span className="font-semibold text-sm text-[var(--c-text)]">{step.title}</span>
-          <button
-            onClick={onClose}
-            aria-label={isRTL ? 'סגירה' : 'Close'}
-            className="text-[var(--c-muted)] hover:text-[var(--c-text)] leading-none text-base px-1 shrink-0"
-          >✕</button>
+          <div className="flex items-center gap-2 shrink-0">
+            {isFirst && onToggleLang && (
+              <button
+                onClick={onToggleLang}
+                className="px-2 py-0.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors"
+              >
+                {langToggleLabel}
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              aria-label={isRTL ? 'סגירה' : 'Close'}
+              className="text-[var(--c-muted)] hover:text-[var(--c-text)] leading-none text-base px-1 shrink-0"
+            >✕</button>
+          </div>
         </div>
 
         <div className="text-sm text-[var(--c-muted)] leading-relaxed mt-2">{step.body}</div>
