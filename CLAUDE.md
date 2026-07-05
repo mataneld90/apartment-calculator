@@ -68,12 +68,18 @@ DONE:
 - VISUALLY VERIFIED 2026-07-05: all 10 steps screenshotted in HE-desktop,
   EN-desktop, HE-mobile (~/projects/tour-shots-2026-07-05/). Spotlight hole,
   card placement, RTL page indicator, chart-view switching all correct.
+- User's first review round applied, commit 536bbc9 (tour now 12 steps):
+  copy fixes (dp amount/percent, prepayment fee, plural crossovers, diff
+  reword), cashflow split into lines + bars cards (chartSubView plumbing),
+  final under-the-hood card, lang toggle on card 1, indigo card background,
+  removed post-tour diff/flow button flash. Re-verified HE+EN headless.
 
 OPEN:
+- [ ] User re-reviews the revised tour on localhost:3000.
 - [ ] USER DECISION: dead methodology modal - the tour replaced it
       (methodologyOpen / setIsFirstVisitPanel(true) never called). Remove
       MethodologyPageHE/EN + goToMethodologyPage etc., or re-expose it?
-- [ ] After decision: build + deploy + push (11 commits ahead of origin).
+- [ ] After decision: build + deploy + push (12 commits ahead of origin).
 
 Previous task (canonical host consolidation, www.apartment-calc.com):
 shipped + deployed (70e3d8a); apex 301->www verified; GSC domain property
