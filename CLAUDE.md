@@ -101,9 +101,8 @@ DONE:
 - IRR view got the winner-decides-background bands (5cab0b4), computed
   from the IRR curves' own crossovers (differ from gains crossovers).
 
-OPEN:
-- [ ] User reviews modal removal + IRR bands on :3000, then deploy+push
-      (2 local commits ahead of origin).
+OPEN: nothing. Modal removal + IRR bands reviewed, deployed to
+apartment-calc.com and pushed 2026-07-05 (in sync with origin).
 
 Previous task (canonical host consolidation, www.apartment-calc.com):
 shipped + deployed (70e3d8a); apex 301->www verified; GSC domain property
