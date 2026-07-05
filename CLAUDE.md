@@ -79,6 +79,11 @@ DONE:
   fraction), new summary-strip card 4 (data-tour="summary"), grey flash on
   the cashflow sub-toggle when the tour flips it, ESC exits, params reset
   to defaults during tour + restored on any exit.
+- Round 4 (356a116): the round-3 reset was defeated in amount mode by
+  Sliders' local down-payment state (keep-₪-fixed effect rewrites p on
+  Av0 change) -> Sliders now keyed on sliderEpoch, bumped on tour
+  start/close, dpMode forced 'amount' during tour + restored. Chart
+  snapshots view+cashflow sub-view on tour start, restores on end.
 
 OPEN:
 - [ ] User re-reviews the revised tour on localhost:3000.
