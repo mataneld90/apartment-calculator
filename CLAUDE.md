@@ -54,7 +54,10 @@ Never use literal directional characters (→, ←, ▶, ◀) as hardcoded stati
 - Before any reset or when stuck, commit completed work and update `## ACTIVE TASK` with what's done vs pending.
 
 ## ACTIVE TASK
-Spotlight/guided tour (branch layout-redesign, NOT deployed, NOT pushed)
+Spotlight/guided tour - SHIPPED. Deployed to apartment-calc.com + pushed
+(2026-07-05, layout-redesign in sync with origin). User approved desktop
+and mobile after 5 review rounds. Live-verified (new tour copy in served
+JS chunk).
 
 DONE:
 - Tour.tsx complete + wired in Calculator.tsx (auto-opens on first visit via
@@ -91,11 +94,9 @@ DONE:
   strip shows only 2 of 4 values). Desktop approved by user.
 
 OPEN:
-- [ ] User re-reviews the revised tour on localhost:3000.
 - [ ] USER DECISION: dead methodology modal - the tour replaced it
       (methodologyOpen / setIsFirstVisitPanel(true) never called). Remove
       MethodologyPageHE/EN + goToMethodologyPage etc., or re-expose it?
-- [ ] After decision: build + deploy + push (12 commits ahead of origin).
 
 Previous task (canonical host consolidation, www.apartment-calc.com):
 shipped + deployed (70e3d8a); apex 301->www verified; GSC domain property
