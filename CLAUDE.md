@@ -84,6 +84,11 @@ DONE:
   Av0 change) -> Sliders now keyed on sliderEpoch, bumped on tour
   start/close, dpMode forced 'amount' during tour + restored. Chart
   snapshots view+cashflow sub-view on tour start, restores on end.
+- Round 5 (feec246), mobile: hole rect clamped to clipping ancestors
+  (visibleRect; pad only unclamped sides) + tall targets scroll to
+  block:'start' - fixes the mortgage-panel spotlight bleeding onto the
+  summary strip/byline. Summary-card copy is isNarrow-aware (mobile
+  strip shows only 2 of 4 values). Desktop approved by user.
 
 OPEN:
 - [ ] User re-reviews the revised tour on localhost:3000.
