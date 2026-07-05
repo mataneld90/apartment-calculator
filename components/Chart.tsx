@@ -39,6 +39,7 @@ interface Props {
   occupancy?: Occupancy
   tourView?: View          // when the guided tour drives the active view
   tourSubView?: 'rentmort' | 'bars'  // tour's choice within the cashflow view
+  tourOpen?: boolean       // tour running: snapshot the view on start, restore on end
 }
 
 export type View = 'gains' | 'diff' | 'cashflow' | 'irr'
@@ -123,7 +124,7 @@ function CompactLegend({ view, cashFlowSubView, APT, PAS, DIFF, isRTL, t, rentLe
   )
 }
 
-export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive, occupancy = 'rentout', tourView, tourSubView }: Props) {
+export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isDark, diffHintReady, irrApartment, irrPassive, occupancy = 'rentout', tourView, tourSubView, tourOpen }: Props) {
   // Live-in: rent is avoided, not received — relabel the cashflow rent series/legend (math unchanged)
   const isLiveIn = occupancy === 'livein'
   const rentLegendLabel = isLiveIn ? t.cashFlowRentLegendLiveIn : t.cashFlowRentLegend
@@ -155,6 +156,22 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
 
   // The guided tour steps through the chart views; reflect its choice.
   useEffect(() => { if (tourView) setView(tourView) }, [tourView])
+
+  // Snapshot the active view when the tour starts and restore it when the
+  // tour ends (first visit starts on the default 'gains' and returns there).
+  const prevTourOpenRef = useRef(false)
+  const preTourViewRef = useRef<View>('gains')
+  const preTourCfSubViewRef = useRef<'rentmort' | 'bars'>('rentmort')
+  useEffect(() => {
+    if (tourOpen && !prevTourOpenRef.current) {
+      preTourViewRef.current = viewRef.current
+      preTourCfSubViewRef.current = cfSubViewRef.current
+    } else if (!tourOpen && prevTourOpenRef.current) {
+      setView(preTourViewRef.current)
+      setCashFlowSubView(preTourCfSubViewRef.current)
+    }
+    prevTourOpenRef.current = !!tourOpen
+  }, [tourOpen])
   const touchState = useRef<
     | { type: 'drag'; startX: number; startY: number; startTime: number; origS: number; span: number; panning: boolean }
     | { type: 'pinch'; startDist: number; origSpan: number; origCenter: number }
@@ -163,6 +180,8 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const [tapMonth, setTapMonth] = useState<number | null>(null)
   const [activeBarMonth, setActiveBarMonth] = useState<number | null>(null)
   const [cashFlowSubView, setCashFlowSubView] = useState<'rentmort' | 'bars'>('rentmort')
+  const cfSubViewRef = useRef(cashFlowSubView)
+  cfSubViewRef.current = cashFlowSubView
   const [subToggleFlash, setSubToggleFlash] = useState(false)
   const prevTourSubView = useRef<'rentmort' | 'bars' | undefined>(undefined)
   useEffect(() => {

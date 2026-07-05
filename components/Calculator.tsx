@@ -168,11 +168,18 @@ export default function Calculator() {
 
   // The tour narrates the DEFAULT scenario (crossovers, positive-flow year,
   // prepayment fee), so it resets the inputs for its duration and restores
-  // the user's values on exit.
+  // the user's values on exit. Bumping sliderEpoch remounts the Sliders:
+  // their internal down-payment state would otherwise rewrite p right after
+  // the reset (it holds the ₪ amount fixed whenever the price changes).
   const preTourParams = useRef<Params | null>(null)
+  const preTourDpMode = useRef<'amount' | 'fraction' | null>(null)
+  const [sliderEpoch, setSliderEpoch] = useState(0)
   function startTour() {
     preTourParams.current = params
+    preTourDpMode.current = dpMode
     setParams(DEFAULT_PARAMS)
+    setDpMode('amount')
+    setSliderEpoch(e => e + 1)
     setTourStep(0)
     setTourOpen(true)
   }
@@ -184,6 +191,11 @@ export default function Calculator() {
       setParams(preTourParams.current)
       preTourParams.current = null
     }
+    if (preTourDpMode.current) {
+      setDpMode(preTourDpMode.current)
+      preTourDpMode.current = null
+    }
+    setSliderEpoch(e => e + 1)
     // The tour walks every chart view itself, so no diff/cashflow button hint here.
     if (isFirstVisit) {
       setTimeout(() => {
@@ -346,7 +358,7 @@ export default function Calculator() {
         {/* Top: chart fixed at ~48dvh */}
         <div className="shrink-0 h-[56dvh] overflow-hidden pt-0 px-3 pb-1.5">
           <div className="border border-[var(--c-border)] rounded-lg p-3 h-full" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} tourSubView={tourOpen ? tourSteps[tourStep]?.chartSubView : undefined} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} fill isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} tourSubView={tourOpen ? tourSteps[tourStep]?.chartSubView : undefined} tourOpen={tourOpen} />
           </div>
         </div>
         {/* Summary bar */}
@@ -367,6 +379,7 @@ export default function Calculator() {
         {/* Bottom: sliders, independently scrollable */}
         <div className="flex-1 min-h-0 overflow-y-auto p-3 pt-1">
           <Sliders
+            key={sliderEpoch}
             params={params} update={update} results={results} t={t} isRTL={isRTL}
             only={SLIDER_GROUPS}
             palette={palette}
@@ -410,6 +423,7 @@ export default function Calculator() {
           {isDark ? (
             <div className="bg-[var(--bg-panel)] border border-[var(--c-border)] rounded-lg p-4">
               <Sliders
+                key={sliderEpoch}
                 params={params} update={update} results={results} t={t} isRTL={isRTL}
                 only={SLIDER_GROUPS}
                 palette={palette}
@@ -419,6 +433,7 @@ export default function Calculator() {
             </div>
           ) : (
             <Sliders
+              key={sliderEpoch}
               params={params} update={update} results={results} t={t} isRTL={isRTL}
               only={SLIDER_GROUPS}
               palette={palette}
@@ -459,7 +474,7 @@ export default function Calculator() {
 
           {/* Chart - fills remaining height */}
           <div className="flex-1 min-h-0 border border-[var(--c-border)] rounded-lg p-4 flex flex-col" style={{ background: 'var(--chart-bg, var(--bg-panel))' }}>
-            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} tourSubView={tourOpen ? tourSteps[tourStep]?.chartSubView : undefined} />
+            <Chart points={results.points} crossovers={results.crossovers} t={t} isRTL={isRTL} stretch isDark={isDark} diffHintReady={diffHintReady} irrApartment={results.irrApartment} irrPassive={results.irrPassive} occupancy={params.occupancy} tourView={tourOpen ? tourSteps[tourStep]?.chartView : undefined} tourSubView={tourOpen ? tourSteps[tourStep]?.chartSubView : undefined} tourOpen={tourOpen} />
           </div>
 
         </section>
