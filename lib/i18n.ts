@@ -92,8 +92,6 @@ export type Translation = {
   cashFlowMonthlyNote: string
   cashFlowPositiveFrom: (year: string) => string
   chartViewLabel: string
-  diffHint: string
-  cashFlowHint: string
   cashFlowLabel: string
   cashFlowLegendPositive: string
   cashFlowLegendNegative: string
@@ -246,8 +244,6 @@ export const LANG: Record<Lang, Translation> = {
     cashFlowMonthlyNote: 'Monthly amounts',
     cashFlowPositiveFrom: (year) => `Positive flow from year ${year}`,
     chartViewLabel: 'Chart view:',
-    diffHint: '💡 Try the Difference view - it shows the gap between both scenarios at each point in time',
-    cashFlowHint: '💡 The Cash flow view shows the monthly gap between rent and mortgage - and how long until it turns positive',
     cashFlowLabel: 'Cash flow:',
     cashFlowLegendPositive: 'Rent exceeds mortgage',
     cashFlowLegendNegative: 'Mortgage exceeds rent',
@@ -396,8 +392,6 @@ export const LANG: Record<Lang, Translation> = {
     cashFlowMonthlyNote: 'ערכים חודשיים',
     cashFlowPositiveFrom: (year) => `תזרים חיובי החל משנה ${year}`,
     chartViewLabel: 'תצוגת גרף:',
-    diffHint: '💡 נסו את תצוגת ההפרש - היא מציגה את הפער בין שני התרחישים בכל נקודת זמן',
-    cashFlowHint: '💡 תצוגת התזרים מציגה את ההפרש החודשי בין שכירות למשכנתה - וכמה זמן עד שהוא הופך לחיובי',
     cashFlowLabel: 'תזרים:',
     cashFlowLegendPositive: 'הכנסה עולה על משכנתה',
     cashFlowLegendNegative: 'משכנתה עולה על הכנסה',
