@@ -158,6 +158,15 @@ input[type='range']::-webkit-slider-thumb {
   animation: subtlePulse 1s ease-out 3;
 }
 
+/* Guided tour: grey "pressed" flash on a control the tour just activated */
+@keyframes tourBtnFlash {
+  0%, 100% { background-color: transparent; }
+  50%      { background-color: var(--c-border-hover); }
+}
+.tour-btn-flash {
+  animation: tourBtnFlash 0.5s ease 3;
+}
+
 /* Guided tour spotlight — animate the mask hole + ring between steps */
 .tour-hole {
   transition: x 0.35s ease, y 0.35s ease, width 0.35s ease, height 0.35s ease;

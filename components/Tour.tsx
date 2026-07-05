@@ -70,6 +70,14 @@ export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRT
     }
   }, [open, readRect])
 
+  // ESC exits the tour.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
   if (!open || !step) return null
 
   const vw = typeof window !== 'undefined' ? window.innerWidth : 1024

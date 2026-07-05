@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, type ReactNode } from 'react'
+import { useState, useMemo, useEffect, useRef, type ReactNode } from 'react'
 import { compute, DEFAULT_PARAMS } from '@/lib/model'
 import type { Params } from '@/lib/types'
 import { LANG, type Lang } from '@/lib/i18n'
@@ -116,7 +116,9 @@ export default function Calculator() {
     { target: 'panel-costs', title: 'רכישה',
       body: 'עלויות הרכישה החד-פעמיות: מחיר הדירה, מס רכישה ועלויות נלוות.' },
     { target: 'panel-mortgage', title: 'משכנתה',
-      body: 'המימון: הון עצמי, תקופה וריבית - ריבית משוקללת אחת או פירוט לפי מסלול. את ההון העצמי מזינים כסכום או כאחוז ממחיר הדירה.' },
+      body: 'המימון: הון עצמי, תקופה וריבית - ריבית משוקללת אחת או פירוט לפי מסלול. את גובה המימון קובעים דרך סכום ההון העצמי, או דרך אחוז המימון של הבנק.' },
+    { target: 'summary', title: 'סה"כ הוצאות רכישה',
+      body: 'כמה כסף יוצא מהכיס ביום הרכישה: הון עצמי, מס רכישה ועלויות נלוות. מתעדכן לפי פאנלי הרכישה והמשכנתה.' },
     { target: 'panel-apartment', title: 'נכס',
       body: 'הדירה עצמה: שכר דירה, עליית ערך ותחזוקה. למעלה בוחרים בין השכרה למגורים.' },
     { target: 'panel-selling', title: 'מכירה',
@@ -141,7 +143,9 @@ export default function Calculator() {
     { target: 'panel-costs', title: 'Purchase',
       body: 'The one-time cost of buying: price, purchase tax and fees.' },
     { target: 'panel-mortgage', title: 'Mortgage',
-      body: 'Your financing: down payment, term and rate - a single blended rate, or broken out per track. The down payment can be entered as an amount or as a percent of the price.' },
+      body: 'Your financing: down payment, term and rate - a single blended rate, or broken out per track. Set the financing via the down-payment amount, or via the bank’s financing percent.' },
+    { target: 'summary', title: 'Total paid to buy',
+      body: 'The cash out of pocket on purchase day: down payment, purchase tax and transaction costs. Updates as you change the Purchase and Mortgage panels.' },
     { target: 'panel-apartment', title: 'Property',
       body: 'The apartment itself: rent, appreciation and upkeep. Up top, choose renting it out or living in it.' },
     { target: 'panel-selling', title: 'Sale',
@@ -162,7 +166,13 @@ export default function Calculator() {
       body: 'That’s it! The full formulas and assumptions behind the numbers live here, any time.' },
   ], [isRTL])
 
+  // The tour narrates the DEFAULT scenario (crossovers, positive-flow year,
+  // prepayment fee), so it resets the inputs for its duration and restores
+  // the user's values on exit.
+  const preTourParams = useRef<Params | null>(null)
   function startTour() {
+    preTourParams.current = params
+    setParams(DEFAULT_PARAMS)
     setTourStep(0)
     setTourOpen(true)
   }
@@ -170,6 +180,10 @@ export default function Calculator() {
     const isFirstVisit = !localStorage.getItem('hasVisitedBefore')
     markVisited()
     setTourOpen(false)
+    if (preTourParams.current) {
+      setParams(preTourParams.current)
+      preTourParams.current = null
+    }
     // The tour walks every chart view itself, so no diff/cashflow button hint here.
     if (isFirstVisit) {
       setTimeout(() => {
@@ -336,7 +350,7 @@ export default function Calculator() {
           </div>
         </div>
         {/* Summary bar */}
-        <div className="shrink-0 mx-3 mb-1.5 bg-[var(--bg-panel)] border border-[var(--c-border)] rounded-lg px-3 py-1"
+        <div data-tour="summary" className="shrink-0 mx-3 mb-1.5 bg-[var(--bg-panel)] border border-[var(--c-border)] rounded-lg px-3 py-1"
           style={isDark ? {} : { backgroundColor: 'var(--sidebar-group-bg)', borderColor: 'var(--sidebar-group-border)' }}>
           <div className="flex items-center gap-x-3 text-xs text-[var(--c-muted)]" dir={isRTL ? 'rtl' : 'ltr'}>
             <span>
@@ -418,7 +432,7 @@ export default function Calculator() {
         <section className="flex-1 min-h-0 flex flex-col gap-3">
 
           {/* Summary bar */}
-          <div className="shrink-0 bg-[var(--bg-panel)] border border-[var(--c-border)] rounded-lg px-4 py-2"
+          <div data-tour="summary" className="shrink-0 bg-[var(--bg-panel)] border border-[var(--c-border)] rounded-lg px-4 py-2"
             style={isDark ? {} : { backgroundColor: 'var(--sidebar-group-bg)', borderColor: 'var(--sidebar-group-border)' }}>
             <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-xs text-[var(--c-muted)]" dir={isRTL ? 'rtl' : 'ltr'}>
               <span>

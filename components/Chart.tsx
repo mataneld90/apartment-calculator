@@ -163,7 +163,21 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
   const [tapMonth, setTapMonth] = useState<number | null>(null)
   const [activeBarMonth, setActiveBarMonth] = useState<number | null>(null)
   const [cashFlowSubView, setCashFlowSubView] = useState<'rentmort' | 'bars'>('rentmort')
-  useEffect(() => { if (tourSubView) setCashFlowSubView(tourSubView) }, [tourSubView])
+  const [subToggleFlash, setSubToggleFlash] = useState(false)
+  const prevTourSubView = useRef<'rentmort' | 'bars' | undefined>(undefined)
+  useEffect(() => {
+    const prev = prevTourSubView.current
+    prevTourSubView.current = tourSubView
+    if (!tourSubView) return
+    setCashFlowSubView(tourSubView)
+    // When the tour flips the sub-view, flash the corner toggle so the
+    // switch is attributable to that control.
+    if (prev && prev !== tourSubView) {
+      setSubToggleFlash(true)
+      const tm = setTimeout(() => setSubToggleFlash(false), 1600)
+      return () => clearTimeout(tm)
+    }
+  }, [tourSubView])
   const cursorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isZoomed = view === 'irr'
     ? (irrDomain[0] !== 24 || irrDomain[1] !== TOTAL)
@@ -790,7 +804,7 @@ export default function Chart({ points, crossovers, t, isRTL, fill, stretch, isD
             {/* Single toggle: shows the current sub-view, tap to switch to the other */}
             <button
               onClick={(e) => { e.stopPropagation(); setCashFlowSubView(cashFlowSubView === 'rentmort' ? 'bars' : 'rentmort') }}
-              className="text-xs px-2 py-0.5 rounded text-[var(--c-text)] font-medium transition-opacity hover:opacity-70"
+              className={`text-xs px-2 py-0.5 rounded text-[var(--c-text)] font-medium transition-opacity hover:opacity-70${subToggleFlash ? ' tour-btn-flash' : ''}`}
             >
               {cashFlowSubView === 'rentmort' ? t.cashFlowSubViewBars : rentSubViewLabel}
             </button>
