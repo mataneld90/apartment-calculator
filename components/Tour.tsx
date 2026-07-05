@@ -121,12 +121,12 @@ export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRT
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div className="flex justify-between items-start gap-2">
-          <span className="font-semibold text-sm text-[var(--c-text)]">{step.title}</span>
+          <span className="font-semibold text-sm text-[var(--tour-card-text)]">{step.title}</span>
           <div className="flex items-center gap-2 shrink-0">
             {isFirst && onToggleLang && (
               <button
                 onClick={onToggleLang}
-                className="px-2 py-0.5 rounded bg-[var(--bg-control)] border border-[var(--c-border)] text-[var(--c-text-3)] text-xs font-medium hover:border-[var(--c-border-hover)] hover:text-[var(--c-text)] transition-colors"
+                className="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-600 text-xs font-medium hover:border-slate-400 hover:text-slate-900 transition-colors"
               >
                 {langToggleLabel}
               </button>
@@ -134,20 +134,20 @@ export default function Tour({ open, steps, index, onNext, onPrev, onClose, isRT
             <button
               onClick={onClose}
               aria-label={isRTL ? 'סגירה' : 'Close'}
-              className="text-[var(--c-muted)] hover:text-[var(--c-text)] leading-none text-base px-1 shrink-0"
+              className="text-slate-400 hover:text-slate-700 leading-none text-base px-1 shrink-0"
             >✕</button>
           </div>
         </div>
 
-        <div className="text-sm text-[var(--c-muted)] leading-relaxed mt-2">{step.body}</div>
+        <div className="text-sm text-[var(--tour-card-muted)] leading-relaxed mt-2">{step.body}</div>
 
         <div className="mt-4 flex items-center justify-between gap-2">
-          <span className="text-xs text-slate-400 select-none" dir="ltr">{index + 1} / {steps.length}</span>
+          <span className="text-xs text-slate-500 select-none" dir="ltr">{index + 1} / {steps.length}</span>
           <div className="flex items-center gap-2">
             {!isFirst && (
               <button
                 onClick={onPrev}
-                className="px-3 py-1 rounded border border-[var(--c-toggle-border)] text-[var(--c-muted)] text-xs font-medium hover:text-[var(--c-text)] hover:border-[var(--c-border-hover)] transition-colors"
+                className="px-3 py-1 rounded border border-slate-300 text-slate-600 text-xs font-medium hover:text-slate-900 hover:border-slate-400 transition-colors"
               >
                 {isRTL ? 'הקודם' : 'Back'}
               </button>
