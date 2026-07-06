@@ -176,7 +176,7 @@ export const LANG: Record<Lang, Translation> = {
     liveInRentLabel: "Rent you'd otherwise pay",
     liveInRentTooltip: "The monthly rent you'd pay to live elsewhere if you hadn't bought. By living in your own apartment you avoid it - this is the benefit that offsets the mortgage.",
     yLabel: 'Mortgage period',
-    vLabel: 'Apartment appreciation',
+    vLabel: 'Apartment appreciation (nominal)',
     riLabel: 'Yearly rent increase',
     riTooltip: "Expected annual rent increase, applied to both the apartment's market rent and the rent you'd otherwise pay. The 2% default matches the Bank of Israel's inflation target.",
     maintenanceRateLabel: 'Annual maintenance',
@@ -209,8 +209,8 @@ export const LANG: Record<Lang, Translation> = {
     tooltips: {
       pInvestor: 'Israeli law caps mortgage financing at 50% of apartment value for a non-primary residence. If this will become your primary residence and you sell your current apartment within 18 months, the 75% cap may apply - consult a mortgage advisor.',
       pSingle: 'Israeli law caps mortgage financing at 75% of apartment value for a primary residence.',
-      Ip: (pct) => `Expected annual return in ILS on a passive stock market investment (e.g. S&P 500 or MSCI World), net of fund fees. Default ${pct} = ~10% in USD, minus ~0.7–0.8% annual shekel appreciation against the dollar (historical trend 2006–2024, linear regression on Bank of Israel data), minus ~0.2% fund management fees.`,
-      V: 'Expected annual increase in apartment value. In major Israeli cities, the historical average was approximately 5–8% per year in the decade 2012–2022, with significant variation by area and period.',
+      Ip: (pct) => `Expected annual return in ILS on a passive stock market investment (e.g. S&P 500 or MSCI World), net of fund fees. Default ${pct} = ~10% in USD, minus ~0.7–0.8% annual shekel appreciation against the dollar (historical trend 2006–2024, linear regression on Bank of Israel data), minus ~0.2% fund management fees. This return is nominal by default. If you switch it to a real (inflation-adjusted) figure, set the apartment appreciation to a real figure as well, so both sides use the same basis.`,
+      V: "Expected annual increase in apartment value. In major Israeli cities, the historical average was approximately 5–8% per year in the decade 2012–2022, with significant variation by area and period. This is a nominal figure. If you enter a real (inflation-adjusted) return for the passive investment, use a real appreciation here too - don't mix a real return on one side with a nominal one on the other.",
       Es: 'Selling costs as a percentage of the apartment value at sale. Typical breakdown: agent ~2%, lawyer ~0.5%, plus incidental costs. Common range: 2.5–3%.',
 
       buyerTypeInvestor:
@@ -326,7 +326,7 @@ export const LANG: Record<Lang, Translation> = {
     liveInRentLabel: 'שכר דירה שהייתם משלמים',
     liveInRentTooltip: 'שכר הדירה החודשי שהייתם משלמים כדי לגור במקום אחר אילולא קניתם. המגורים בדירה שלכם חוסכים לכם אותו - זוהי התועלת שמקזזת את המשכנתה.',
     yLabel: 'תקופת משכנתה',
-    vLabel: 'עליית ערך שנתית',
+    vLabel: 'עליית ערך שנתית (נומינלית)',
     riLabel: 'עליית שכירות שנתית',
     riTooltip: 'עליית שכר דירה שנתית צפויה, החלה הן על שכר הדירה בשוק והן על שכר הדירה שהייתם משלמים. ברירת המחדל 2% תואמת את יעד האינפלציה של בנק ישראל.',
     maintenanceRateLabel: 'תחזוקה שנתית',
@@ -359,8 +359,8 @@ export const LANG: Record<Lang, Translation> = {
     tooltips: {
       pInvestor: 'החוק בישראל מגביל מימון משכנתה ל-50% משווי הדירה עבור דירה שאינה מגורים עיקריים. אם הדירה החדשה תשמש כמגוריכם העיקריים ותמכרו את הדירה הקיימת תוך 18 חודשים, עשויה לחול תקרת מימון של 75% - מומלץ להתייעץ עם יועץ משכנתאות.',
       pSingle: 'החוק בישראל מגביל מימון משכנתה ל-75% משווי הדירה עבור דירת מגורים עיקריים.',
-      Ip: (pct) => `תשואה שנתית צפויה בשקלים על השקעה פסיבית במדד מניות (כגון S&P 500 או MSCI World), נטו מדמי ניהול. ברירת המחדל ${pct} = ~10% בדולרים, פחות ~0.7–0.8% התחזקות שקל מול דולר (מגמה היסטורית 2006–2024, רגרסיה לינארית על נתוני בנק ישראל) ופחות ~0.2% דמי ניהול.`,
-      V: 'עלייה שנתית צפויה בשווי הדירה. בערים גדולות בישראל עמד הממוצע על כ-5–8% בשנה בעשור 2012–2022, עם שונות משמעותית בין אזורים ותקופות.',
+      Ip: (pct) => `תשואה שנתית צפויה בשקלים על השקעה פסיבית במדד מניות (כגון S&P 500 או MSCI World), נטו מדמי ניהול. ברירת המחדל ${pct} = ~10% בדולרים, פחות ~0.7–0.8% התחזקות שקל מול דולר (מגמה היסטורית 2006–2024, רגרסיה לינארית על נתוני בנק ישראל) ופחות ~0.2% דמי ניהול. תשואה זו נומינלית כברירת מחדל. אם תעברו לערך ריאלי (מנוכה אינפלציה), הגדירו גם את עליית ערך הדירה כערך ריאלי, כך ששני הצדדים ישתמשו באותו בסיס.`,
+      V: 'עלייה שנתית צפויה בשווי הדירה. בערים גדולות בישראל עמד הממוצע על כ-5–8% בשנה בעשור 2012–2022, עם שונות משמעותית בין אזורים ותקופות. מדובר בערך נומינלי. אם הזנתם תשואה ריאלית (מנוכת אינפלציה) בהשקעה הפסיבית, השתמשו גם כאן בעליית ערך ריאלית - אין לערבב תשואה ריאלית בצד אחד עם ערך נומינלי בצד השני.',
       Es: 'עלויות מכירה כאחוז משווי הדירה בעת המכירה. פירוט אופייני: מתווך ~2%, עו"ד ~0.5%, ועלויות נלוות נוספות. טווח מקובל: 2.5–3%.',
 
       buyerTypeInvestor: 'חל על מי שמחזיקים בדירה נוספת ואינם מוכרים אותה לפני הרכישה. מס רכישה: 8% עד ₪5,872,725, ו-10% על החלק שמעבר. אם הדירה החדשה תשמש כמגוריכם העיקריים ותמכרו את הדירה הקיימת תוך 18 חודשים, עשויה לחול תקרת מימון של 75% - מומלץ להתייעץ עם יועץ משכנתאות.',
