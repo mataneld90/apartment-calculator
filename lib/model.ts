@@ -250,7 +250,7 @@ export function compute(params: Params): Results {
 
 // Bank of Israel policy rate. THE manual knob: update this one number when BOI moves
 // (the live BOI fetch was abandoned). Prime = BOI + 1.5% by definition (used for the prime track).
-export const BOI_RATE = 0.0375
+export const BOI_RATE = 0.035
 const PRIME_RATE = BOI_RATE + 0.015   // standard Israeli prime = BOI + 1.5%
 
 export const DEFAULT_PARAMS: Params = {
@@ -262,7 +262,7 @@ export const DEFAULT_PARAMS: Params = {
   V: 0.07,
   // Single blended effective rate for the whole mortgage — a typical Israeli mortgage today.
   // Standalone value (not derived from a personal deal); edit to your bank's quote.
-  mortgageRate: 0.045,
+  mortgageRate: 0.044,
   Ri: 0.02,
   maintenanceRate: 0.07,
   buyerType: 'investor',
@@ -275,11 +275,11 @@ export const DEFAULT_PARAMS: Params = {
 
   mortgageMode: 'simple',
   // By-track defaults: individually realistic rates that, in equal thirds, BLEND to the single
-  // rate above ((5.25 + 4.0 + 4.25) / 3 = 4.5%). So switching to By-track leaves the payment
+  // rate above ((5.0 + 4.0 + 4.25) / 3 ≈ 4.4%). So switching to By-track leaves the payment
   // ~unchanged — the only meaningful difference is the lower early-repayment fee, because the
   // prime track is exempt by law. Users then set their real per-track shares and rates.
   trackPrimeShare: 1 / 3,
-  trackPrimeRate: PRIME_RATE,   // prime = BOI + 1.5% = 5.25%
+  trackPrimeRate: PRIME_RATE,   // prime = BOI + 1.5% = 5.0%
   trackFixedShare: 1 / 3,
   trackFixedRate: 0.04,         // fixed-unlinked (קל"צ), typical today
   trackVarShare: 1 / 3,
